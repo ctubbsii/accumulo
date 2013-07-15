@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.admin.TimeType;
+import org.apache.accumulo.core.client.impl.TableNamespaces;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.client.impl.thrift.TableOperation;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
@@ -153,7 +154,7 @@ class CreateDir extends MasterRepo {
   @Override
   public void undo(long tid, Master master) throws Exception {
     VolumeManager fs = master.getFileSystem();
-    for(String dir : ServerConstants.getTablesDirs()) {
+    for (String dir : ServerConstants.getTablesDirs()) {
       fs.deleteRecursively(new Path(dir + "/" + tableInfo.tableId));
     }
     
@@ -187,6 +188,11 @@ class PopulateZookeeper extends MasterRepo {
       Utils.checkTableDoesNotExist(instance, tableInfo.tableName, tableInfo.tableId, TableOperation.CREATE);
       
       TableManager.getInstance().addTable(tableInfo.tableId, tableInfo.tableName, NodeExistsPolicy.OVERWRITE);
+      
+      String namespace = Tables.extractNamespace(tableInfo.tableName);
+      String namespaceId = TableNamespaces.getNamespaceId(instance, namespace);
+      
+      TableManager.getInstance().addNamespaceToTable(tableInfo.tableId, namespaceId);
       
       for (Entry<String,String> entry : tableInfo.props.entrySet())
         TablePropUtil.setTableProperty(tableInfo.tableId, entry.getKey(), entry.getValue());
@@ -264,7 +270,7 @@ public class CreateTable extends MasterRepo {
   }
   
   @Override
-  public Repo<Master> call(long tid, Master master) throws Exception {
+  public Repo<Master> call(long tid, Master master) throws Exception {   
     // first step is to reserve a table id.. if the machine fails during this step
     // it is ok to retry... the only side effect is that a table id may not be used
     // or skipped

@@ -18,6 +18,7 @@ package org.apache.accumulo.server.master.tableOps;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
+import org.apache.accumulo.core.client.impl.TableNamespaces;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.client.impl.thrift.TableOperation;
 import org.apache.accumulo.core.client.impl.thrift.TableOperationExceptionType;
@@ -27,6 +28,7 @@ import org.apache.accumulo.fate.Repo;
 import org.apache.accumulo.fate.zookeeper.IZooReaderWriter;
 import org.apache.accumulo.fate.zookeeper.ZooReaderWriter.Mutator;
 import org.apache.accumulo.server.master.Master;
+import org.apache.accumulo.server.master.state.tables.TableManager;
 import org.apache.accumulo.server.zookeeper.ZooReaderWriter;
 import org.apache.log4j.Logger;
 
@@ -53,7 +55,22 @@ public class RenameTable extends MasterRepo {
     
     Instance instance = master.getInstance();
     
+    final String namespace = Tables.extractNamespace(newTableName);
+    String namespaceId = TableNamespaces.getNamespaceId(instance, namespace);
+    final String oldNamespace = Tables.extractNamespace(oldTableName);
+    String oldNamespaceId = TableNamespaces.getNamespaceId(instance, oldNamespace);
+    
+    if (!namespaceId.equals(oldNamespaceId)) {
+      TableManager tm = TableManager.getInstance();
+      tm.addNamespaceToTable(tableId, namespaceId);
+      // TODO change parent of table's configuration to new namespace...somehow...
+    }
+    
+    newTableName = Tables.extractTableName(newTableName);
+    oldTableName = Tables.extractTableName(oldTableName);
+    
     IZooReaderWriter zoo = ZooReaderWriter.getRetryingInstance();
+    
     Utils.tableNameLock.lock();
     try {
       Utils.checkTableDoesNotExist(instance, newTableName, tableId, TableOperation.RENAME);

@@ -22,3 +22,6 @@ assert testCreateTable.isFile()
 
 File testWriteToTable = new File(basedir, "target/accumulo-maven-plugin/plugin-it-instance/testWriteToTablePassed");
 assert testWriteToTable.isFile()
+
+File testCheckIterator = new File(basedir, "target/accumulo-maven-plugin/plugin-it-instance/testCheckIteratorPassed");
+assert testCheckIterator.isFile()

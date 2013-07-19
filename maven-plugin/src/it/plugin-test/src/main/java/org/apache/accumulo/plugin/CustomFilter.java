@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.accumulo.server.client.security.token;
+package org.apache.accumulo.plugin;
 
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.Filter;
 
 /**
- * @since 1.5.0
+ * 
  */
-
-public class SystemToken extends PasswordToken {
+public class CustomFilter extends Filter {
   
-  public SystemToken(byte[] systemPassword) {
-    super(systemPassword);
+  @Override
+  public boolean accept(Key k, Value v) {
+    return k.getColumnFamily().toString().equals("allowed");
   }
+  
 }

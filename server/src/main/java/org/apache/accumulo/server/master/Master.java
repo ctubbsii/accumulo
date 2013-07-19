@@ -135,8 +135,8 @@ import org.apache.accumulo.server.master.tableOps.TraceRepo;
 import org.apache.accumulo.server.master.tserverOps.ShutdownTServer;
 import org.apache.accumulo.server.monitor.Monitor;
 import org.apache.accumulo.server.security.AuditedSecurityOperation;
-import org.apache.accumulo.server.security.SecurityConstants;
 import org.apache.accumulo.server.security.SecurityOperation;
+import org.apache.accumulo.server.security.SystemCredentials;
 import org.apache.accumulo.server.util.AddressUtil;
 import org.apache.accumulo.server.util.DefaultMap;
 import org.apache.accumulo.server.util.Halt;
@@ -333,7 +333,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
           @Override
           public void run() {
             try {
-              MetadataTableUtil.moveMetaDeleteMarkers(instance, SecurityConstants.getSystemCredentials());
+              MetadataTableUtil.moveMetaDeleteMarkers(instance, SystemCredentials.get().getAsThrift());
               Accumulo.updateAccumuloVersion(fs);
               
               log.info("Upgrade complete");
@@ -451,7 +451,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
   }
   
   public Connector getConnector() throws AccumuloException, AccumuloSecurityException {
-    return instance.getConnector(SecurityConstants.SYSTEM_PRINCIPAL, SecurityConstants.getSystemToken());
+    return instance.getConnector(SystemCredentials.get().getPrincipal(), SystemCredentials.get().getToken());
   }
   
   private void waitAround(EventCoordinator.Listener listener) {
@@ -1683,7 +1683,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
       }
     });
     
-    TCredentials systemAuths = SecurityConstants.getSystemCredentials();
+    TCredentials systemAuths = SystemCredentials.get().getAsThrift();
     watchers.add(new TabletGroupWatcher(this, new MetaDataStateStore(instance, systemAuths, this), null));
     watchers.add(new TabletGroupWatcher(this, new RootTabletStateStore(instance, systemAuths, this), watchers.get(0)));
     watchers.add(new TabletGroupWatcher(this, new ZooTabletStateStore(new ZooStore(zroot)), watchers.get(1)));

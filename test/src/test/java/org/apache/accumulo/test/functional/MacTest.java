@@ -32,8 +32,9 @@ import org.junit.rules.TemporaryFolder;
 public class MacTest {
   public static final Logger log = Logger.getLogger(MacTest.class);
   public static final String PASSWORD = "secret";
-  static final ScannerOpts SOPTS = new ScannerOpts();
-  static final BatchWriterOpts BWOPTS = new BatchWriterOpts();
+  public static final ScannerOpts SOPTS = new ScannerOpts();
+  public static final BatchWriterOpts BWOPTS = new BatchWriterOpts();
+  
   public TemporaryFolder folder = new TemporaryFolder();
   public MiniAccumuloCluster cluster;
   
@@ -44,7 +45,7 @@ public class MacTest {
   @Before
   public void setUp() throws Exception {
     folder.create();
-    MiniAccumuloConfig cfg = new MiniAccumuloConfig(folder.newFolder("miniAccumulo"), PASSWORD);
+    MiniAccumuloConfig cfg = new MiniAccumuloConfig(folder.newFolder(this.getClass().getSimpleName()), PASSWORD);
     configure(cfg);
     cluster = new MiniAccumuloCluster(cfg);
     cluster.start();

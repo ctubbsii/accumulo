@@ -137,14 +137,14 @@ public class ClientServiceHandler implements ClientService.Iface {
   @Override
   public void changeLocalUserPassword(TInfo tinfo, TCredentials credentials, String principal, ByteBuffer password) throws ThriftSecurityException {
     PasswordToken token = new PasswordToken(password);
-    TCredentials toChange = CredentialHelper.createSquelchError(principal, token, credentials.instanceId);
+    TCredentials toChange = CredentialHelper.createSquelchError(principal, token, credentials.getInstanceId());
     security.changePassword(credentials, toChange);
   }
   
   @Override
   public void createLocalUser(TInfo tinfo, TCredentials credentials, String principal, ByteBuffer password) throws ThriftSecurityException {
     PasswordToken token = new PasswordToken(password);
-    TCredentials newUser = CredentialHelper.createSquelchError(principal, token, credentials.instanceId);
+    TCredentials newUser = CredentialHelper.createSquelchError(principal, token, credentials.getInstanceId());
     security.createUser(credentials, newUser, new Authorizations());
   }
   
@@ -233,11 +233,10 @@ public class ClientServiceHandler implements ClientService.Iface {
   }
   
   @Override
-  public List<String> bulkImportFiles(TInfo tinfo, final TCredentials tikw, final long tid, final String tableId, final List<String> files,
+  public List<String> bulkImportFiles(TInfo tinfo, final TCredentials credentials, final long tid, final String tableId, final List<String> files,
       final String errorDir, final boolean setTime) throws ThriftSecurityException, ThriftTableOperationException, TException {
     try {
-      final TCredentials credentials = new TCredentials(tikw);
-      if (!security.hasSystemPermission(credentials, credentials.getPrincipal(), SystemPermission.SYSTEM))
+      if (!security.canPerformSystemActions(credentials))
         throw new AccumuloSecurityException(credentials.getPrincipal(), SecurityErrorCode.PERMISSION_DENIED);
       return transactionWatcher.run(Constants.BULK_ARBITRATOR_TYPE, tid, new Callable<List<String>>() {
         @Override
@@ -284,7 +283,6 @@ public class ClientServiceHandler implements ClientService.Iface {
     }
   }
   
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   public boolean checkTableClass(TInfo tinfo, TCredentials credentials, String tableName, String className, String interfaceMatch) throws TException,
       ThriftTableOperationException, ThriftSecurityException {
@@ -294,7 +292,7 @@ public class ClientServiceHandler implements ClientService.Iface {
     String tableId = checkTableId(tableName, null);
     
     ClassLoader loader = getClass().getClassLoader();
-    Class shouldMatch;
+    Class<?> shouldMatch;
     try {
       shouldMatch = loader.loadClass(interfaceMatch);
       
@@ -310,7 +308,7 @@ public class ClientServiceHandler implements ClientService.Iface {
         currentLoader = AccumuloVFSClassLoader.getClassLoader();
       }
       
-      Class test = currentLoader.loadClass(className).asSubclass(shouldMatch);
+      Class<?> test = currentLoader.loadClass(className).asSubclass(shouldMatch);
       test.newInstance();
       return true;
     } catch (Exception e) {

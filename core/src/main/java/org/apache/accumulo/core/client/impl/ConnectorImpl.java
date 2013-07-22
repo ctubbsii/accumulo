@@ -54,7 +54,6 @@ public class ConnectorImpl extends Connector {
   private TableNamespaceOperations namespaceops = null;
   private InstanceOperations instanceops = null;
   
-  @Deprecated
   public ConnectorImpl(Instance instance, TCredentials cred) throws AccumuloException, AccumuloSecurityException {
     ArgumentChecker.notNull(instance, cred);
     this.instance = instance;

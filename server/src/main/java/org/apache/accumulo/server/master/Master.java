@@ -17,7 +17,6 @@
 package org.apache.accumulo.server.master;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,6 +91,7 @@ import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeMissingPolicy;
 import org.apache.accumulo.server.Accumulo;
 import org.apache.accumulo.server.ServerConstants;
+import org.apache.accumulo.server.ServerOpts;
 import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.conf.ServerConfiguration;
 import org.apache.accumulo.server.fs.VolumeManager;
@@ -137,7 +137,6 @@ import org.apache.accumulo.server.monitor.Monitor;
 import org.apache.accumulo.server.security.AuditedSecurityOperation;
 import org.apache.accumulo.server.security.SecurityOperation;
 import org.apache.accumulo.server.security.SystemCredentials;
-import org.apache.accumulo.server.util.AddressUtil;
 import org.apache.accumulo.server.util.DefaultMap;
 import org.apache.accumulo.server.util.Halt;
 import org.apache.accumulo.server.util.MetadataTableUtil;
@@ -746,9 +745,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
     public void shutdownTabletServer(TInfo info, TCredentials c, String tabletServer, boolean force) throws ThriftSecurityException, TException {
       security.canPerformSystemActions(c);
       
-      final InetSocketAddress addr = AddressUtil.parseAddress(tabletServer);
-      final String addrString = org.apache.accumulo.core.util.AddressUtil.toString(addr);
-      final TServerInstance doomed = tserverSet.find(addrString);
+      final TServerInstance doomed = tserverSet.find(tabletServer);
       if (!force) {
         final TServerConnection server = tserverSet.getConnection(doomed);
         if (server == null) {
@@ -1692,7 +1689,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
     }
     
     Processor<Iface> processor = new Processor<Iface>(TraceWrap.service(new MasterClientServiceHandler()));
-    clientService = TServerUtils.startServer(getSystemConfiguration(), Property.MASTER_CLIENTPORT, processor, "Master", "Master Client Service Handler", null,
+    clientService = TServerUtils.startServer(getSystemConfiguration(), hostname, Property.MASTER_CLIENTPORT, processor, "Master", "Master Client Service Handler", null,
         Property.MASTER_MINTHREADS, Property.MASTER_THREADCHECK, Property.GENERAL_MAX_MESSAGE_SIZE).server;
     
     while (!clientService.isServing()) {
@@ -1777,8 +1774,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
   private void getMasterLock(final String zMasterLoc) throws KeeperException, InterruptedException {
     log.info("trying to get master lock");
     
-    final String masterClientAddress = org.apache.accumulo.core.util.AddressUtil.toString(new InetSocketAddress(hostname, getSystemConfiguration().getPort(
-        Property.MASTER_CLIENTPORT)));
+    final String masterClientAddress = hostname + ":" + getSystemConfiguration().getPort(Property.MASTER_CLIENTPORT);
     
     while (true) {
       
@@ -1809,7 +1805,9 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
       SecurityUtil.serverLogin();
       
       VolumeManager fs = VolumeManagerImpl.get();
-      String hostname = Accumulo.getLocalAddress(args);
+      ServerOpts opts = new ServerOpts();
+      opts.parseArgs("master", args);
+      String hostname = opts.getAddress();
       Instance instance = HdfsZooInstance.getInstance();
       ServerConfiguration conf = new ServerConfiguration(instance);
       Accumulo.init(fs, conf, "master");

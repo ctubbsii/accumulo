@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.accumulo.server.util;
+package org.apache.accumulo.server;
 
-import java.net.InetSocketAddress;
+import org.apache.accumulo.core.cli.Help;
 
-import org.apache.accumulo.core.conf.Property;
-import org.apache.accumulo.server.conf.ServerConfiguration;
+import com.beust.jcommander.Parameter;
 
-public class AddressUtil {
-  static public InetSocketAddress parseAddress(String address, Property portDefaultProperty) {
-    final int dfaultPort = ServerConfiguration.getDefaultConfiguration().getPort(portDefaultProperty);
-    return org.apache.accumulo.core.util.AddressUtil.parseAddress(address, dfaultPort);
-  }
-
-  static public InetSocketAddress parseAddress(String address) {
-    return org.apache.accumulo.core.util.AddressUtil.parseAddress(address);
+public class ServerOpts extends Help {
+  @Parameter(names={"-a", "--address"}, description = "address to bind to")
+  String address = null;
+  
+  public String getAddress() {
+    if (address != null)
+      return address;
+    return "0.0.0.0";
   }
 }

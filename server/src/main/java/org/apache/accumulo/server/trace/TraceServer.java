@@ -40,11 +40,11 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.AgeOffFilter;
 import org.apache.accumulo.core.security.SecurityUtil;
 import org.apache.accumulo.core.trace.TraceFormatter;
-import org.apache.accumulo.core.util.AddressUtil;
 import org.apache.accumulo.core.util.UtilWaitThread;
 import org.apache.accumulo.core.zookeeper.ZooUtil;
 import org.apache.accumulo.fate.zookeeper.IZooReaderWriter;
 import org.apache.accumulo.server.Accumulo;
+import org.apache.accumulo.server.ServerOpts;
 import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.conf.ServerConfiguration;
 import org.apache.accumulo.server.fs.VolumeManager;
@@ -201,14 +201,12 @@ public class TraceServer implements Watcher {
     int port = conf.getPort(Property.TRACE_PORT);
     final ServerSocket sock = ServerSocketChannel.open().socket();
     sock.setReuseAddress(true);
-    sock.bind(new InetSocketAddress(port));
+    sock.bind(new InetSocketAddress(hostname, port));
     final TServerTransport transport = new TServerSocket(sock);
     TThreadPoolServer.Args options = new TThreadPoolServer.Args(transport);
     options.processor(new Processor<Iface>(new Receiver()));
     server = new TThreadPoolServer(options);
-    final InetSocketAddress address = new InetSocketAddress(hostname, sock.getLocalPort());
-    registerInZooKeeper(AddressUtil.toString(address));
-    
+    registerInZooKeeper(sock.getInetAddress().getHostAddress() + ":" + sock.getLocalPort());
     writer = connector.createBatchWriter(table, new BatchWriterConfig().setMaxLatency(5, TimeUnit.SECONDS));
   }
   
@@ -256,11 +254,13 @@ public class TraceServer implements Watcher {
   
   public static void main(String[] args) throws Exception {
     SecurityUtil.serverLogin();
+    ServerOpts opts = new ServerOpts();
+    opts.parseArgs("tracer", args);
     Instance instance = HdfsZooInstance.getInstance();
     ServerConfiguration conf = new ServerConfiguration(instance);
     VolumeManager fs = VolumeManagerImpl.get();
     Accumulo.init(fs, conf, "tracer");
-    String hostname = Accumulo.getLocalAddress(args);
+    String hostname = opts.getAddress();
     TraceServer server = new TraceServer(conf, hostname);
     Accumulo.enableTracing(hostname, "tserver");
     server.run();

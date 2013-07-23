@@ -19,38 +19,36 @@ package org.apache.accumulo.test.functional;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
-public class SimpleMacIT extends AbstractMacIT {
-  public static final Logger log = Logger.getLogger(SimpleMacIT.class);
-      
-  static private TemporaryFolder folder = new TemporaryFolder();
-  static private MiniAccumuloCluster cluster;
+public class ConfigurableMacIT extends AbstractMacIT {
+  public static final Logger log = Logger.getLogger(ConfigurableMacIT.class);
   
-  @BeforeClass
-  synchronized public static void setUp() throws Exception {
-    if (cluster == null) {
-      folder.create();
-      MiniAccumuloConfig cfg = new MiniAccumuloConfig(folder.newFolder("mac"), ROOT_PASSWORD);
-      cluster = new MiniAccumuloCluster(cfg);
-      cluster.start();
-      Runtime.getRuntime().addShutdownHook(new Thread() {
-        @Override
-        public void run() {
-          cleanUp(cluster, folder);
-        }
-      });
-    }
+  public TemporaryFolder folder = new TemporaryFolder();
+  public MiniAccumuloCluster cluster;
+  
+  @Before
+  public void setUp() throws Exception {
+    folder.create();
+    MiniAccumuloConfig cfg = new MiniAccumuloConfig(folder.newFolder(this.getClass().getSimpleName()), ROOT_PASSWORD);
+    configure(cfg);
+    cluster = new MiniAccumuloCluster(cfg);
+    cluster.start();
   }
   
+  public void configure(MiniAccumuloConfig cfg) {
+  }
+  
+  @After
+  public void tearDown() throws Exception {
+    cleanUp(cluster, folder);
+  }
+
   @Override
   public MiniAccumuloCluster getCluster() {
     return cluster;
   }
   
-  @AfterClass
-  public static void tearDown() throws Exception {
-  }
 }

@@ -16,8 +16,12 @@
  */
 package org.apache.accumulo.server.conf;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -25,6 +29,7 @@ import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
+import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.zookeeper.ZooUtil;
 import org.apache.accumulo.fate.zookeeper.ZooCache;
@@ -39,10 +44,12 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
   private String tableId = null;
   private String namespaceId = null;
   private Instance inst = null;
+  private Set<ConfigurationObserver> observers;
   
   public TableNamespaceConfiguration(String tableId, AccumuloConfiguration parent) {
     inst = HdfsZooInstance.getInstance();
     propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut());
+    this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
     this.parent = parent;
     this.tableId = tableId;
   }
@@ -50,6 +57,7 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
   public TableNamespaceConfiguration(String namespaceId, AccumuloConfiguration parent, boolean notForSpecificTable) {
     inst = HdfsZooInstance.getInstance();
     propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut());
+    this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
     this.parent = parent;
     this.namespaceId = namespaceId;
   }
@@ -118,5 +126,42 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
       return Tables.getNamespace(inst, tableId);
     }
     return namespaceId;
+  }
+  
+  public void addObserver(ConfigurationObserver co) {
+    if (tableId == null || namespaceId == null) {
+      String err = "Attempt to add observer for non-table-namespace configuration";
+      log.error(err);
+      throw new RuntimeException(err);
+    }
+    iterator();
+    observers.add(co);
+  }
+  
+  public void removeObserver(ConfigurationObserver configObserver) {
+    if (tableId == null || namespaceId == null) {
+      String err = "Attempt to remove observer for non-table-namespace configuration";
+      log.error(err);
+      throw new RuntimeException(err);
+    }
+    observers.remove(configObserver);
+  }
+  
+  public void expireAllObservers() {
+    Collection<ConfigurationObserver> copy = Collections.unmodifiableCollection(observers);
+    for (ConfigurationObserver co : copy)
+      co.sessionExpired();
+  }
+  
+  public void propertyChanged(String key) {
+    Collection<ConfigurationObserver> copy = Collections.unmodifiableCollection(observers);
+    for (ConfigurationObserver co : copy)
+      co.propertyChanged(key);
+  }
+  
+  public void propertiesChanged(String key) {
+    Collection<ConfigurationObserver> copy = Collections.unmodifiableCollection(observers);
+    for (ConfigurationObserver co : copy)
+      co.propertiesChanged();
   }
 }

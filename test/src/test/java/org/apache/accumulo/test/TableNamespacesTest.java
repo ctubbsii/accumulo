@@ -48,6 +48,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.Filter;
 import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
 import org.apache.accumulo.core.security.Authorizations;
+import org.apache.accumulo.examples.simple.constraints.AlphaNumKeyConstraint;
 import org.apache.accumulo.examples.simple.constraints.NumericValueConstraint;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.junit.AfterClass;
@@ -359,7 +360,7 @@ public class TableNamespacesTest {
    * This tests adding iterators to a namespace, listing them, and removing them as well as adding and removing constraints
    */
   @Test
-  public void testNamespaceIterators() throws Exception {
+  public void testNamespaceIteratorsAndConstraints() throws Exception {
     Connector c = accumulo.getConnector("root", secret);
     
     String namespace = "iterator";
@@ -387,16 +388,22 @@ public class TableNamespacesTest {
     c.tableNamespaceOperations().removeIterator(namespace, iter, EnumSet.copyOf(scope));
     
     c.tableNamespaceOperations().addConstraint(namespace, NumericValueConstraint.class.getName());
+    //c.tableOperations().addConstraint(tableName, AlphaNumKeyConstraint.class.getName());
+        
+    for (Entry<String,Integer> e : c.tableOperations().listConstraints(tableName).entrySet()) {
+      System.out.println(e.toString());
+    }
+    
     m = new Mutation("rowy");
     m.put("a", "b", new Value("abcde".getBytes(Constants.UTF8)));
     try {
       bw.addMutation(m);
       bw.flush();
+      bw.close();
       fail();
     } catch (MutationsRejectedException e) {
       // supposed to be thrown
     }
-    bw.close();
     
     int num = c.tableNamespaceOperations().listConstraints(namespace).get(NumericValueConstraint.class.getName());
     c.tableNamespaceOperations().removeConstraint(namespace, num);

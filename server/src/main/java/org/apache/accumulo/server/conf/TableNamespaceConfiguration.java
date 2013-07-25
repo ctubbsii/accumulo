@@ -27,7 +27,6 @@ import java.util.TreeMap;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.Property;
@@ -41,25 +40,16 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
   
   private final AccumuloConfiguration parent;
   private static ZooCache propCache = null;
-  private String tableId = null;
   private String namespaceId = null;
   private Instance inst = null;
   private Set<ConfigurationObserver> observers;
-  
-  public TableNamespaceConfiguration(String tableId, AccumuloConfiguration parent) {
+
+  public TableNamespaceConfiguration(String namespaceId, AccumuloConfiguration parent) {
     inst = HdfsZooInstance.getInstance();
     propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut());
-    this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
-    this.parent = parent;
-    this.tableId = tableId;
-  }
-  
-  public TableNamespaceConfiguration(String namespaceId, AccumuloConfiguration parent, boolean notForSpecificTable) {
-    inst = HdfsZooInstance.getInstance();
-    propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut());
-    this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
     this.parent = parent;
     this.namespaceId = namespaceId;
+    this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
   }
   
   @Override
@@ -122,14 +112,11 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
   }
   
   private String getNamespaceId() {
-    if (tableId != null) {
-      return Tables.getNamespace(inst, tableId);
-    }
     return namespaceId;
   }
   
   public void addObserver(ConfigurationObserver co) {
-    if (tableId == null || namespaceId == null) {
+    if (namespaceId == null) {
       String err = "Attempt to add observer for non-table-namespace configuration";
       log.error(err);
       throw new RuntimeException(err);
@@ -139,7 +126,7 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
   }
   
   public void removeObserver(ConfigurationObserver configObserver) {
-    if (tableId == null || namespaceId == null) {
+    if (namespaceId == null) {
       String err = "Attempt to remove observer for non-table-namespace configuration";
       log.error(err);
       throw new RuntimeException(err);

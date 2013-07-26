@@ -21,14 +21,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.TableNamespaceNotFoundException;
-import org.apache.accumulo.core.client.impl.TableNamespaces;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.Property;
@@ -48,16 +46,9 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
 
   public TableNamespaceConfiguration(String namespaceId, AccumuloConfiguration parent) {
     inst = HdfsZooInstance.getInstance();
-    propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut());
     this.parent = parent;
     this.namespaceId = namespaceId;
     this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
-  }
-  
-  @Override
-  public void invalidateCache() {
-    if (propCache != null)
-      propCache.clear();
   }
   
   @Override
@@ -140,41 +131,17 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
     Collection<ConfigurationObserver> copy = Collections.unmodifiableCollection(observers);
     for (ConfigurationObserver co : copy)
       co.sessionExpired();
-    
-    try {
-      for (String t : TableNamespaces.getTableIds(inst, namespaceId)) {
-        ServerConfiguration.getTableConfiguration(inst, t).expireAllObservers();
-      }
-    } catch (TableNamespaceNotFoundException e) {
-      throw new IllegalStateException("The namespace (" + namespaceId + ") for this configuration no longer exists");
-    }
   }
   
   public void propertyChanged(String key) {
     Collection<ConfigurationObserver> copy = Collections.unmodifiableCollection(observers);
     for (ConfigurationObserver co : copy)
       co.propertyChanged(key);
-    
-    try {
-      for (String t : TableNamespaces.getTableIds(inst, namespaceId)) {
-        ServerConfiguration.getTableConfiguration(inst, t).propertyChanged(key);
-      }
-    } catch (TableNamespaceNotFoundException e) {
-      throw new IllegalStateException("The namespace (" + namespaceId + ") for this configuration no longer exists");
-    }
   }
   
   public void propertiesChanged(String key) {
     Collection<ConfigurationObserver> copy = Collections.unmodifiableCollection(observers);
     for (ConfigurationObserver co : copy)
       co.propertiesChanged();
-    
-    try {
-      for (String t : TableNamespaces.getTableIds(inst, namespaceId)) {
-        ServerConfiguration.getTableConfiguration(inst, t).propertiesChanged(key);
-      }
-    } catch (TableNamespaceNotFoundException e) {
-      throw new IllegalStateException("The namespace (" + namespaceId + ") for this configuration no longer exists");
-    }
   }
 }

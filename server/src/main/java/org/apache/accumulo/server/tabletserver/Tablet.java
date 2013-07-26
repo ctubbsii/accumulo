@@ -1300,7 +1300,7 @@ public class Tablet {
     acuTableConf.addObserver(configObserver = new ConfigurationObserver() {
       
       private void reloadConstraints() {
-        constraintChecker.set(new ConstraintChecker(getTableConfiguration()));
+        constraintChecker.set(new ConstraintChecker(acuTableConf));
       }
       
       @Override
@@ -1335,6 +1335,9 @@ public class Tablet {
       }
       
     });
+    
+    acuTableConf.getNamespaceConfiguration().addObserver(configObserver);
+    
     // Force a load of any per-table properties
     configObserver.propertiesChanged();
     
@@ -1739,8 +1742,8 @@ public class Tablet {
     public long numBytes;
   }
   
-  Scanner createScanner(Range range, int num, Set<Column> columns, Authorizations authorizations, List<IterInfo> ssiList,
-      Map<String,Map<String,String>> ssio, boolean isolated, AtomicBoolean interruptFlag) {
+  Scanner createScanner(Range range, int num, Set<Column> columns, Authorizations authorizations, List<IterInfo> ssiList, Map<String,Map<String,String>> ssio,
+      boolean isolated, AtomicBoolean interruptFlag) {
     // do a test to see if this range falls within the tablet, if it does not
     // then clip will throw an exception
     extent.toDataRange().clip(range);
@@ -2451,7 +2454,7 @@ public class Tablet {
     ConstraintChecker cc = constraintChecker.get();
     
     if (cc.classLoaderChanged()) {
-      ConstraintChecker ncc = new ConstraintChecker(getTableConfiguration());
+      ConstraintChecker ncc = new ConstraintChecker(acuTableConf);
       constraintChecker.compareAndSet(cc, ncc);
     }
   }
@@ -2709,6 +2712,7 @@ public class Tablet {
     
     log.log(TLevel.TABLET_HIST, extent + " closed");
     
+    acuTableConf.getNamespaceConfiguration().removeObserver(configObserver);
     acuTableConf.removeObserver(configObserver);
     
     closeComplete = completeClose;
@@ -3818,6 +3822,6 @@ public class Tablet {
   }
   
   public TableConfiguration getTableConfiguration() {
-    return tabletServer.getTableConfiguration(extent);
+    return acuTableConf;
   }
 }

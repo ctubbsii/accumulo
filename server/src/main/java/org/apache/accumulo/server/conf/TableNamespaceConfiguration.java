@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.accumulo.core.Constants;
@@ -46,16 +46,9 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
 
   public TableNamespaceConfiguration(String namespaceId, AccumuloConfiguration parent) {
     inst = HdfsZooInstance.getInstance();
-    propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut());
     this.parent = parent;
     this.namespaceId = namespaceId;
     this.observers = Collections.synchronizedSet(new HashSet<ConfigurationObserver>());
-  }
-  
-  @Override
-  public void invalidateCache() {
-    if (propCache != null)
-      propCache.clear();
   }
   
   @Override
@@ -86,7 +79,7 @@ public class TableNamespaceConfiguration extends AccumuloConfiguration {
     if (propCache == null)
       synchronized (TableNamespaceConfiguration.class) {
         if (propCache == null)
-          propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut(), new TableConfWatcher(inst));
+          propCache = new ZooCache(inst.getZooKeepers(), inst.getZooKeepersSessionTimeOut(), new TableNamespaceConfWatcher(inst));
       }
     return propCache;
   }

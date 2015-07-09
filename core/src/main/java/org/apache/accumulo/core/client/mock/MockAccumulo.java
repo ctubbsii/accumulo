@@ -40,6 +40,10 @@ import org.apache.accumulo.core.security.TablePermission;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
 
+/**
+ * @deprecated since 1.8.0; use MiniAccumuloCluster or a standard mock framework instead.
+ */
+@Deprecated
 public class MockAccumulo {
   final Map<String,MockTable> tables = new HashMap<String,MockTable>();
   final Map<String,MockNamespace> namespaces = new HashMap<String,MockNamespace>();

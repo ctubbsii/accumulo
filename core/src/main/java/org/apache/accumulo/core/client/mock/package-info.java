@@ -14,26 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.accumulo.server.cli;
+/**
+ * Mock framework for Accumulo
+ *
+ * <p>
+ * Deprecated since 1.8.0; use MiniAccumuloCluster or a standard mock framework instead.
+ */
+@Deprecated
+package org.apache.accumulo.core.client.mock;
 
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.ZooKeeperInstance;
-import org.apache.accumulo.core.util.DeprecationUtil;
-import org.apache.accumulo.server.client.HdfsZooInstance;
-
-public class ClientOpts extends org.apache.accumulo.core.cli.ClientOpts {
-
-  {
-    setPrincipal("root");
-  }
-
-  @Override
-  public Instance getInstance() {
-    if (mock)
-      return DeprecationUtil.makeMockInstance(instance);
-    if (instance == null) {
-      return HdfsZooInstance.getInstance();
-    }
-    return new ZooKeeperInstance(this.getClientConfiguration());
-  }
-}

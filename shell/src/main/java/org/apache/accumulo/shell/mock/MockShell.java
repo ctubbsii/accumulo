@@ -78,7 +78,7 @@ public class MockShell extends Shell {
   @Override
   protected void setInstance(ShellOptionsJC options) {
     // We always want a MockInstance for this test
-    instance = new org.apache.accumulo.core.client.mock.MockInstance(this.getClass().getSimpleName());
+    instance = new org.apache.accumulo.core.client.mock.MockInstance();
   }
 
   @Override

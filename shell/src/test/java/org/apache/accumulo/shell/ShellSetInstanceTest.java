@@ -50,6 +50,7 @@ import org.apache.log4j.Level;
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -119,17 +120,15 @@ public class ShellSetInstanceTest {
     SiteConfiguration.clearInstance();
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testSetInstance_Fake() throws Exception {
     ShellOptionsJC opts = createMock(ShellOptionsJC.class);
     expect(opts.isFake()).andReturn(true);
     replay(opts);
-    org.apache.accumulo.core.client.mock.MockInstance theInstance = createMock(org.apache.accumulo.core.client.mock.MockInstance.class);
-    expectNew(org.apache.accumulo.core.client.mock.MockInstance.class, "fake").andReturn(theInstance);
-    replay(theInstance, org.apache.accumulo.core.client.mock.MockInstance.class);
 
     shell.setInstance(opts);
-    verify(theInstance, org.apache.accumulo.core.client.mock.MockInstance.class);
+    Assert.assertTrue(shell.getInstance() instanceof org.apache.accumulo.core.client.mock.MockInstance);
   }
 
   @Test

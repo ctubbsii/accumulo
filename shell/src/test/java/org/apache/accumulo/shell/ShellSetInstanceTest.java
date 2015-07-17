@@ -120,7 +120,7 @@ public class ShellSetInstanceTest {
     SiteConfiguration.clearInstance();
   }
 
-  @SuppressWarnings("deprecation")
+  @Deprecated
   @Test
   public void testSetInstance_Fake() throws Exception {
     ShellOptionsJC opts = createMock(ShellOptionsJC.class);

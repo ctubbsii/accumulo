@@ -299,6 +299,11 @@
         <version>1.2.17</version>
       </dependency>
       <dependency>
+        <groupId>net.revelc.code</groupId>
+        <artifactId>blazon</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-core</artifactId>
         <version>${project.version}</version>

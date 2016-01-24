@@ -238,6 +238,9 @@ enum CompactionType {
 enum CompactionReason {
    USER,
    SYSTEM,
+/**
+ * @deprecated since 2.0.0
+ */
    CHOP,
    IDLE,
    CLOSE

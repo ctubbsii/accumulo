@@ -122,7 +122,6 @@ import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletLocationState;
 import org.apache.accumulo.server.master.state.TabletMigration;
 import org.apache.accumulo.server.master.state.TabletServerState;
-import org.apache.accumulo.server.master.state.TabletState;
 import org.apache.accumulo.server.master.state.ZooStore;
 import org.apache.accumulo.server.master.state.ZooTabletStateStore;
 import org.apache.accumulo.server.metrics.Metrics;
@@ -808,26 +807,19 @@ public class Master extends AccumuloServerContext implements LiveTServerSet.List
       if (mergeInfo.getExtent() != null) {
         log.debug("mergeInfo overlaps: " + extent + " " + mergeInfo.overlaps(extent));
         if (mergeInfo.overlaps(extent)) {
-          switch (mergeInfo.getState()) {
+          MergeState mergeState = mergeInfo.getState();
+          switch (mergeState) {
             case NONE:
             case COMPLETE:
               break;
             case STARTED:
             case SPLITTING:
               return TabletGoalState.HOSTED;
-            case WAITING_FOR_CHOPPED:
-              if (tls.getState(tserverSet.getCurrentServers()).equals(TabletState.HOSTED)) {
-                if (tls.chopped)
-                  return TabletGoalState.UNASSIGNED;
-              } else {
-                if (tls.chopped && tls.walogs.isEmpty())
-                  return TabletGoalState.UNASSIGNED;
-              }
-
-              return TabletGoalState.HOSTED;
             case WAITING_FOR_OFFLINE:
             case MERGING:
               return TabletGoalState.UNASSIGNED;
+            default:
+              throw new AssertionError("Unrecognized mergeInfo state: " + mergeState);
           }
         }
       }

@@ -68,9 +68,13 @@ public class TabletClientService {
 
     public void flushTablet(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, org.apache.accumulo.core.data.thrift.TKeyExtent extent) throws org.apache.thrift.TException;
 
+<<<<<<< 2415f22be51b788a6b98518c8e3622dc8742dce0
     public void chop(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, org.apache.accumulo.core.data.thrift.TKeyExtent extent) throws org.apache.thrift.TException;
 
     public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, java.lang.String tableId, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow) throws org.apache.thrift.TException;
+=======
+    public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, String lock, String tableId, ByteBuffer startRow, ByteBuffer endRow) throws org.apache.thrift.TException;
+>>>>>>> Remove chop compaction code
 
     public org.apache.accumulo.core.master.thrift.TabletServerStatus getTabletServerStatus(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials) throws org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException, org.apache.thrift.TException;
 
@@ -150,9 +154,13 @@ public class TabletClientService {
 
     public void getTabletStats(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String tableId, org.apache.thrift.async.AsyncMethodCallback<java.util.List<TabletStats>> resultHandler) throws org.apache.thrift.TException;
 
+<<<<<<< 2415f22be51b788a6b98518c8e3622dc8742dce0
     public void getHistoricalStats(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, org.apache.thrift.async.AsyncMethodCallback<TabletStats> resultHandler) throws org.apache.thrift.TException;
 
     public void halt(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+=======
+    public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, String lock, String tableId, ByteBuffer startRow, ByteBuffer endRow, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+>>>>>>> Remove chop compaction code
 
     public void fastHalt(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
@@ -705,6 +713,7 @@ public class TabletClientService {
       sendBaseOneway("flushTablet", args);
     }
 
+<<<<<<< 2415f22be51b788a6b98518c8e3622dc8742dce0
     public void chop(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, org.apache.accumulo.core.data.thrift.TKeyExtent extent) throws org.apache.thrift.TException
     {
       send_chop(tinfo, credentials, lock, extent);
@@ -721,6 +730,9 @@ public class TabletClientService {
     }
 
     public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, java.lang.String tableId, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow) throws org.apache.thrift.TException
+=======
+    public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, String lock, String tableId, ByteBuffer startRow, ByteBuffer endRow) throws org.apache.thrift.TException
+>>>>>>> Remove chop compaction code
     {
       send_compact(tinfo, credentials, lock, tableId, startRow, endRow);
     }
@@ -1938,6 +1950,7 @@ public class TabletClientService {
       }
     }
 
+<<<<<<< 2415f22be51b788a6b98518c8e3622dc8742dce0
     public void chop(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, org.apache.accumulo.core.data.thrift.TKeyExtent extent, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       chop_call method_call = new chop_call(tinfo, credentials, lock, extent, resultHandler, this, ___protocolFactory, ___transport);
@@ -1980,6 +1993,9 @@ public class TabletClientService {
     }
 
     public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, java.lang.String lock, java.lang.String tableId, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+=======
+    public void compact(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.security.thrift.TCredentials credentials, String lock, String tableId, ByteBuffer startRow, ByteBuffer endRow, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+>>>>>>> Remove chop compaction code
       checkReady();
       compact_call method_call = new compact_call(tinfo, credentials, lock, tableId, startRow, endRow, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -2544,7 +2560,6 @@ public class TabletClientService {
       processMap.put("unloadTablet", new unloadTablet());
       processMap.put("flush", new flush());
       processMap.put("flushTablet", new flushTablet());
-      processMap.put("chop", new chop());
       processMap.put("compact", new compact());
       processMap.put("getTabletServerStatus", new getTabletServerStatus());
       processMap.put("getTabletStats", new getTabletStats());
@@ -3026,25 +3041,6 @@ public class TabletClientService {
       }
     }
 
-    public static class chop<I extends Iface> extends org.apache.thrift.ProcessFunction<I, chop_args> {
-      public chop() {
-        super("chop");
-      }
-
-      public chop_args getEmptyArgsInstance() {
-        return new chop_args();
-      }
-
-      protected boolean isOneway() {
-        return true;
-      }
-
-      public org.apache.thrift.TBase getResult(I iface, chop_args args) throws org.apache.thrift.TException {
-        iface.chop(args.tinfo, args.credentials, args.lock, args.extent);
-        return null;
-      }
-    }
-
     public static class compact<I extends Iface> extends org.apache.thrift.ProcessFunction<I, compact_args> {
       public compact() {
         super("compact");
@@ -3397,7 +3393,6 @@ public class TabletClientService {
       processMap.put("unloadTablet", new unloadTablet());
       processMap.put("flush", new flush());
       processMap.put("flushTablet", new flushTablet());
-      processMap.put("chop", new chop());
       processMap.put("compact", new compact());
       processMap.put("getTabletServerStatus", new getTabletServerStatus());
       processMap.put("getTabletStats", new getTabletStats());
@@ -4535,6 +4530,7 @@ public class TabletClientService {
       }
     }
 
+<<<<<<< 2415f22be51b788a6b98518c8e3622dc8742dce0
     public static class chop<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, chop_args, Void> {
       public chop() {
         super("chop");
@@ -4569,6 +4565,8 @@ public class TabletClientService {
       }
     }
 
+=======
+>>>>>>> Remove chop compaction code
     public static class compact<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, compact_args, Void> {
       public compact() {
         super("compact");
@@ -28069,6 +28067,7 @@ public class TabletClientService {
     }
   }
 
+<<<<<<< 2415f22be51b788a6b98518c8e3622dc8742dce0
   public static class chop_args implements org.apache.thrift.TBase<chop_args, chop_args._Fields>, java.io.Serializable, Cloneable, Comparable<chop_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("chop_args");
 
@@ -28758,6 +28757,8 @@ public class TabletClientService {
     }
   }
 
+=======
+>>>>>>> Remove chop compaction code
   public static class compact_args implements org.apache.thrift.TBase<compact_args, compact_args._Fields>, java.io.Serializable, Cloneable, Comparable<compact_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("compact_args");
 

@@ -64,7 +64,6 @@ import org.apache.accumulo.core.metadata.RootTable;
 import org.apache.accumulo.core.metadata.schema.DataFileValue;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection;
-import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.ChoppedColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.ClonedColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.DataFileColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.LogColumnFamily;
@@ -317,7 +316,6 @@ public class MetadataTableUtil {
     TabletsSection.TabletColumnFamily.SPLIT_RATIO_COLUMN.put(m, new Value(Double.toString(splitRatio).getBytes(UTF_8)));
 
     TabletsSection.TabletColumnFamily.OLD_PREV_ROW_COLUMN.put(m, KeyExtent.encodePrevEndRow(oldPrevEndRow));
-    ChoppedColumnFamily.CHOPPED_COLUMN.putDelete(m);
     update(context, zooLock, m, extent);
   }
 
@@ -326,7 +324,6 @@ public class MetadataTableUtil {
     Mutation m = new Mutation(metadataEntry);
     TabletsSection.TabletColumnFamily.SPLIT_RATIO_COLUMN.putDelete(m);
     TabletsSection.TabletColumnFamily.OLD_PREV_ROW_COLUMN.putDelete(m);
-    ChoppedColumnFamily.CHOPPED_COLUMN.putDelete(m);
 
     for (Entry<FileRef,DataFileValue> entry : datafileSizes.entrySet()) {
       m.put(DataFileColumnFamily.NAME, entry.getKey().meta(), new Value(entry.getValue().encode()));
@@ -884,12 +881,6 @@ public class MetadataTableUtil {
         bw.addMutation(m);
       }
     }
-  }
-
-  public static void chopped(AccumuloServerContext context, KeyExtent extent, ZooLock zooLock) {
-    Mutation m = new Mutation(extent.getMetadataEntry());
-    ChoppedColumnFamily.CHOPPED_COLUMN.put(m, new Value("chopped".getBytes(UTF_8)));
-    update(context, zooLock, m, extent);
   }
 
   public static void removeBulkLoadEntries(Connector conn, String tableId, long tid) throws Exception {

@@ -58,7 +58,6 @@ import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.metadata.MetadataTable;
 import org.apache.accumulo.core.metadata.RootTable;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection;
-import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.ChoppedColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.CurrentLocationColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.DataFileColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.FutureLocationColumnFamily;
@@ -237,8 +236,7 @@ abstract class TabletGroupWatcher extends Daemon {
             Master.log.trace("Goal state " + goal + " current " + state + " for " + tls.extent);
           }
           stats.update(tableId, state);
-          mergeStats.update(tls.extent, state, tls.chopped, !tls.walogs.isEmpty());
-          sendChopRequest(mergeStats.getMergeInfo(), state, tls);
+          mergeStats.update(tls.extent, state, !tls.walogs.isEmpty());
           sendSplitRequest(mergeStats.getMergeInfo(), state, tls);
 
           // Always follow through with assignments
@@ -507,33 +505,6 @@ abstract class TabletGroupWatcher extends Daemon {
     }
   }
 
-  private void sendChopRequest(MergeInfo info, TabletState state, TabletLocationState tls) {
-    // Don't bother if we're in the wrong state
-    if (!info.getState().equals(MergeState.WAITING_FOR_CHOPPED))
-      return;
-    // Tablet must be online
-    if (!state.equals(TabletState.HOSTED))
-      return;
-    // Tablet isn't already chopped
-    if (tls.chopped)
-      return;
-    // Tablet ranges intersect
-    if (info.needsToBeChopped(tls.extent)) {
-      TServerConnection conn;
-      try {
-        conn = this.master.tserverSet.getConnection(tls.current);
-        if (conn != null) {
-          Master.log.info("Asking " + tls.current + " to chop " + tls.extent);
-          conn.chop(this.master.masterLock, tls.extent);
-        } else {
-          Master.log.warn("Could not connect to server " + tls.current);
-        }
-      } catch (TException e) {
-        Master.log.warn("Communications error asking tablet server to chop a tablet");
-      }
-    }
-  }
-
   private void updateMergeState(Map<String,MergeStats> mergeStatsCache) {
     for (MergeStats stats : mergeStatsCache.values()) {
       try {
@@ -634,7 +605,6 @@ abstract class TabletGroupWatcher extends Daemon {
         try {
           Mutation m = new Mutation(followingTablet.getMetadataEntry());
           TabletsSection.TabletColumnFamily.PREV_ROW_COLUMN.put(m, KeyExtent.encodePrevEndRow(extent.getPrevEndRow()));
-          ChoppedColumnFamily.CHOPPED_COLUMN.putDelete(m);
           bw.addMutation(m);
           bw.flush();
         } finally {
@@ -734,12 +704,6 @@ abstract class TabletGroupWatcher extends Daemon {
       bw.flush();
 
       deleteTablets(info, scanRange, bw, conn);
-
-      // Clean-up the last chopped marker
-      m = new Mutation(stopRow);
-      ChoppedColumnFamily.CHOPPED_COLUMN.putDelete(m);
-      bw.addMutation(m);
-      bw.flush();
 
     } catch (Exception ex) {
       throw new AccumuloException(ex);

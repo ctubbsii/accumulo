@@ -194,9 +194,6 @@ public class NullTserver {
     }
 
     @Override
-    public void chop(TInfo tinfo, TCredentials credentials, String lock, TKeyExtent extent) throws TException {}
-
-    @Override
     public void flushTablet(TInfo tinfo, TCredentials credentials, String lock, TKeyExtent extent) throws TException {
 
     }

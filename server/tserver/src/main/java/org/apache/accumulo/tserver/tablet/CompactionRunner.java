@@ -76,7 +76,7 @@ final class CompactionRunner implements Runnable, Comparable<CompactionRunner> {
     if (cmp != 0)
       return cmp;
 
-    if (reason == MajorCompactionReason.USER || reason == MajorCompactionReason.CHOP) {
+    if (reason == MajorCompactionReason.USER) {
       // for these types of compactions want to do the oldest first
       cmp = (int) (queued - o.queued);
       if (cmp != 0)

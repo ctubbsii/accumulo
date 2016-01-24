@@ -27,6 +27,9 @@ package org.apache.accumulo.proxy.thrift;
 public enum CompactionReason implements org.apache.thrift.TEnum {
   USER(0),
   SYSTEM(1),
+  /**
+   * @deprecated since 1.8.0
+   */
   CHOP(2),
   IDLE(3),
   CLOSE(4);

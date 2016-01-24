@@ -355,9 +355,6 @@ public class MasterClientServiceHandler extends FateServiceHandler implements Ma
           Master.log.trace(serverName + " reports unload failed: not serving tablet, could be a split: " + tablet);
         }
         break;
-      case CHOPPED:
-        master.nextEvent.event("tablet %s chopped", tablet);
-        break;
     }
   }
 

@@ -114,7 +114,7 @@ public class TabletStateChangeIteratorIT extends AccumuloClusterHarness {
         return Collections.singletonList(new MergeInfo(new KeyExtent(tableIdToModify, null, null), MergeInfo.Operation.MERGE));
       }
     };
-    assertEquals("Should have 2 tablets that need to be chopped or unassigned", 1, findTabletsNeedingAttention(cloned, state));
+    assertEquals("Should have 2 tablets that need to be unassigned", 1, findTabletsNeedingAttention(cloned, state));
 
     // test the bad tablet location state case (inconsistent metadata)
     state = new State();

@@ -159,15 +159,6 @@ public class LiveTServerSet implements Watcher {
       }
     }
 
-    public void chop(ZooLock lock, KeyExtent extent) throws TException {
-      TabletClientService.Client client = ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
-      try {
-        client.chop(Tracer.traceInfo(), context.rpcCreds(), lockString(lock), extent.toThrift());
-      } finally {
-        ThriftUtil.returnClient(client);
-      }
-    }
-
     public void splitTablet(ZooLock lock, KeyExtent extent, Text splitPoint) throws TException, ThriftSecurityException, NotServingTabletException {
       TabletClientService.Client client = ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {

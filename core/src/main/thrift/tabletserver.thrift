@@ -103,6 +103,9 @@ enum CompactionType {
 enum CompactionReason {
    USER,
    SYSTEM,
+/**
+ * @deprecated since 2.0.0
+ */
    CHOP,
    IDLE,
    CLOSE
@@ -217,7 +220,6 @@ service TabletClientService extends client.ClientService {
   oneway void unloadTablet(5:trace.TInfo tinfo, 1:security.TCredentials credentials, 4:string lock, 2:data.TKeyExtent extent, 6:TUnloadTabletGoal goal, 7:i64 requestTime),
   oneway void flush(4:trace.TInfo tinfo, 1:security.TCredentials credentials, 3:string lock, 2:string tableId, 5:binary startRow, 6:binary endRow),
   oneway void flushTablet(1:trace.TInfo tinfo, 2:security.TCredentials credentials, 3:string lock, 4:data.TKeyExtent extent),
-  oneway void chop(1:trace.TInfo tinfo, 2:security.TCredentials credentials, 3:string lock, 4:data.TKeyExtent extent),
   oneway void compact(1:trace.TInfo tinfo, 2:security.TCredentials credentials, 3:string lock, 4:string tableId, 5:binary startRow, 6:binary endRow),
   
   master.TabletServerStatus getTabletServerStatus(3:trace.TInfo tinfo, 1:security.TCredentials credentials) throws (1:client.ThriftSecurityException sec)

@@ -136,6 +136,9 @@ enum TabletLoadState {
   UNLOADED
   UNLOAD_FAILURE_NOT_SERVING
   UNLOAD_ERROR
+/**
+ * @deprecated since 2.0.0
+ */
   CHOPPED
 }
 

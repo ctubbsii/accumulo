@@ -178,13 +178,6 @@ public class MetadataSchema {
       public static final Text NAME = new Text("log");
     }
 
-    /**
-     * Column family for indicating that the files in a tablet have been trimmed to only include data for the current tablet, so that they are safe to merge
-     */
-    public static class ChoppedColumnFamily {
-      public static final Text NAME = new Text("chopped");
-      public static final ColumnFQ CHOPPED_COLUMN = new ColumnFQ(NAME, new Text("chopped"));
-    }
   }
 
   /**

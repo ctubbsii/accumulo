@@ -52,18 +52,23 @@ public abstract class ActiveCompaction {
      * compaction initiated by user
      */
     USER,
+
     /**
      * Compaction initiated by system
      */
     SYSTEM,
+
     /**
      * Compaction initiated by merge operation
      */
+    @Deprecated
     CHOP,
+
     /**
      * idle compaction
      */
     IDLE,
+
     /**
      * Compaction initiated to close a unload a tablet
      */

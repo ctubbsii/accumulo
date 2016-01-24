@@ -63,14 +63,16 @@ public class GarbageCollectWriteAheadLogsTest {
   private final Collection<Collection<String>> walogs = Collections.emptyList();
   private final TabletLocationState tabletAssignedToServer1;
   private final TabletLocationState tabletAssignedToServer2;
+
   {
     try {
-      tabletAssignedToServer1 = new TabletLocationState(extent, (TServerInstance) null, server1, (TServerInstance) null, null, walogs, false);
-      tabletAssignedToServer2 = new TabletLocationState(extent, (TServerInstance) null, server2, (TServerInstance) null, null, walogs, false);
+      tabletAssignedToServer1 = new TabletLocationState(extent, (TServerInstance) null, server1, (TServerInstance) null, null, walogs);
+      tabletAssignedToServer2 = new TabletLocationState(extent, (TServerInstance) null, server2, (TServerInstance) null, null, walogs);
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
   }
+
   private final Iterable<TabletLocationState> tabletOnServer1List = Collections.singletonList(tabletAssignedToServer1);
   private final Iterable<TabletLocationState> tabletOnServer2List = Collections.singletonList(tabletAssignedToServer2);
   private final List<Entry<Key,Value>> emptyList = Collections.emptyList();

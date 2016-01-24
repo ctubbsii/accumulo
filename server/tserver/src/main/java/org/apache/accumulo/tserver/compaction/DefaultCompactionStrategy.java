@@ -62,10 +62,6 @@ public class DefaultCompactionStrategy extends CompactionStrategy {
     if (reason == MajorCompactionReason.USER) {
       return new ArrayList<>(request.getFiles().keySet());
     }
-    if (reason == MajorCompactionReason.CHOP) {
-      // should not happen, but this is safe
-      return new ArrayList<>(request.getFiles().keySet());
-    }
 
     if (request.getFiles().size() <= 1)
       return null;

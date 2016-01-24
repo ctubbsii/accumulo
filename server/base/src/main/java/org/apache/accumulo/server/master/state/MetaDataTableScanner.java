@@ -38,7 +38,6 @@ import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.accumulo.core.metadata.MetadataTable;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection;
-import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.ChoppedColumnFamily;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.LogColumnFamily;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.server.master.state.TabletLocationState.BadLocationStateException;
@@ -80,7 +79,6 @@ public class MetaDataTableScanner implements ClosableIterator<TabletLocationStat
     scanner.fetchColumnFamily(TabletsSection.LastLocationColumnFamily.NAME);
     scanner.fetchColumnFamily(TabletsSection.SuspendLocationColumn.SUSPEND_COLUMN.getColumnFamily());
     scanner.fetchColumnFamily(LogColumnFamily.NAME);
-    scanner.fetchColumnFamily(ChoppedColumnFamily.NAME);
     scanner.addScanIterator(new IteratorSetting(1000, "wholeRows", WholeRowIterator.class));
     IteratorSetting tabletChange = new IteratorSetting(1001, "tabletChange", TabletStateChangeIterator.class);
     if (state != null) {
@@ -140,7 +138,6 @@ public class MetaDataTableScanner implements ClosableIterator<TabletLocationStat
     SuspendingTServer suspend = null;
     long lastTimestamp = 0;
     List<Collection<String>> walogs = new ArrayList<>();
-    boolean chopped = false;
 
     for (Entry<Key,Value> entry : decodedRow.entrySet()) {
 
@@ -169,8 +166,6 @@ public class MetaDataTableScanner implements ClosableIterator<TabletLocationStat
       } else if (cf.compareTo(TabletsSection.LastLocationColumnFamily.NAME) == 0) {
         if (lastTimestamp < entry.getKey().getTimestamp())
           last = new TServerInstance(entry.getValue(), cq);
-      } else if (cf.compareTo(ChoppedColumnFamily.NAME) == 0) {
-        chopped = true;
       } else if (TabletsSection.TabletColumnFamily.PREV_ROW_COLUMN.equals(cf, cq)) {
         extent = new KeyExtent(row, entry.getValue());
       } else if (TabletsSection.SuspendLocationColumn.SUSPEND_COLUMN.equals(cf, cq)) {
@@ -182,7 +177,7 @@ public class MetaDataTableScanner implements ClosableIterator<TabletLocationStat
       log.error(msg);
       throw new BadLocationStateException(msg, k.getRow());
     }
-    return new TabletLocationState(extent, future, current, last, suspend, walogs, chopped);
+    return new TabletLocationState(extent, future, current, last, suspend, walogs);
   }
 
   private TabletLocationState fetch() {

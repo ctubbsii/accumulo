@@ -33,7 +33,6 @@ import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.master.thrift.MasterState;
 import org.apache.accumulo.core.metadata.MetadataTable;
 import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection;
-import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection.ChoppedColumnFamily;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.TablePermission;
 import org.apache.accumulo.master.state.MergeStats;
@@ -119,7 +118,6 @@ public class MergeStateIT extends ConfigurableMacBase {
       Text split = new Text(s);
       Mutation prevRow = KeyExtent.getPrevRowUpdateMutation(new KeyExtent(tableId, split, pr));
       prevRow.put(TabletsSection.CurrentLocationColumnFamily.NAME, new Text("123456"), new Value("127.0.0.1:1234".getBytes()));
-      ChoppedColumnFamily.CHOPPED_COLUMN.put(prevRow, new Value("junk".getBytes()));
       bw.addMutation(prevRow);
       pr = split;
     }
@@ -172,20 +170,12 @@ public class MergeStateIT extends ConfigurableMacBase {
 
     // onos... there's a new tablet online
     stats = scan(state, metaDataStateStore);
-    Assert.assertEquals(MergeState.WAITING_FOR_CHOPPED, stats.nextMergeState(connector, state));
-
-    // chop it
-    m = tablet.getPrevRowUpdateMutation();
-    ChoppedColumnFamily.CHOPPED_COLUMN.put(m, new Value("junk".getBytes()));
-    update(connector, m);
-
-    stats = scan(state, metaDataStateStore);
     Assert.assertEquals(MergeState.WAITING_FOR_OFFLINE, stats.nextMergeState(connector, state));
 
     // take it offline
     m = tablet.getPrevRowUpdateMutation();
     Collection<Collection<String>> walogs = Collections.emptyList();
-    metaDataStateStore.unassign(Collections.singletonList(new TabletLocationState(tablet, null, state.someTServer, null, null, walogs, false)), null);
+    metaDataStateStore.unassign(Collections.singletonList(new TabletLocationState(tablet, null, state.someTServer, null, null, walogs)), null);
 
     // now we can split
     stats = scan(state, metaDataStateStore);
@@ -197,7 +187,7 @@ public class MergeStateIT extends ConfigurableMacBase {
     MergeStats stats = new MergeStats(state.mergeInfo);
     stats.getMergeInfo().setState(MergeState.WAITING_FOR_OFFLINE);
     for (TabletLocationState tss : metaDataStateStore) {
-      stats.update(tss.extent, tss.getState(state.onlineTabletServers()), tss.chopped, false);
+      stats.update(tss.extent, tss.getState(state.onlineTabletServers()), false);
     }
     return stats;
   }

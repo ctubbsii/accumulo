@@ -1716,23 +1716,6 @@ public class TabletServer extends AccumuloServerContext implements Runnable {
     }
 
     @Override
-    public void chop(TInfo tinfo, TCredentials credentials, String lock, TKeyExtent textent) throws TException {
-      try {
-        checkPermission(credentials, lock, "chop");
-      } catch (ThriftSecurityException e) {
-        log.error("Caller doesn't have permission to chop extent", e);
-        throw new RuntimeException(e);
-      }
-
-      KeyExtent ke = new KeyExtent(textent);
-
-      Tablet tablet = onlineTablets.get(ke);
-      if (tablet != null) {
-        tablet.chopFiles();
-      }
-    }
-
-    @Override
     public void compact(TInfo tinfo, TCredentials credentials, String lock, String tableId, ByteBuffer startRow, ByteBuffer endRow) throws TException {
       try {
         checkPermission(credentials, lock, "compact");
@@ -2158,7 +2141,7 @@ public class TabletServer extends AccumuloServerContext implements Runnable {
         TServerInstance instance = new TServerInstance(clientAddress, getLock().getSessionId());
         TabletLocationState tls = null;
         try {
-          tls = new TabletLocationState(extent, null, instance, null, null, null, false);
+          tls = new TabletLocationState(extent, null, instance, null, null, null);
         } catch (BadLocationStateException e) {
           log.error("Unexpected error ", e);
         }

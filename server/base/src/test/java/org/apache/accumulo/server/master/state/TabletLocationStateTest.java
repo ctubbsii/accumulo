@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Set;
@@ -60,24 +59,22 @@ public class TabletLocationStateTest {
 
   @Test
   public void testConstruction_NoFuture() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs);
     assertSame(keyExtent, tls.extent);
     assertNull(tls.future);
     assertSame(current, tls.current);
     assertSame(last, tls.last);
     assertSame(walogs, tls.walogs);
-    assertTrue(tls.chopped);
   }
 
   @Test
   public void testConstruction_NoCurrent() throws Exception {
-    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs);
     assertSame(keyExtent, tls.extent);
     assertSame(future, tls.future);
     assertNull(tls.current);
     assertSame(last, tls.last);
     assertSame(walogs, tls.walogs);
-    assertTrue(tls.chopped);
   }
 
   @Test(expected = TabletLocationState.BadLocationStateException.class)
@@ -85,7 +82,7 @@ public class TabletLocationStateTest {
     expect(keyExtent.getMetadataEntry()).andReturn(new Text("entry"));
     replay(keyExtent);
     try {
-      new TabletLocationState(keyExtent, future, current, last, null, walogs, true);
+      new TabletLocationState(keyExtent, future, current, last, null, walogs);
     } catch (TabletLocationState.BadLocationStateException e) {
       assertEquals(new Text("entry"), e.getEncodedEndRow());
       throw (e);
@@ -94,44 +91,44 @@ public class TabletLocationStateTest {
 
   @Test
   public void testConstruction_NoFuture_NoWalogs() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, current, last, null, null, true);
+    tls = new TabletLocationState(keyExtent, null, current, last, null, null);
     assertNotNull(tls.walogs);
     assertEquals(0, tls.walogs.size());
   }
 
   @Test
   public void testGetServer_Current() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs);
     assertSame(current, tls.getServer());
   }
 
   @Test
   public void testGetServer_Future() throws Exception {
-    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs);
     assertSame(future, tls.getServer());
   }
 
   @Test
   public void testGetServer_Last() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, null, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, null, last, null, walogs);
     assertSame(last, tls.getServer());
   }
 
   @Test
   public void testGetServer_None() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, null, null, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, null, null, null, walogs);
     assertNull(tls.getServer());
   }
 
   @Test
   public void testGetState_Unassigned1() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, null, null, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, null, null, null, walogs);
     assertEquals(TabletState.UNASSIGNED, tls.getState(null));
   }
 
   @Test
   public void testGetState_Unassigned2() throws Exception {
-    tls = new TabletLocationState(keyExtent, null, null, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, null, last, null, walogs);
     assertEquals(TabletState.UNASSIGNED, tls.getState(null));
   }
 
@@ -139,7 +136,7 @@ public class TabletLocationStateTest {
   public void testGetState_Assigned() throws Exception {
     Set<TServerInstance> liveServers = new java.util.HashSet<>();
     liveServers.add(future);
-    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs);
     assertEquals(TabletState.ASSIGNED, tls.getState(liveServers));
   }
 
@@ -147,7 +144,7 @@ public class TabletLocationStateTest {
   public void testGetState_Hosted() throws Exception {
     Set<TServerInstance> liveServers = new java.util.HashSet<>();
     liveServers.add(current);
-    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs);
     assertEquals(TabletState.HOSTED, tls.getState(liveServers));
   }
 
@@ -155,7 +152,7 @@ public class TabletLocationStateTest {
   public void testGetState_Dead1() throws Exception {
     Set<TServerInstance> liveServers = new java.util.HashSet<>();
     liveServers.add(current);
-    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, future, null, last, null, walogs);
     assertEquals(TabletState.ASSIGNED_TO_DEAD_SERVER, tls.getState(liveServers));
   }
 
@@ -163,7 +160,7 @@ public class TabletLocationStateTest {
   public void testGetState_Dead2() throws Exception {
     Set<TServerInstance> liveServers = new java.util.HashSet<>();
     liveServers.add(future);
-    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs, true);
+    tls = new TabletLocationState(keyExtent, null, current, last, null, walogs);
     assertEquals(TabletState.ASSIGNED_TO_DEAD_SERVER, tls.getState(liveServers));
   }
 }

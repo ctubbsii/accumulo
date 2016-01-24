@@ -101,9 +101,6 @@ public class CompactionInfo {
         case USER:
           reason = CompactionReason.USER;
           break;
-        case CHOP:
-          reason = CompactionReason.CHOP;
-          break;
         case IDLE:
           reason = CompactionReason.IDLE;
           break;

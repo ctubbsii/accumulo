@@ -34,7 +34,7 @@ public enum MergeState {
   SPLITTING,
 
   /**
-   * @deprecated since 1.8.0; left in place so as to avoid unnecessary enum ordinal changes; this should remain unused
+   * @deprecated since 2.0.0; left in place so as to avoid unnecessary enum ordinal changes; this should remain unused
    */
   @Deprecated
   WAITING_FOR_CHOPPED,

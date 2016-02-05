@@ -28,7 +28,7 @@ public enum CompactionReason implements org.apache.thrift.TEnum {
   USER(0),
   SYSTEM(1),
   /**
-   * @deprecated since 1.8.0
+   * @deprecated since 2.0.0
    */
   CHOP(2),
   IDLE(3),

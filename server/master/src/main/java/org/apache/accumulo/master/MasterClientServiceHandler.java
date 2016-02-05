@@ -355,6 +355,8 @@ public class MasterClientServiceHandler extends FateServiceHandler implements Ma
           Master.log.trace(serverName + " reports unload failed: not serving tablet, could be a split: " + tablet);
         }
         break;
+      default:
+        Master.log.error("{} reports unexpected tablet status {} for tablet {}", serverName, status, tablet);
     }
   }
 

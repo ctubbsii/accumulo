@@ -121,7 +121,7 @@ module Accumulo
   module CompactionReason
     USER = 0
     SYSTEM = 1
-    # @deprecated since 1.8.0
+    # @deprecated since 2.0.0
     CHOP = 2
     IDLE = 3
     CLOSE = 4

@@ -18,13 +18,13 @@ package org.apache.accumulo.core.data.impl;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Function;
 
 import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
@@ -97,6 +97,10 @@ public class BytesRange {
     };
   }
 
+  protected Range<ByteSequence> applyIntersector(Range<ByteSequence> input) {
+    return intersector.apply(input);
+  }
+
   /**
    * When adding a file to a tablet represented by this range, merge the file's previous ranges with those in this tablet.
    *
@@ -116,7 +120,7 @@ public class BytesRange {
     }
 
     // intersect new ranges with this tablet, then coalesce them with any existing ranges
-    for (Range<ByteSequence> r : Iterables.transform(newRanges.asRanges(), intersector)) {
+    for (Range<ByteSequence> r : Iterables.transform(newRanges.asRanges(), this::applyIntersector)) {
       result.add(r);
     }
 

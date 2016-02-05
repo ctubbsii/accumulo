@@ -18,23 +18,40 @@ package org.apache.accumulo.core.metadata.schema;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.util.Base64;
+import java.util.Optional;
+
+import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Value;
 
+import com.google.common.collect.BoundType;
+import com.google.common.collect.Range;
+import com.google.common.collect.TreeRangeSet;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
+
 public class DataFileValue {
-  private long size;
-  private long numEntries;
-  private long time = -1;
+
+  private static final Gson gson = new Gson();
+
+  private final long size;
+  private final long numEntries;
+  private long time;
+  private final Optional<TreeRangeSet<ByteSequence>> ranges;
 
   public DataFileValue(long size, long numEntries, long time) {
     this.size = size;
     this.numEntries = numEntries;
     this.time = time;
+    this.ranges = Optional.empty();
   }
 
   public DataFileValue(long size, long numEntries) {
     this.size = size;
     this.numEntries = numEntries;
     this.time = -1;
+    this.ranges = Optional.empty();
   }
 
   public DataFileValue(byte[] encodedDFV) {
@@ -47,6 +64,8 @@ public class DataFileValue {
       time = Long.parseLong(ba[2]);
     else
       time = -1;
+
+    this.ranges = Optional.empty();
   }
 
   public long getSize() {
@@ -65,14 +84,46 @@ public class DataFileValue {
     return time;
   }
 
+  public Optional<TreeRangeSet<ByteSequence>> getRanges() {
+    return ranges;
+  }
+
   public byte[] encode() {
     return encodeAsString().getBytes(UTF_8);
   }
 
   public String encodeAsString() {
-    if (time >= 0)
-      return ("" + size + "," + numEntries + "," + time);
-    return ("" + size + "," + numEntries);
+    StringBuilder sb = new StringBuilder(getSize() + "," + numEntries);
+    if (isTimeSet()) {
+      sb.append("," + getTime());
+    }
+    if (ranges.isPresent()) {
+      JsonArray serializedRanges = new JsonArray();
+      for (Range<ByteSequence> r : ranges.get().asRanges()) {
+        serializedRanges.add(new JsonPrimitive(encodeRange(r)));
+        ;
+      }
+      sb.append(gson.toJson(serializedRanges));
+    }
+    return sb.toString();
+  }
+
+  private static String encodeRange(Range<ByteSequence> r) {
+    StringBuilder sb = new StringBuilder();
+    if (r.hasLowerBound()) {
+      sb.append(r.lowerBoundType() == BoundType.CLOSED ? '[' : '(');
+      sb.append(Base64.getEncoder().encodeToString(r.lowerEndpoint().toArray()));
+    } else {
+      sb.append("(-inf");
+    }
+    sb.append(',');
+    if (r.hasUpperBound()) {
+      sb.append(Base64.getEncoder().encodeToString(r.upperEndpoint().toArray()));
+      sb.append(r.upperBoundType() == BoundType.CLOSED ? ']' : ')');
+    } else {
+      sb.append("+inf)");
+    }
+    return sb.toString();
   }
 
   public Value encodeAsValue() {

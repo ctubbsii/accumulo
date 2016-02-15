@@ -185,4 +185,10 @@ public class ArrayByteSequence extends ByteSequence implements Serializable {
   public String toString() {
     return new String(data, offset, length, UTF_8);
   }
+
+  private static final ArrayByteSequence EMPTY = new ArrayByteSequence(new byte[0]);
+
+  public static ArrayByteSequence empty() {
+    return EMPTY;
+  }
 }

@@ -603,60 +603,6 @@ public class KeyExtent implements WritableComparable<KeyExtent> {
     return range;
   }
 
-  public static SortedSet<KeyExtent> findChildren(KeyExtent ke, SortedSet<KeyExtent> tablets) {
-
-    SortedSet<KeyExtent> children = null;
-
-    for (KeyExtent tabletKe : tablets) {
-
-      if (ke.getPrevEndRow() == tabletKe.getPrevEndRow() || ke.getPrevEndRow() != null && tabletKe.getPrevEndRow() != null
-          && tabletKe.getPrevEndRow().compareTo(ke.getPrevEndRow()) == 0) {
-        children = new TreeSet<>();
-      }
-
-      if (children != null) {
-        children.add(tabletKe);
-      }
-
-      if (ke.getEndRow() == tabletKe.getEndRow() || ke.getEndRow() != null && tabletKe.getEndRow() != null
-          && tabletKe.getEndRow().compareTo(ke.getEndRow()) == 0) {
-        return children;
-      }
-    }
-
-    return new TreeSet<>();
-  }
-
-  public static KeyExtent findContainingExtent(KeyExtent extent, SortedSet<KeyExtent> extents) {
-
-    KeyExtent lookupExtent = new KeyExtent(extent);
-    lookupExtent.setPrevEndRow((Text) null);
-
-    SortedSet<KeyExtent> tailSet = extents.tailSet(lookupExtent);
-
-    if (tailSet.isEmpty()) {
-      return null;
-    }
-
-    KeyExtent first = tailSet.first();
-
-    if (first.getTableId().compareTo(extent.getTableId()) != 0) {
-      return null;
-    }
-
-    if (first.getPrevEndRow() == null) {
-      return first;
-    }
-
-    if (extent.getPrevEndRow() == null) {
-      return null;
-    }
-
-    if (extent.getPrevEndRow().compareTo(first.getPrevEndRow()) >= 0)
-      return first;
-    return null;
-  }
-
   private static boolean startsAfter(KeyExtent nke, KeyExtent ke) {
 
     int tiCmp = ke.getTableId().compareTo(nke.getTableId());
@@ -731,10 +677,6 @@ public class KeyExtent implements WritableComparable<KeyExtent> {
       result.add(ke);
     }
     return result;
-  }
-
-  public static Text getMetadataEntry(KeyExtent extent) {
-    return getMetadataEntry(extent.getTableId(), extent.getEndRow());
   }
 
   public TKeyExtent toThrift() {

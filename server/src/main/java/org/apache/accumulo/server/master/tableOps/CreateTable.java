@@ -25,7 +25,7 @@ import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.admin.TimeType;
 import org.apache.accumulo.core.client.impl.Tables;
-import org.apache.accumulo.core.client.impl.thrift.TableOperation;
+import org.apache.accumulo.rpc.client.impl.thrift.TableOperation;
 import org.apache.accumulo.core.data.KeyExtent;
 import org.apache.accumulo.core.file.FileUtil;
 import org.apache.accumulo.core.master.state.tables.TableState;

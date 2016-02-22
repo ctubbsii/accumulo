@@ -28,7 +28,7 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.TextUtil;
 import org.apache.hadoop.io.Text;

@@ -40,7 +40,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
 import org.apache.accumulo.server.conf.ServerConfiguration;
 import org.apache.accumulo.start.classloader.AccumuloClassLoader;
 import org.apache.commons.cli.BasicParser;

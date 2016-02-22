@@ -19,7 +19,7 @@ package org.apache.accumulo.server.master.state;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.accumulo.core.master.thrift.DeadServer;
+import org.apache.accumulo.rpc.master.thrift.DeadServer;
 import org.apache.accumulo.fate.zookeeper.IZooReaderWriter;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeMissingPolicy;

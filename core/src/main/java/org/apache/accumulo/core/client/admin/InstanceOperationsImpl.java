@@ -31,15 +31,15 @@ import org.apache.accumulo.core.client.impl.ClientExec;
 import org.apache.accumulo.core.client.impl.ClientExecReturn;
 import org.apache.accumulo.core.client.impl.MasterClient;
 import org.apache.accumulo.core.client.impl.ServerClient;
-import org.apache.accumulo.core.client.impl.thrift.ClientService;
-import org.apache.accumulo.core.client.impl.thrift.ConfigurationType;
-import org.apache.accumulo.core.master.thrift.MasterClientService;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
 import org.apache.accumulo.core.util.ArgumentChecker;
 import org.apache.accumulo.core.util.ThriftUtil;
 import org.apache.accumulo.core.zookeeper.ZooUtil;
 import org.apache.accumulo.fate.zookeeper.ZooCache;
+import org.apache.accumulo.rpc.client.impl.thrift.ClientService;
+import org.apache.accumulo.rpc.client.impl.thrift.ConfigurationType;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletClientService;
 
 /**
  * Provides a class for administering the accumulo instance
@@ -143,15 +143,15 @@ public class InstanceOperationsImpl implements InstanceOperations {
   
   @Override
   public List<ActiveScan> getActiveScans(String tserver) throws AccumuloException, AccumuloSecurityException {
-    List<org.apache.accumulo.core.tabletserver.thrift.ActiveScan> tas = ThriftUtil.execute(tserver, instance.getConfiguration(),
-        new ClientExecReturn<List<org.apache.accumulo.core.tabletserver.thrift.ActiveScan>,TabletClientService.Client>() {
+    List<org.apache.accumulo.rpc.tabletserver.thrift.ActiveScan> tas = ThriftUtil.execute(tserver, instance.getConfiguration(),
+        new ClientExecReturn<List<org.apache.accumulo.rpc.tabletserver.thrift.ActiveScan>,TabletClientService.Client>() {
           @Override
-          public List<org.apache.accumulo.core.tabletserver.thrift.ActiveScan> execute(TabletClientService.Client client) throws Exception {
+          public List<org.apache.accumulo.rpc.tabletserver.thrift.ActiveScan> execute(TabletClientService.Client client) throws Exception {
             return client.getActiveScans(Tracer.traceInfo(), credentials);
           }
         });
     List<ActiveScan> as = new ArrayList<ActiveScan>();
-    for (org.apache.accumulo.core.tabletserver.thrift.ActiveScan activeScan : tas) {
+    for (org.apache.accumulo.rpc.tabletserver.thrift.ActiveScan activeScan : tas) {
       try {
         as.add(new ActiveScan(instance, activeScan));
       } catch (TableNotFoundException e) {

@@ -16,8 +16,8 @@
  */
 package org.apache.accumulo.server.tabletserver;
 
-import org.apache.accumulo.core.tabletserver.thrift.ActionStats;
-import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
+import org.apache.accumulo.rpc.tabletserver.thrift.ActionStats;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletStats;
 
 public class TabletStatsKeeper {
   

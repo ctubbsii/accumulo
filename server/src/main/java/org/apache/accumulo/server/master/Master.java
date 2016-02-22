@@ -54,9 +54,6 @@ import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.client.impl.ThriftTransportPool;
-import org.apache.accumulo.core.client.impl.thrift.TableOperation;
-import org.apache.accumulo.core.client.impl.thrift.TableOperationExceptionType;
-import org.apache.accumulo.core.client.impl.thrift.ThriftTableOperationException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.Key;
@@ -65,25 +62,11 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.PartialKey;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.data.thrift.TKeyExtent;
 import org.apache.accumulo.core.file.FileUtil;
 import org.apache.accumulo.core.iterators.IteratorUtil;
 import org.apache.accumulo.core.master.state.tables.TableState;
-import org.apache.accumulo.core.master.thrift.MasterClientService;
-import org.apache.accumulo.core.master.thrift.MasterClientService.Iface;
-import org.apache.accumulo.core.master.thrift.MasterClientService.Processor;
-import org.apache.accumulo.core.master.thrift.MasterGoalState;
-import org.apache.accumulo.core.master.thrift.MasterMonitorInfo;
-import org.apache.accumulo.core.master.thrift.MasterState;
-import org.apache.accumulo.core.master.thrift.TableInfo;
-import org.apache.accumulo.core.master.thrift.TabletLoadState;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
-import org.apache.accumulo.core.master.thrift.TabletSplit;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.SecurityErrorCode;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.CachedConfiguration;
 import org.apache.accumulo.core.util.Daemon;
@@ -97,6 +80,23 @@ import org.apache.accumulo.fate.zookeeper.ZooLock.LockWatcher;
 import org.apache.accumulo.fate.zookeeper.ZooReaderWriter.Mutator;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeMissingPolicy;
+import org.apache.accumulo.rpc.client.impl.thrift.TableOperation;
+import org.apache.accumulo.rpc.client.impl.thrift.TableOperationExceptionType;
+import org.apache.accumulo.rpc.client.impl.thrift.ThriftTableOperationException;
+import org.apache.accumulo.rpc.data.thrift.TKeyExtent;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService.Iface;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService.Processor;
+import org.apache.accumulo.rpc.master.thrift.MasterGoalState;
+import org.apache.accumulo.rpc.master.thrift.MasterMonitorInfo;
+import org.apache.accumulo.rpc.master.thrift.MasterState;
+import org.apache.accumulo.rpc.master.thrift.TableInfo;
+import org.apache.accumulo.rpc.master.thrift.TabletLoadState;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.master.thrift.TabletSplit;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.SecurityErrorCode;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
 import org.apache.accumulo.server.Accumulo;
 import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.conf.ServerConfiguration;
@@ -886,7 +886,7 @@ public class Master implements LiveTServerSet.Listener, TableObserver, CurrentSt
     }
     
     @Override
-    public void executeTableOperation(TInfo tinfo, AuthInfo c, long opid, org.apache.accumulo.core.master.thrift.TableOperation op, List<ByteBuffer> arguments,
+    public void executeTableOperation(TInfo tinfo, AuthInfo c, long opid, org.apache.accumulo.rpc.master.thrift.TableOperation op, List<ByteBuffer> arguments,
         Map<String,String> options, boolean autoCleanup) throws ThriftSecurityException, ThriftTableOperationException, TException {
       
       authenticate(c);

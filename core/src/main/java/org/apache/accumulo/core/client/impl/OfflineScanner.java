@@ -55,7 +55,7 @@ import org.apache.accumulo.core.iterators.system.VisibilityFilter;
 import org.apache.accumulo.core.master.state.tables.TableState;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
 import org.apache.accumulo.core.util.ArgumentChecker;
 import org.apache.accumulo.core.util.CachedConfiguration;
 import org.apache.accumulo.core.util.LocalityGroupUtil;

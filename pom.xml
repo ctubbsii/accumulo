@@ -46,6 +46,7 @@
   </distributionManagement>
 
   <modules>
+    <module>rpc</module>
     <module>trace</module>
     <module>core</module>
     <module>fate</module>
@@ -97,6 +98,7 @@
                 <requireMavenVersion>
                   <version>[2.2.0,)</version>
                 </requireMavenVersion>
+                <DependencyConvergence/>
               </rules>
             </configuration>
           </execution>
@@ -480,6 +482,12 @@
         <artifactId>hadoop-core</artifactId>
         <version>0.20.205.0</version>
         <scope>provided</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -504,38 +512,48 @@
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>cloudtrace</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-fate</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-start</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-rpc-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.accumulo</groupId>
+        <artifactId>accumulo-rpc-thrift</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-core</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-server</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>examples-simple</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>wikisearch-query-war</artifactId>
+        <version>${project.version}</version>
         <type>war</type>
-        <version>1.5.0-SNAPSHOT</version>
       </dependency>
 
       <!-- additional dependencies we need to provide -->
@@ -580,6 +598,12 @@
         <groupId>org.apache.thrift</groupId>
         <artifactId>libthrift</artifactId>
         <version>0.8.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>jline</groupId>

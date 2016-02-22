@@ -16,7 +16,7 @@
  */
 package org.apache.accumulo.core.client;
 
-import org.apache.accumulo.core.client.impl.thrift.ThriftTableOperationException;
+import org.apache.accumulo.rpc.client.impl.thrift.ThriftTableOperationException;
 
 /**
  * Thrown when the table specified doesn't exist when it was expected to

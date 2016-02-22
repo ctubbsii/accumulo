@@ -40,7 +40,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.data.thrift.TKeyExtent;
+import org.apache.accumulo.rpc.data.thrift.TKeyExtent;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.TextUtil;
 import org.apache.hadoop.io.BinaryComparable;

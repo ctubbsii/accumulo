@@ -85,42 +85,11 @@ import org.apache.accumulo.core.data.KeyExtent;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.data.thrift.InitialMultiScan;
-import org.apache.accumulo.core.data.thrift.InitialScan;
-import org.apache.accumulo.core.data.thrift.IterInfo;
-import org.apache.accumulo.core.data.thrift.MapFileInfo;
-import org.apache.accumulo.core.data.thrift.MultiScanResult;
-import org.apache.accumulo.core.data.thrift.ScanResult;
-import org.apache.accumulo.core.data.thrift.TColumn;
-import org.apache.accumulo.core.data.thrift.TKey;
-import org.apache.accumulo.core.data.thrift.TKeyExtent;
-import org.apache.accumulo.core.data.thrift.TKeyValue;
-import org.apache.accumulo.core.data.thrift.TMutation;
-import org.apache.accumulo.core.data.thrift.TRange;
-import org.apache.accumulo.core.data.thrift.UpdateErrors;
 import org.apache.accumulo.core.file.FileUtil;
 import org.apache.accumulo.core.iterators.IterationInterruptedException;
-import org.apache.accumulo.core.master.thrift.Compacting;
-import org.apache.accumulo.core.master.thrift.MasterClientService;
-import org.apache.accumulo.core.master.thrift.TableInfo;
-import org.apache.accumulo.core.master.thrift.TabletLoadState;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.SecurityErrorCode;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
-import org.apache.accumulo.core.tabletserver.thrift.ActiveScan;
-import org.apache.accumulo.core.tabletserver.thrift.ConstraintViolationException;
-import org.apache.accumulo.core.tabletserver.thrift.NoSuchScanIDException;
-import org.apache.accumulo.core.tabletserver.thrift.NotServingTabletException;
-import org.apache.accumulo.core.tabletserver.thrift.ScanState;
-import org.apache.accumulo.core.tabletserver.thrift.ScanType;
-import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
-import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Iface;
-import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Processor;
-import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.core.util.AddressUtil;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.CachedConfiguration;
@@ -138,6 +107,37 @@ import org.apache.accumulo.fate.zookeeper.IZooReaderWriter;
 import org.apache.accumulo.fate.zookeeper.ZooLock.LockLossReason;
 import org.apache.accumulo.fate.zookeeper.ZooLock.LockWatcher;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
+import org.apache.accumulo.rpc.data.thrift.InitialMultiScan;
+import org.apache.accumulo.rpc.data.thrift.InitialScan;
+import org.apache.accumulo.rpc.data.thrift.IterInfo;
+import org.apache.accumulo.rpc.data.thrift.MapFileInfo;
+import org.apache.accumulo.rpc.data.thrift.MultiScanResult;
+import org.apache.accumulo.rpc.data.thrift.ScanResult;
+import org.apache.accumulo.rpc.data.thrift.TColumn;
+import org.apache.accumulo.rpc.data.thrift.TKey;
+import org.apache.accumulo.rpc.data.thrift.TKeyExtent;
+import org.apache.accumulo.rpc.data.thrift.TKeyValue;
+import org.apache.accumulo.rpc.data.thrift.TMutation;
+import org.apache.accumulo.rpc.data.thrift.TRange;
+import org.apache.accumulo.rpc.data.thrift.UpdateErrors;
+import org.apache.accumulo.rpc.master.thrift.Compacting;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService;
+import org.apache.accumulo.rpc.master.thrift.TableInfo;
+import org.apache.accumulo.rpc.master.thrift.TabletLoadState;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.SecurityErrorCode;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
+import org.apache.accumulo.rpc.tabletserver.thrift.ActiveScan;
+import org.apache.accumulo.rpc.tabletserver.thrift.ConstraintViolationException;
+import org.apache.accumulo.rpc.tabletserver.thrift.NoSuchScanIDException;
+import org.apache.accumulo.rpc.tabletserver.thrift.NotServingTabletException;
+import org.apache.accumulo.rpc.tabletserver.thrift.ScanState;
+import org.apache.accumulo.rpc.tabletserver.thrift.ScanType;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletClientService;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletClientService.Iface;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletClientService.Processor;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.server.Accumulo;
 import org.apache.accumulo.server.ServerConstants;
 import org.apache.accumulo.server.client.ClientServiceHandler;
@@ -929,7 +929,7 @@ public class TabletServer extends AbstractMetricsImpl implements org.apache.accu
           Tablet tablet = onlineTablets.get(scanSession.extent);
           
           if (tablet == null) {
-            addResult(new org.apache.accumulo.core.tabletserver.thrift.NotServingTabletException(scanSession.extent.toThrift()));
+            addResult(new org.apache.accumulo.rpc.tabletserver.thrift.NotServingTabletException(scanSession.extent.toThrift()));
             return;
           }
           
@@ -945,7 +945,7 @@ public class TabletServer extends AbstractMetricsImpl implements org.apache.accu
           // problem somewhere
           addResult(batch);
         } catch (TabletClosedException e) {
-          addResult(new org.apache.accumulo.core.tabletserver.thrift.NotServingTabletException(scanSession.extent.toThrift()));
+          addResult(new org.apache.accumulo.rpc.tabletserver.thrift.NotServingTabletException(scanSession.extent.toThrift()));
         } catch (IterationInterruptedException iie) {
           if (!isCancelled()) {
             log.warn("Iteration interrupted, when scan not cancelled", iie);
@@ -1089,7 +1089,7 @@ public class TabletServer extends AbstractMetricsImpl implements org.apache.accu
     @Override
     public InitialScan startScan(TInfo tinfo, AuthInfo credentials, TKeyExtent textent, TRange range, List<TColumn> columns, int batchSize,
         List<IterInfo> ssiList, Map<String,Map<String,String>> ssio, List<ByteBuffer> authorizations, boolean waitForWrites, boolean isolated)
-        throws NotServingTabletException, ThriftSecurityException, org.apache.accumulo.core.tabletserver.thrift.TooManyFilesException {
+        throws NotServingTabletException, ThriftSecurityException, org.apache.accumulo.rpc.tabletserver.thrift.TooManyFilesException {
       
       Authorizations userauths = null;
       
@@ -1156,7 +1156,7 @@ public class TabletServer extends AbstractMetricsImpl implements org.apache.accu
     
     @Override
     public ScanResult continueScan(TInfo tinfo, long scanID) throws NoSuchScanIDException, NotServingTabletException,
-        org.apache.accumulo.core.tabletserver.thrift.TooManyFilesException {
+        org.apache.accumulo.rpc.tabletserver.thrift.TooManyFilesException {
       ScanSession scanSession = (ScanSession) sessionManager.reserveSession(scanID);
       if (scanSession == null) {
         throw new NoSuchScanIDException();
@@ -1170,7 +1170,7 @@ public class TabletServer extends AbstractMetricsImpl implements org.apache.accu
     }
     
     private ScanResult continueScan(TInfo tinfo, long scanID, ScanSession scanSession) throws NoSuchScanIDException, NotServingTabletException,
-        org.apache.accumulo.core.tabletserver.thrift.TooManyFilesException {
+        org.apache.accumulo.rpc.tabletserver.thrift.TooManyFilesException {
       
       if (scanSession.nextBatchTask == null) {
         scanSession.nextBatchTask = new NextBatchTask(scanID, scanSession.interruptFlag);
@@ -1186,7 +1186,7 @@ public class TabletServer extends AbstractMetricsImpl implements org.apache.accu
         if (e.getCause() instanceof NotServingTabletException)
           throw (NotServingTabletException) e.getCause();
         else if (e.getCause() instanceof TooManyFilesException)
-          throw new org.apache.accumulo.core.tabletserver.thrift.TooManyFilesException(scanSession.extent.toThrift());
+          throw new org.apache.accumulo.rpc.tabletserver.thrift.TooManyFilesException(scanSession.extent.toThrift());
         else
           throw new RuntimeException(e);
       } catch (CancellationException ce) {

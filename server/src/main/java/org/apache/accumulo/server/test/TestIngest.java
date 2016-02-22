@@ -42,7 +42,7 @@ import org.apache.accumulo.core.file.FileSKVWriter;
 import org.apache.accumulo.core.file.rfile.RFile;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
 import org.apache.accumulo.core.trace.DistributedTrace;
 import org.apache.accumulo.core.util.CachedConfiguration;
 import org.apache.accumulo.fate.zookeeper.ZooReader;

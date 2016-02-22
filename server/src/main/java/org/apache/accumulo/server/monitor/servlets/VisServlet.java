@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.accumulo.core.conf.Property;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
 import org.apache.accumulo.server.monitor.Monitor;
 
 public class VisServlet extends BasicServlet {

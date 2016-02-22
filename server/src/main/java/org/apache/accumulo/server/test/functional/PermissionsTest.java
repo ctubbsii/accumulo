@@ -44,7 +44,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
-import org.apache.accumulo.core.security.thrift.SecurityErrorCode;
+import org.apache.accumulo.rpc.security.thrift.SecurityErrorCode;
 import org.apache.accumulo.server.conf.ServerConfiguration;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;

@@ -31,7 +31,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.SortedKeyIterator;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
 
 public class TabletServerBatchDeleter extends TabletServerBatchReader implements BatchDeleter {
   

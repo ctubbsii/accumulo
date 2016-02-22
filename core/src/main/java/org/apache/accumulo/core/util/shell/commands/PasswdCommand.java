@@ -21,8 +21,8 @@ import java.nio.ByteBuffer;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.SecurityErrorCode;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.SecurityErrorCode;
 import org.apache.accumulo.core.util.shell.Shell;
 import org.apache.accumulo.core.util.shell.Shell.Command;
 import org.apache.commons.cli.CommandLine;

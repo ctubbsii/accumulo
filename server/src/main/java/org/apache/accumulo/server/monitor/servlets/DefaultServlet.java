@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.file.FileUtil;
-import org.apache.accumulo.core.master.thrift.MasterMonitorInfo;
+import org.apache.accumulo.rpc.master.thrift.MasterMonitorInfo;
 import org.apache.accumulo.core.util.CachedConfiguration;
 import org.apache.accumulo.core.util.Duration;
 import org.apache.accumulo.core.util.Pair;

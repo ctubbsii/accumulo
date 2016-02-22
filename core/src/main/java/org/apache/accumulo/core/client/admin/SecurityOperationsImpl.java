@@ -27,17 +27,17 @@ import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.impl.ClientExec;
 import org.apache.accumulo.core.client.impl.ClientExecReturn;
 import org.apache.accumulo.core.client.impl.ServerClient;
-import org.apache.accumulo.core.client.impl.thrift.ClientService;
-import org.apache.accumulo.core.client.impl.thrift.TableOperationExceptionType;
-import org.apache.accumulo.core.client.impl.thrift.ThriftTableOperationException;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.SecurityErrorCode;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.util.ArgumentChecker;
 import org.apache.accumulo.core.util.ByteBufferUtil;
+import org.apache.accumulo.rpc.client.impl.thrift.ClientService;
+import org.apache.accumulo.rpc.client.impl.thrift.TableOperationExceptionType;
+import org.apache.accumulo.rpc.client.impl.thrift.ThriftTableOperationException;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.SecurityErrorCode;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
 
 public class SecurityOperationsImpl implements SecurityOperations {
   

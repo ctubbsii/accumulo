@@ -16,9 +16,9 @@
  */
 package org.apache.accumulo.server.tabletserver.mastermessage;
 
-import org.apache.accumulo.core.master.thrift.MasterClientService;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
 import org.apache.thrift.TException;
 
 public interface MasterMessage {

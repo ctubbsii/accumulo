@@ -29,11 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.conf.Property;
-import org.apache.accumulo.core.master.thrift.DeadServer;
-import org.apache.accumulo.core.master.thrift.MasterMonitorInfo;
-import org.apache.accumulo.core.master.thrift.MasterState;
-import org.apache.accumulo.core.master.thrift.RecoveryStatus;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.master.thrift.DeadServer;
+import org.apache.accumulo.rpc.master.thrift.MasterMonitorInfo;
+import org.apache.accumulo.rpc.master.thrift.MasterState;
+import org.apache.accumulo.rpc.master.thrift.RecoveryStatus;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.util.StringUtil;
 import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.monitor.DedupedLogEvent;

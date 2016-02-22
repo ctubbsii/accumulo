@@ -42,26 +42,26 @@ import org.apache.accumulo.core.client.impl.ServerClient;
 import org.apache.accumulo.core.client.impl.TabletLocator;
 import org.apache.accumulo.core.client.impl.TabletLocator.TabletLocation;
 import org.apache.accumulo.core.client.impl.Translator;
-import org.apache.accumulo.core.client.impl.thrift.ClientService;
-import org.apache.accumulo.core.client.impl.thrift.ThriftTableOperationException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.KeyExtent;
 import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.thrift.TKeyExtent;
 import org.apache.accumulo.core.file.FileOperations;
 import org.apache.accumulo.core.file.FileSKVIterator;
 import org.apache.accumulo.core.file.FileUtil;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
-import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
 import org.apache.accumulo.core.util.CachedConfiguration;
 import org.apache.accumulo.core.util.LoggingRunnable;
 import org.apache.accumulo.core.util.NamingThreadFactory;
 import org.apache.accumulo.core.util.StopWatch;
 import org.apache.accumulo.core.util.ThriftUtil;
 import org.apache.accumulo.core.util.UtilWaitThread;
+import org.apache.accumulo.rpc.client.impl.thrift.ClientService;
+import org.apache.accumulo.rpc.client.impl.thrift.ThriftTableOperationException;
+import org.apache.accumulo.rpc.data.thrift.TKeyExtent;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletClientService;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -580,13 +580,13 @@ public class BulkImporter {
     try {
       TabletClientService.Iface client = ThriftUtil.getTServerClient(location, instance.getConfiguration());
       try {
-        HashMap<KeyExtent,Map<String,org.apache.accumulo.core.data.thrift.MapFileInfo>> files = new HashMap<KeyExtent,Map<String,org.apache.accumulo.core.data.thrift.MapFileInfo>>();
+        HashMap<KeyExtent,Map<String,org.apache.accumulo.rpc.data.thrift.MapFileInfo>> files = new HashMap<KeyExtent,Map<String,org.apache.accumulo.rpc.data.thrift.MapFileInfo>>();
         for (Entry<KeyExtent,List<PathSize>> entry : assignmentsPerTablet.entrySet()) {
-          HashMap<String,org.apache.accumulo.core.data.thrift.MapFileInfo> tabletFiles = new HashMap<String,org.apache.accumulo.core.data.thrift.MapFileInfo>();
+          HashMap<String,org.apache.accumulo.rpc.data.thrift.MapFileInfo> tabletFiles = new HashMap<String,org.apache.accumulo.rpc.data.thrift.MapFileInfo>();
           files.put(entry.getKey(), tabletFiles);
           
           for (PathSize pathSize : entry.getValue()) {
-            org.apache.accumulo.core.data.thrift.MapFileInfo mfi = new org.apache.accumulo.core.data.thrift.MapFileInfo(pathSize.estSize);
+            org.apache.accumulo.rpc.data.thrift.MapFileInfo mfi = new org.apache.accumulo.rpc.data.thrift.MapFileInfo(pathSize.estSize);
             tabletFiles.put(pathSize.path.toUri().getPath().toString(), mfi);
           }
         }

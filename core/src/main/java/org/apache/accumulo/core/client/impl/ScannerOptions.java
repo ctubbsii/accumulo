@@ -32,7 +32,7 @@ import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Column;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.data.thrift.IterInfo;
+import org.apache.accumulo.rpc.data.thrift.IterInfo;
 import org.apache.accumulo.core.util.ArgumentChecker;
 import org.apache.accumulo.core.util.TextUtil;
 import org.apache.hadoop.io.Text;

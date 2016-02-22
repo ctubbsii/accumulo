@@ -34,8 +34,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.data.thrift.TKey;
-import org.apache.accumulo.core.data.thrift.TKeyValue;
+import org.apache.accumulo.rpc.data.thrift.TKey;
+import org.apache.accumulo.rpc.data.thrift.TKeyValue;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;

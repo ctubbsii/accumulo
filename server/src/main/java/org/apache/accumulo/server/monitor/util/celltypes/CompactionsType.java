@@ -16,8 +16,8 @@
  */
 package org.apache.accumulo.server.monitor.util.celltypes;
 
-import org.apache.accumulo.core.master.thrift.Compacting;
-import org.apache.accumulo.core.master.thrift.TableInfo;
+import org.apache.accumulo.rpc.master.thrift.Compacting;
+import org.apache.accumulo.rpc.master.thrift.TableInfo;
 
 public class CompactionsType extends CellType<TableInfo> {
   

@@ -35,10 +35,10 @@ import java.util.Map.Entry;
 import junit.framework.Assert;
 
 import org.apache.accumulo.core.data.KeyExtent;
-import org.apache.accumulo.core.master.thrift.TableInfo;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
-import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
+import org.apache.accumulo.rpc.master.thrift.TableInfo;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.core.util.AddressUtil;
 import org.apache.accumulo.server.master.balancer.DefaultLoadBalancer;
 import org.apache.accumulo.server.master.state.TServerInstance;

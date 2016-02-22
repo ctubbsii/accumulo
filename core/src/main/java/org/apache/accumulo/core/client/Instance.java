@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
 
 /**
  * This class represents the information a client needs to know to connect to an instance of accumulo.

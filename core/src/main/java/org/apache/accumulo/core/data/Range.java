@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.accumulo.core.data.thrift.TRange;
+import org.apache.accumulo.rpc.data.thrift.TRange;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 

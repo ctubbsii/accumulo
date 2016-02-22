@@ -17,7 +17,7 @@
 package org.apache.accumulo.server.master.tserverOps;
 
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.util.AddressUtil;
 import org.apache.accumulo.core.zookeeper.ZooUtil;
 import org.apache.accumulo.fate.Repo;

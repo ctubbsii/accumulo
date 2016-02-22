@@ -25,8 +25,8 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.data.Column;
 import org.apache.accumulo.core.data.KeyExtent;
-import org.apache.accumulo.core.data.thrift.IterInfo;
-import org.apache.accumulo.core.data.thrift.TColumn;
+import org.apache.accumulo.rpc.data.thrift.IterInfo;
+import org.apache.accumulo.rpc.data.thrift.TColumn;
 
 /**
  * A class that contains information about an ActiveScan
@@ -48,7 +48,7 @@ public class ActiveScan {
   private Map<String,Map<String,String>> ssio;
   private String user;
   
-  ActiveScan(Instance instance, org.apache.accumulo.core.tabletserver.thrift.ActiveScan activeScan) throws TableNotFoundException {
+  ActiveScan(Instance instance, org.apache.accumulo.rpc.tabletserver.thrift.ActiveScan activeScan) throws TableNotFoundException {
     this.client = activeScan.client;
     this.user = activeScan.user;
     this.age = activeScan.age;

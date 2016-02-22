@@ -36,12 +36,12 @@ import org.apache.accumulo.core.client.admin.SecurityOperations;
 import org.apache.accumulo.core.client.admin.SecurityOperationsImpl;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.client.admin.TableOperationsImpl;
-import org.apache.accumulo.core.client.impl.thrift.ClientService;
 import org.apache.accumulo.core.master.state.tables.TableState;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.SecurityErrorCode;
 import org.apache.accumulo.core.util.ArgumentChecker;
+import org.apache.accumulo.rpc.client.impl.thrift.ClientService;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.SecurityErrorCode;
 
 public class ConnectorImpl extends Connector {
   private Instance instance;

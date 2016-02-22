@@ -18,10 +18,10 @@ package org.apache.accumulo.server.tabletserver.mastermessage;
 
 import org.apache.accumulo.cloudtrace.instrument.Tracer;
 import org.apache.accumulo.core.data.KeyExtent;
-import org.apache.accumulo.core.master.thrift.TabletLoadState;
-import org.apache.accumulo.core.master.thrift.MasterClientService.Iface;
-import org.apache.accumulo.core.security.thrift.AuthInfo;
-import org.apache.accumulo.core.security.thrift.ThriftSecurityException;
+import org.apache.accumulo.rpc.master.thrift.TabletLoadState;
+import org.apache.accumulo.rpc.master.thrift.MasterClientService.Iface;
+import org.apache.accumulo.rpc.security.thrift.AuthInfo;
+import org.apache.accumulo.rpc.security.thrift.ThriftSecurityException;
 import org.apache.thrift.TException;
 
 public class TabletStatusMessage implements MasterMessage {

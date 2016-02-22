@@ -27,10 +27,10 @@ import org.apache.accumulo.core.data.Column;
 import org.apache.accumulo.core.data.ConstraintViolationSummary;
 import org.apache.accumulo.core.data.KeyExtent;
 import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.thrift.TColumn;
-import org.apache.accumulo.core.data.thrift.TConstraintViolationSummary;
-import org.apache.accumulo.core.data.thrift.TKeyExtent;
-import org.apache.accumulo.core.data.thrift.TRange;
+import org.apache.accumulo.rpc.data.thrift.TColumn;
+import org.apache.accumulo.rpc.data.thrift.TConstraintViolationSummary;
+import org.apache.accumulo.rpc.data.thrift.TKeyExtent;
+import org.apache.accumulo.rpc.data.thrift.TRange;
 
 public abstract class Translator<IT,OT> {
   

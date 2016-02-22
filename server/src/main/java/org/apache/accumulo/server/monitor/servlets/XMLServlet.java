@@ -25,10 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.impl.Tables;
-import org.apache.accumulo.core.master.thrift.Compacting;
-import org.apache.accumulo.core.master.thrift.DeadServer;
-import org.apache.accumulo.core.master.thrift.TableInfo;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.master.thrift.Compacting;
+import org.apache.accumulo.rpc.master.thrift.DeadServer;
+import org.apache.accumulo.rpc.master.thrift.TableInfo;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
 import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.master.state.TabletServerState;
 import org.apache.accumulo.server.monitor.Monitor;

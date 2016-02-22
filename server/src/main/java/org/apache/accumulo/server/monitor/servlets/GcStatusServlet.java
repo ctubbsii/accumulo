@@ -21,7 +21,7 @@ import java.text.DateFormat;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.accumulo.core.gc.thrift.GCStatus;
+import org.apache.accumulo.rpc.gc.thrift.GCStatus;
 import org.apache.accumulo.server.monitor.Monitor;
 import org.apache.accumulo.server.monitor.util.Table;
 import org.apache.accumulo.server.monitor.util.celltypes.DateTimeType;

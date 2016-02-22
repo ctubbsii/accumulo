@@ -27,9 +27,9 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.apache.accumulo.core.data.KeyExtent;
-import org.apache.accumulo.core.master.thrift.TableInfo;
-import org.apache.accumulo.core.master.thrift.TabletServerStatus;
-import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
+import org.apache.accumulo.rpc.master.thrift.TableInfo;
+import org.apache.accumulo.rpc.master.thrift.TabletServerStatus;
+import org.apache.accumulo.rpc.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletMigration;
 import org.apache.log4j.Logger;

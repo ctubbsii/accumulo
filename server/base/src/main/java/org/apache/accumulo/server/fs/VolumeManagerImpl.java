@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.Property;
@@ -78,8 +79,15 @@ public class VolumeManagerImpl implements VolumeManager {
     this.volumesByFileSystemUri = HashMultimap.create();
     invertVolumesByFileSystem(volumesByName, volumesByFileSystemUri);
     ensureSyncIsEnabled();
-    // Keep in sync with default type in the property definition.
-    chooser = Property.createInstanceFromPropertyName(conf, Property.GENERAL_VOLUME_CHOOSER, VolumeChooser.class, new PerTableVolumeChooser());
+    String configuredChooser = conf.get(Property.GENERAL_VOLUME_CHOOSER);
+    if (null == configuredChooser || configuredChooser.isEmpty()) {
+      if (log.isTraceEnabled()) {
+        log.trace("No volume chooser specified, defaulting to RandomVolumeChooser.");
+      }
+      chooser = new RandomVolumeChooser();
+    } else { // if they supplied a property and we cannot load it, then fail hard
+      chooser = Property.createInstanceFromPropertyName(conf, Property.GENERAL_VOLUME_CHOOSER, VolumeChooser.class, null);
+    }
   }
 
   private void invertVolumesByFileSystem(Map<String,Volume> forward, Multimap<URI,Volume> inverted) {
@@ -468,11 +476,19 @@ public class VolumeManagerImpl implements VolumeManager {
 
   @Override
   public String choose(VolumeChooserEnvironment env, String[] options) {
-    final String choice = chooser.choose(env, options);
-    if (!(ArrayUtils.contains(options, choice))) {
-      log.error("The configured volume chooser, '" + chooser.getClass() + "', or one of its delegates returned a volume not in the set of options provided; "
-          + "will continue by relying on a RandomVolumeChooser. You should investigate and correct the named chooser.");
-      return failsafeChooser.choose(env, options);
+    final String choice;
+    try {
+      choice = chooser.choose(env, options);
+
+      if (!(ArrayUtils.contains(options, choice))) {
+        // we may want to go with random if they chooser was not overridden
+        log.error("The configured volume chooser, '" + chooser.getClass() + "', or one of its delegates returned a volume not in the set of options provided; "
+            + "will continue by relying on a RandomVolumeChooser. You should investigate and correct the named chooser.");
+        return failsafeChooser.choose(env, options);
+      }
+    } catch (AccumuloException e) {
+      log.error("Failure occurred in the configured chooser.", e);
+      throw new RuntimeException(e);
     }
     return choice;
   }

@@ -191,7 +191,7 @@ public enum Property {
       + "server-internal scheduled tasks"),
   // If you update the default type, be sure to update the default used for initialization failures in VolumeManagerImpl
   @Experimental
-  GENERAL_VOLUME_CHOOSER("general.volume.chooser", "org.apache.accumulo.server.fs.PerTableVolumeChooser", PropertyType.CLASSNAME,
+  GENERAL_VOLUME_CHOOSER("general.volume.chooser", "org.apache.accumulo.server.fs.RandomVolumeChooser", PropertyType.CLASSNAME,
       "The class that will be used to select which volume will be used to create new files."),
   GENERAL_SECURITY_CREDENTIAL_PROVIDER_PATHS("general.security.credential.provider.paths", "", PropertyType.STRING,
       "Comma-separated list of paths to CredentialProviders"),
@@ -550,8 +550,9 @@ public enum Property {
       + "replicate their data to. The key suffix is the identifying cluster name and the value is an identifier for a location on the target system, "
       + "e.g. the ID of the table on the target to replicate to"),
   @Experimental
-  TABLE_VOLUME_CHOOSER("table.volume.chooser", "org.apache.accumulo.server.fs.RandomVolumeChooser", PropertyType.CLASSNAME,
-      "The class that will be used to select which volume will be used to create new files for this table."),
+  TABLE_VOLUME_CHOOSER("table.volume.chooser", "", PropertyType.CLASSNAME,
+      "The class that will be used to select which volume will be used to create new files for this table. It needs to be set in the site configuration "
+          + "and overridden per table, as needed"),
   TABLE_SAMPLER(
       "table.sampler",
       "",

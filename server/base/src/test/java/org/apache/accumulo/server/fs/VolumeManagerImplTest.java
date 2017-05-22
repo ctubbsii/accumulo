@@ -16,10 +16,6 @@
  */
 package org.apache.accumulo.server.fs;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.accumulo.core.conf.ConfigurationCopy;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.server.fs.VolumeManager.FileType;
@@ -28,6 +24,10 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -61,7 +61,7 @@ public class VolumeManagerImplTest {
     fs.getFullPath(FileType.TABLE, "/t-0000001/C0000001.rf");
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = RuntimeException.class)
   public void invalidChooserConfigured() throws Exception {
     List<String> volumes = Arrays.asList("file://one/", "file://two/", "file://three/");
     ConfigurationCopy conf = new ConfigurationCopy();
@@ -114,7 +114,8 @@ public class VolumeManagerImplTest {
   @SuppressWarnings("deprecation")
   private static final Property INSTANCE_DFS_URI = Property.INSTANCE_DFS_URI;
 
-  @Test
+  // Expected to throw a runtime exception when the WrongVolumeChooser picks an invalid volume.
+  @Test(expected = RuntimeException.class)
   public void chooseFromOptions() throws Exception {
     List<String> volumes = Arrays.asList("file://one/", "file://two/", "file://three/");
     ConfigurationCopy conf = new ConfigurationCopy();
@@ -124,6 +125,5 @@ public class VolumeManagerImplTest {
     VolumeManager vm = VolumeManagerImpl.get(conf);
     VolumeChooserEnvironment chooserEnv = new VolumeChooserEnvironment(Optional.of("sometable"));
     String choice = vm.choose(chooserEnv, volumes.toArray(new String[0]));
-    Assert.assertTrue("shouldn't see invalid options from misbehaving chooser.", volumes.contains(choice));
   }
 }

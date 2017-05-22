@@ -16,8 +16,6 @@
  */
 package org.apache.accumulo.server.fs;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
@@ -27,6 +25,8 @@ import org.apache.accumulo.server.conf.TableConfiguration;
 import org.apache.accumulo.start.classloader.vfs.AccumuloVFSClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A {@link VolumeChooser} that delegates to another volume chooser based on the presence of an experimental table property,
@@ -41,7 +41,10 @@ public class PerTableVolumeChooser implements VolumeChooser {
   private final RandomVolumeChooser randomChooser = new RandomVolumeChooser();
   // TODO has to be lazily initialized currently because of the reliance on HdfsZooInstance. see ACCUMULO-3411
   private volatile ServerConfigurationFactory serverConfs;
-  private volatile VolumeChooser fallbackVolumeChooser = null;
+
+  public static final String VOLUME_CHOOSER_SCOPED_KEY(String scope) {
+    return Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + scope + ".volume.chooser";
+  }
 
   @Override
   public String choose(VolumeChooserEnvironment env, String[] options) throws AccumuloException {
@@ -55,7 +58,6 @@ public class PerTableVolumeChooser implements VolumeChooser {
     }
 
     ServerConfigurationFactory localConf = loadConf();
-    lazilyCreateFallbackChooser();
     if (env.hasScope()) {
       // use the system configuration
       chooser = getVolumeChooserForNonTable(env, localConf);
@@ -67,86 +69,67 @@ public class PerTableVolumeChooser implements VolumeChooser {
     return chooser.choose(env, options);
   }
 
-  private VolumeChooser getVolumeChooserForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) {
+  private VolumeChooser getVolumeChooserForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {
     VolumeChooser chooser;
     if (log.isTraceEnabled()) {
       log.trace("Table id: " + env.getTableId());
     }
     final TableConfiguration tableConf = localConf.getTableConfiguration(env.getTableId());
     String clazz = tableConf.get(Property.TABLE_VOLUME_CHOOSER);
-    if (null == clazz || clazz.isEmpty()) {
-      chooser = fallbackVolumeChooser;
-    } else {
-      chooser = tableSpecificChooser.get(env.getTableId());
-      if (chooser == null) {
-        VolumeChooser temp = Property.createTableInstanceFromPropertyName(tableConf, Property.TABLE_VOLUME_CHOOSER, VolumeChooser.class, fallbackVolumeChooser);
-        chooser = tableSpecificChooser.putIfAbsent(env.getTableId(), temp);
-        if (chooser == null) {
-          chooser = temp;
-          // Otherwise, someone else beat us to initializing; use theirs.
-        }
-      } else if (!(chooser.getClass().getName().equals(clazz))) {
-        if (log.isTraceEnabled()) {
-          log.trace("change detected for table id: " + env.getTableId());
-        }
-        // the configuration for this table's chooser has been updated. In the case of failure to instantiate we'll repeat here next call.
-        // TODO stricter definition of when the updated property is used, ref ACCUMULO-3412
-        VolumeChooser temp = Property.createTableInstanceFromPropertyName(tableConf, Property.TABLE_VOLUME_CHOOSER, VolumeChooser.class, fallbackVolumeChooser);
-        VolumeChooser last = tableSpecificChooser.replace(env.getTableId(), temp);
-        if (chooser.equals(last)) {
-          chooser = temp;
-        } else {
-          // Someone else beat us to updating; use theirs.
-          chooser = last;
-        }
-      }
-    }
-    return chooser;
+
+    return createVolumeChooser(clazz, Property.TABLE_VOLUME_CHOOSER.getKey(), env.getTableId(), tableSpecificChooser);
   }
 
-  private VolumeChooser getVolumeChooserForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) {
+  private VolumeChooser getVolumeChooserForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {
     VolumeChooser chooser;
-    final String customProperty = Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + env.getScope() + ".volume.chooser";
+    String property = VOLUME_CHOOSER_SCOPED_KEY(env.getScope());
 
     if (log.isTraceEnabled()) {
       log.trace("Scope: " + env.getScope());
-      log.trace("Looking up property: " + customProperty);
+      log.trace("Looking up property: " + property);
     }
 
     AccumuloConfiguration systemConfiguration = localConf.getConfiguration();
-    String clazz = systemConfiguration.get(customProperty);
+    String clazz = systemConfiguration.get(property);
+    // only if the custom property is not set to we fallback to the table volumn chooser setting
+    if (null == clazz) {
+      log.debug("Property not found: " + property + " using " + Property.TABLE_VOLUME_CHOOSER + " chooser.");
+      property = Property.TABLE_VOLUME_CHOOSER.getKey();
+      clazz = systemConfiguration.get(Property.TABLE_VOLUME_CHOOSER);
+    }
+
+    return createVolumeChooser(clazz, property, env.getScope(), scopeSpecificChooser);
+  }
+
+  private VolumeChooser createVolumeChooser(String clazz, String property, String key, ConcurrentHashMap<String,VolumeChooser> cache) throws AccumuloException {
     if (null == clazz || clazz.isEmpty()) {
-      log.debug("Property not found: " + customProperty + " using fallback chooser.");
-      return fallbackVolumeChooser;
-    } else {
-      chooser = scopeSpecificChooser.get(env.getScope());
+      String msg = "Property " + property + " must be set" + (null == clazz ? " " : " properly ") + "to use the " + getClass().getSimpleName();
+      log.error(msg);
+      throw new AccumuloException(msg);
+    }
+
+    VolumeChooser chooser = cache.get(key);
+    if (chooser == null || !(chooser.getClass().getName().equals(clazz))) {
+      if (log.isTraceEnabled() && chooser != null) {
+        // TODO stricter definition of when the updated property is used, ref ACCUMULO-3412
+        log.trace("Change detected for " + property + " for " + key);
+      }
+      VolumeChooser temp;
+      try {
+        temp = loadClass(clazz);
+      } catch (Exception e) {
+        String msg = "Failed to create instance for " + key + " configured to use " + clazz + " via " + property;
+        log.error(msg);
+        throw new AccumuloException(msg, e);
+      }
       if (chooser == null) {
-        VolumeChooser temp;
-        try {
-          temp = loadClassForCustomProperty(clazz);
-        } catch (Exception e) {
-          log.error("Failed to create instance for " + env.getScope() + " configured to use " + clazz + " via " + customProperty);
-          return fallbackVolumeChooser;
-        }
-        chooser = scopeSpecificChooser.putIfAbsent(env.getScope(), temp);
+        chooser = cache.putIfAbsent(key, temp);
         if (chooser == null) {
           chooser = temp;
           // Otherwise, someone else beat us to initializing; use theirs.
         }
-      } else if (!(chooser.getClass().getName().equals(clazz))) {
-        if (log.isTraceEnabled()) {
-          log.trace("change detected for scope: " + env.getScope());
-        }
-        // the configuration for this scope's chooser has been updated. In the case of failure to instantiate we'll repeat here next call.
-        // TODO stricter definition of when the updated property is used, ref ACCUMULO-3412
-        VolumeChooser temp;
-        try {
-          temp = loadClassForCustomProperty(clazz);
-        } catch (Exception e) {
-          log.error("Failed to create instance for " + env.getScope() + " configured to use " + clazz + " via " + customProperty);
-          return fallbackVolumeChooser;
-        }
-        VolumeChooser last = scopeSpecificChooser.replace(env.getScope(), temp);
+      } else {
+        VolumeChooser last = cache.replace(key, temp);
         if (chooser.equals(last)) {
           chooser = temp;
         } else {
@@ -158,7 +141,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
     return chooser;
   }
 
-  private VolumeChooser loadClassForCustomProperty(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+  private VolumeChooser loadClass(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     // not attempting to load context because this approach to loading the class is for non-tables only
     return AccumuloVFSClassLoader.loadClass(className, VolumeChooser.class).newInstance();
   }
@@ -174,33 +157,4 @@ public class PerTableVolumeChooser implements VolumeChooser {
     return localConf;
   }
 
-  private void lazilyCreateFallbackChooser() throws AccumuloException {
-    VolumeChooser currentFallback = fallbackVolumeChooser;
-    if (currentFallback == null || !(currentFallback.getClass().getName().equals(serverConfs.getConfiguration().get(Property.TABLE_VOLUME_CHOOSER)))) {
-      if (log.isTraceEnabled()) {
-        log.trace("Creating fallbackVolumeChooser.");
-      }
-      VolumeChooser temp = createFallbackChooser(serverConfs.getConfiguration());
-      if (fallbackVolumeChooser == null || fallbackVolumeChooser.equals(currentFallback)) {
-        fallbackVolumeChooser = temp;
-        if (log.isTraceEnabled()) {
-          log.trace("Updated fallbackVolumeChooser to " + (null != fallbackVolumeChooser ? fallbackVolumeChooser.getClass().getName() : "null"));
-        }
-      } // otherwise it was already updated by another thread
-    }
-  }
-
-  private VolumeChooser createFallbackChooser(AccumuloConfiguration accumuloConfiguration) throws AccumuloException {
-    if (log.isTraceEnabled()) {
-      log.trace("Creating fallback chooser.");
-    }
-    // attempt to load the system-wide default volume chooser
-    String clazz = accumuloConfiguration.get(Property.TABLE_VOLUME_CHOOSER);
-    if (null == clazz || clazz.isEmpty()) {
-      log.error("Cannot create fallback volume chooser with the system-wide configuration. " + Property.TABLE_VOLUME_CHOOSER.getKey()
-          + " is required as a system-wide property.");
-      throw new AccumuloException(Property.TABLE_VOLUME_CHOOSER.getKey() + " was not found in the system-wide configuration.");
-    }
-    return Property.createInstanceFromPropertyName(accumuloConfiguration, Property.TABLE_VOLUME_CHOOSER, VolumeChooser.class, null);
-  }
 }

@@ -111,7 +111,7 @@ public class PreferredVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("1", "2")), results);
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testTableMisconfigured() throws Exception {
     configureDefaultVolumes("1,3");
     configureTableVolumes("4");
@@ -124,7 +124,7 @@ public class PreferredVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("1", "3")), results);
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testTableMissing() throws Exception {
     configureDefaultVolumes("1,3");
     configureTableVolumes(null);
@@ -137,7 +137,7 @@ public class PreferredVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("1", "3")), results);
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testTableEmptyConfig() throws Exception {
     configureDefaultVolumes("1,3");
     configureTableVolumes("");
@@ -183,7 +183,7 @@ public class PreferredVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("1", "2")), results);
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testContextMisconfigured() throws Exception {
     configureDefaultVolumes("1,3");
     configureContextVolumes("4");
@@ -196,7 +196,7 @@ public class PreferredVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("1", "3")), results);
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testContextMissing() throws Exception {
     configureDefaultVolumes("1,3");
     configureContextVolumes(null);
@@ -229,7 +229,7 @@ public class PreferredVolumeChooserTest {
     chooseRepeatedlyForContext();
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testContextEmptyConfig() throws Exception {
     configureDefaultVolumes("1,3");
     configureContextVolumes("");

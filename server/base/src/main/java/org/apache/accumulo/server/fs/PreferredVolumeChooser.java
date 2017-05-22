@@ -43,7 +43,11 @@ import org.slf4j.LoggerFactory;
 public class PreferredVolumeChooser extends RandomVolumeChooser {
   private static final Logger log = LoggerFactory.getLogger(PreferredVolumeChooser.class);
 
-  public static final String PREFERRED_VOLUMES_CUSTOM_KEY = Property.TABLE_ARBITRARY_PROP_PREFIX + "preferredVolumes";
+  public static final String PREFERRED_VOLUMES_CUSTOM_KEY = Property.TABLE_ARBITRARY_PROP_PREFIX.getKey() + "preferredVolumes";
+
+  public static final String PREFERRED_VOLUMES_SCOPED_KEY(String scope) {
+    return Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + scope + ".preferredVolumes";
+  }
 
   @SuppressWarnings("unchecked")
   private final Map<String,Set<String>> parsedPreferredVolumes = Collections.synchronizedMap(new LRUMap(1000));
@@ -57,30 +61,26 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
       log.warn("No table id or scope, so it's not possible to determine preferred volumes.  Using all volumes.");
       return super.choose(env, options);
     }
+
+    // get the volumes property
     ServerConfigurationFactory localConf = loadConf();
-
-    String systemPreferredVolumes = localConf.getConfiguration().get(PREFERRED_VOLUMES_CUSTOM_KEY);
-    if (null == systemPreferredVolumes || systemPreferredVolumes.isEmpty()) {
-      String logMessage = "Default preferred volumes are missing.";
-      log.debug(logMessage);
-      throw new AccumuloException(logMessage);
-    }
-
-    String volumes = null;
+    String volumes;
     if (env.hasTableId()) {
       volumes = localConf.getTableConfiguration(env.getTableId()).get(PREFERRED_VOLUMES_CUSTOM_KEY);
-    } else if (env.hasScope()) {
-      volumes = localConf.getConfiguration().get(Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + env.getScope() + ".preferredVolumes");
+    } else { // env.hasScope()
+      volumes = localConf.getConfiguration().get(PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()));
     }
 
-    // if there was an empty or missing property, use the system-wide volumes
+    // throw an error if volumes not specified or empty
     if (null == volumes || volumes.isEmpty()) {
+      String logmsg;
       if (env.hasTableId()) {
-        log.warn("Missing property for TableID " + env.getTableId() + " but it should have picked up default volumes.");
-      } else {
-        log.debug("Missing preferred volumes for scope " + env.getScope() + ". Using default volumes.");
+        logmsg = "Missing or empty " + PREFERRED_VOLUMES_CUSTOM_KEY + " property for TableID " + env.getTableId();
+      } else { // env.hasScope()
+        logmsg = "Missing or empty " + PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()) + " property for scope " + env.getScope();
       }
-      volumes = systemPreferredVolumes;
+      log.error(logmsg);
+      throw new AccumuloException(logmsg);
     }
 
     if (log.isTraceEnabled()) {
@@ -95,12 +95,7 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
 
     ArrayList<String> filteredOptions = getIntersection(options, volumes);
 
-    // invalid preferred volumes for this environment result in falling back to system-wide preferred volumes
-    if (filteredOptions.isEmpty() && !systemPreferredVolumes.equals(volumes)) { // we may already be using the defaults
-      filteredOptions = getIntersection(options, systemPreferredVolumes);
-    }
-
-    // Neither default volumes nor specific volumes intersect with defined volumes
+    // throw error if intersecting with preferred volumes resulted in the empty set
     if (filteredOptions.isEmpty()) {
       String logMessage = "After filtering preferred volumes, there are no valid instance volumes.";
       log.warn(logMessage);

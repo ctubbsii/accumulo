@@ -79,14 +79,14 @@ public class VolumeManagerImpl implements VolumeManager {
     this.volumesByFileSystemUri = HashMultimap.create();
     invertVolumesByFileSystem(volumesByName, volumesByFileSystemUri);
     ensureSyncIsEnabled();
-    String configuredChooser = conf.get(Property.GENERAL_VOLUME_CHOOSER);
-    if (null == configuredChooser || configuredChooser.isEmpty()) {
-      if (log.isTraceEnabled()) {
-        log.trace("No volume chooser specified, defaulting to RandomVolumeChooser.");
-      }
-      chooser = new RandomVolumeChooser();
-    } else { // if they supplied a property and we cannot load it, then fail hard
+    // if they supplied a property and we cannot load it, then fail hard
+    try {
       chooser = Property.createInstanceFromPropertyName(conf, Property.GENERAL_VOLUME_CHOOSER, VolumeChooser.class, null);
+    } catch (NullPointerException npe) {
+      throw new RuntimeException("Failed to load volume chooser specified by " + Property.GENERAL_VOLUME_CHOOSER);
+    }
+    if (chooser == null) {
+      throw new RuntimeException("Failed to load volume chooser specified by " + Property.GENERAL_VOLUME_CHOOSER);
     }
   }
 
@@ -471,9 +471,6 @@ public class VolumeManagerImpl implements VolumeManager {
     return getVolumeByPath(dir).getFileSystem().getContentSummary(dir);
   }
 
-  // Only used as a fall back if the configured chooser misbehaves.
-  private final VolumeChooser failsafeChooser = new RandomVolumeChooser();
-
   @Override
   public String choose(VolumeChooserEnvironment env, String[] options) {
     final String choice;
@@ -482,9 +479,10 @@ public class VolumeManagerImpl implements VolumeManager {
 
       if (!(ArrayUtils.contains(options, choice))) {
         // we may want to go with random if they chooser was not overridden
-        log.error("The configured volume chooser, '" + chooser.getClass() + "', or one of its delegates returned a volume not in the set of options provided; "
-            + "will continue by relying on a RandomVolumeChooser. You should investigate and correct the named chooser.");
-        return failsafeChooser.choose(env, options);
+        String msg = "The configured volume chooser, '" + chooser.getClass()
+            + "', or one of its delegates returned a volume not in the set of options provided";
+        log.error(msg);
+        throw new RuntimeException(msg);
       }
     } catch (AccumuloException e) {
       log.error("Failure occurred in the configured chooser.", e);

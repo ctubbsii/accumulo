@@ -19,18 +19,14 @@ package org.apache.accumulo.server.conf;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.zookeeper.ZooUtil;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class NamespaceConfWatcher implements Watcher {
-  static {
-    Logger.getLogger("org.apache.zookeeper").setLevel(Level.WARN);
-    Logger.getLogger("org.apache.hadoop.io.compress").setLevel(Level.WARN);
-  }
 
-  private static final Logger log = Logger.getLogger(NamespaceConfWatcher.class);
+  private static final Logger log = LoggerFactory.getLogger(NamespaceConfWatcher.class);
   private final Instance instance;
   private final String namespacesPrefix;
   private final int namespacesPrefixLength;
@@ -43,7 +39,7 @@ class NamespaceConfWatcher implements Watcher {
     scf = new ServerConfigurationFactory(instance);
   }
 
-  static String toString(WatchedEvent event) {
+  private static String toString(WatchedEvent event) {
     return new StringBuilder("{path=").append(event.getPath()).append(",state=").append(event.getState()).append(",type=").append(event.getType()).append("}")
         .toString();
   }
@@ -52,41 +48,33 @@ class NamespaceConfWatcher implements Watcher {
   public void process(WatchedEvent event) {
     String path = event.getPath();
     if (log.isTraceEnabled())
-      log.trace("WatchedEvent : " + toString(event));
+      log.trace("WatchedEvent : {}", toString(event));
 
     String namespaceId = null;
-    String key = null;
 
     if (path != null) {
       if (path.startsWith(namespacesPrefix)) {
         namespaceId = path.substring(namespacesPrefixLength);
         if (namespaceId.contains("/")) {
           namespaceId = namespaceId.substring(0, namespaceId.indexOf('/'));
-          if (path.startsWith(namespacesPrefix + namespaceId + Constants.ZNAMESPACE_CONF + "/"))
-            key = path.substring((namespacesPrefix + namespaceId + Constants.ZNAMESPACE_CONF + "/").length());
         }
       }
 
       if (namespaceId == null) {
-        log.warn("Zookeeper told me about a path I was not watching: " + path + ", event " + toString(event));
+        log.warn("Zookeeper told me about a path I was not watching: {}, event {}", path, toString(event));
         return;
       }
     }
 
     switch (event.getType()) {
       case NodeDataChanged:
-        if (log.isTraceEnabled())
-          log.trace("EventNodeDataChanged " + event.getPath());
-        if (key != null)
-          scf.getNamespaceConfiguration(namespaceId).propertyChanged(key);
+        scf.getNamespaceConfiguration(namespaceId).propertiesChanged();
         break;
       case NodeChildrenChanged:
         scf.getNamespaceConfiguration(namespaceId).propertiesChanged();
         break;
       case NodeDeleted:
-        if (key == null) {
-          ServerConfigurationFactory.removeCachedNamespaceConfiguration(instance.getInstanceID(), namespaceId);
-        }
+        ServerConfigurationFactory.removeCachedNamespaceConfiguration(instance.getInstanceID(), namespaceId);
         break;
       case None:
         switch (event.getState()) {
@@ -98,7 +86,7 @@ class NamespaceConfWatcher implements Watcher {
           case Disconnected:
             break;
           default:
-            log.warn("EventNone event not handled " + toString(event));
+            log.warn("Event not handled {}", toString(event));
         }
         break;
       case NodeCreated:
@@ -106,11 +94,11 @@ class NamespaceConfWatcher implements Watcher {
           case SyncConnected:
             break;
           default:
-            log.warn("Event NodeCreated event not handled " + toString(event));
+            log.warn("Event not handled {}", toString(event));
         }
         break;
       default:
-        log.warn("Event not handled " + toString(event));
+        log.warn("Event not handled {}", toString(event));
     }
   }
 }

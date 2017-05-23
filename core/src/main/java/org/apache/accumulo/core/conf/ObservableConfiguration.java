@@ -86,18 +86,6 @@ public abstract class ObservableConfiguration extends AccumuloConfiguration {
   }
 
   /**
-   * Notifies all observers that a property changed.
-   *
-   * @param key
-   *          configuration property key
-   */
-  public void propertyChanged(String key) {
-    Collection<ConfigurationObserver> copy = snapshot(observers);
-    for (ConfigurationObserver co : copy)
-      co.propertyChanged(key);
-  }
-
-  /**
    * Notifies all observers that properties changed.
    */
   public void propertiesChanged() {

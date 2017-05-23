@@ -377,21 +377,6 @@ public class Tablet implements TabletCommitter {
       }
 
       @Override
-      public void propertyChanged(String prop) {
-        if (prop.startsWith(Property.TABLE_CONSTRAINT_PREFIX.getKey()))
-          reloadConstraints();
-        else if (prop.equals(Property.TABLE_DEFAULT_SCANTIME_VISIBILITY.getKey())) {
-          try {
-            log.info("Default security labels changed for extent: " + extent.toString());
-            setupDefaultSecurityLabels(extent);
-          } catch (Exception e) {
-            log.error("Failed to reload default security labels for extent: " + extent.toString());
-          }
-        }
-
-      }
-
-      @Override
       public void sessionExpired() {
         log.debug("Session expired, no longer updating per table props...");
       }
@@ -414,7 +399,7 @@ public class Tablet implements TabletCommitter {
         for (FileRef ref : datafiles.keySet())
           absPaths.add(ref.path().toString());
 
-        tabletServer.recover(this.getTabletServer().getFileSystem(), extent, tableConfiguration, logEntries, absPaths, new MutationReceiver() {
+        tabletServer.recover(this.getTabletServer().getFileSystem(), extent, logEntries, absPaths, new MutationReceiver() {
           @Override
           public void receive(Mutation m) {
             // LogReader.printMutation(m);

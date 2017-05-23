@@ -45,7 +45,6 @@ import org.apache.accumulo.core.util.SimpleThreadPool;
 import org.apache.accumulo.fate.util.LoggingRunnable;
 import org.apache.accumulo.fate.zookeeper.Retry;
 import org.apache.accumulo.fate.zookeeper.RetryFactory;
-import org.apache.accumulo.server.conf.TableConfiguration;
 import org.apache.accumulo.server.fs.VolumeManager;
 import org.apache.accumulo.server.replication.StatusUtil;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
@@ -550,8 +549,7 @@ public class TabletServerLogger {
     return seq;
   }
 
-  public void recover(VolumeManager fs, KeyExtent extent, TableConfiguration tconf, List<Path> logs, Set<String> tabletFiles, MutationReceiver mr)
-      throws IOException {
+  public void recover(VolumeManager fs, KeyExtent extent, List<Path> logs, Set<String> tabletFiles, MutationReceiver mr) throws IOException {
     try {
       SortedLogRecovery recovery = new SortedLogRecovery(fs);
       recovery.recover(extent, logs, tabletFiles, mr);

@@ -3113,8 +3113,8 @@ public class TabletServer extends AccumuloServerContext implements Runnable {
     logger.minorCompactionStarted(tablet, lastUpdateSequence, newMapfileLocation, durability);
   }
 
-  public void recover(VolumeManager fs, KeyExtent extent, TableConfiguration tconf, List<LogEntry> logEntries, Set<String> tabletFiles,
-      MutationReceiver mutationReceiver) throws IOException {
+  public void recover(VolumeManager fs, KeyExtent extent, List<LogEntry> logEntries, Set<String> tabletFiles, MutationReceiver mutationReceiver)
+      throws IOException {
     List<Path> recoveryLogs = new ArrayList<>();
     List<LogEntry> sorted = new ArrayList<>(logEntries);
     Collections.sort(sorted, new Comparator<LogEntry>() {
@@ -3135,7 +3135,7 @@ public class TabletServer extends AccumuloServerContext implements Runnable {
         throw new IOException("Unable to find recovery files for extent " + extent + " logEntry: " + entry);
       recoveryLogs.add(recovery);
     }
-    logger.recover(fs, extent, tconf, recoveryLogs, tabletFiles, mutationReceiver);
+    logger.recover(fs, extent, recoveryLogs, tabletFiles, mutationReceiver);
   }
 
   public int createLogId(KeyExtent tablet) {

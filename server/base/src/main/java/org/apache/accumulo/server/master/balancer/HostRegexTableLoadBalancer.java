@@ -382,11 +382,6 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
   }
 
   @Override
-  public void propertyChanged(String key) {
-    parseConfiguration(context.getServerConfigurationFactory());
-  }
-
-  @Override
   public void propertiesChanged() {
     parseConfiguration(context.getServerConfigurationFactory());
   }

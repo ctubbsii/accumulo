@@ -14,11 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.accumulo.core.conf;
+package org.apache.accumulo.server.conf.snapshot;
 
-public interface ConfigurationObserver {
+import java.util.Map;
+import java.util.function.Predicate;
 
-  void propertiesChanged();
+import org.apache.accumulo.core.conf.Property;
 
-  void sessionExpired();
+public interface ConfigurationSnapshot {
+
+  String get(Property property);
+
+  void getProperties(Map<String,String> destination, Predicate<String> filter, Predicate<String> parentFilter);
+
+  ConfigurationSnapshot EMPTY = new ConfigurationSnapshot() {
+
+    @Override
+    public String get(Property property) {
+      return null;
+    }
+
+    @Override
+    public void getProperties(Map<String,String> destination, Predicate<String> filter, Predicate<String> parentFilter) {}
+
+  };
 }

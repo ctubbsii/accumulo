@@ -99,7 +99,7 @@ public class ZooCachePropertyAccessor {
    */
   String get(Property property, String path, AccumuloConfiguration parent) {
     String key = property.getKey();
-    String value = get(path + "/" + key);
+    String value = getZkValue(path, key);
 
     if (value == null || !property.getType().isValidFormat(value)) {
       if (value != null) {
@@ -112,13 +112,9 @@ public class ZooCachePropertyAccessor {
     return value;
   }
 
-  private String get(String path) {
-    byte[] v = propCache.get(path);
-    if (v != null) {
-      return new String(v, UTF_8);
-    } else {
-      return null;
-    }
+  private String getZkValue(String path, String name) {
+    byte[] v = getZooCache().get(path + '/' + name);
+    return v == null ? null : new String(v, UTF_8);
   }
 
   /**
@@ -139,11 +135,11 @@ public class ZooCachePropertyAccessor {
   void getProperties(Map<String,String> props, String path, Predicate<String> filter, AccumuloConfiguration parent, Predicate<String> parentFilter) {
     parent.getProperties(props, parentFilter != null ? parentFilter : filter);
 
-    List<String> children = propCache.getChildren(path);
+    List<String> children = getZooCache().getChildren(path);
     if (children != null) {
       for (String child : children) {
         if (child != null && filter.test(child)) {
-          String value = get(path + "/" + child);
+          String value = getZkValue(path, child);
           if (value != null) {
             props.put(child, value);
           }
@@ -156,7 +152,7 @@ public class ZooCachePropertyAccessor {
    * Clears the internal {@link ZooCache}.
    */
   void invalidateCache() {
-    propCache.clear();
+    getZooCache().clear();
   }
 
 }

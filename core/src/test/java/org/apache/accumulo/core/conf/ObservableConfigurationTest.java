@@ -79,16 +79,6 @@ public class ObservableConfigurationTest {
   }
 
   @Test
-  public void testPropertyChanged() {
-    String key = "key";
-    c.addObserver(co1);
-    co1.propertyChanged(key);
-    replay(co1);
-    c.propertyChanged(key);
-    verify(co1);
-  }
-
-  @Test
   public void testPropertiesChanged() {
     c.addObserver(co1);
     co1.propertiesChanged();

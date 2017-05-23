@@ -154,7 +154,7 @@ public class ServerConfigurationFactory extends ServerConfiguration {
     return conf;
   }
 
-  public NamespaceConfiguration getNamespaceConfigurationForTable(String tableId) {
+  private NamespaceConfiguration getNamespaceConfigurationForTable(String tableId) {
     NamespaceConfiguration conf;
     synchronized (tableParentConfigs) {
       conf = tableParentConfigs.get(instanceID).get(tableId);

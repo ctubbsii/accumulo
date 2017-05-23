@@ -550,7 +550,7 @@ public enum Property {
       + "replicate their data to. The key suffix is the identifying cluster name and the value is an identifier for a location on the target system, "
       + "e.g. the ID of the table on the target to replicate to"),
   @Experimental
-  TABLE_VOLUME_CHOOSER("table.volume.chooser", "", PropertyType.CLASSNAME,
+  TABLE_VOLUME_CHOOSER("table.volume.chooser", "org.apache.accumulo.server.fs.RandomVolumeChooser", PropertyType.CLASSNAME,
       "The class that will be used to select which volume will be used to create new files for this table. It needs to be set in the site configuration "
           + "and overridden per table, as needed"),
   TABLE_SAMPLER(

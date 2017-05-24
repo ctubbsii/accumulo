@@ -54,7 +54,7 @@ public class PreferredVolumeChooserTest {
   }
 
   private void configureDefaultVolumes(String configuredVolumes) {
-    EasyMock.expect(mockedServerConfigurationFactory.getConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
+    EasyMock.expect(mockedServerConfigurationFactory.getSystemConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
     EasyMock.expect(mockedAccumuloConfiguration.get(PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY)).andReturn(configuredVolumes).anyTimes();
   }
 

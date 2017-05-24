@@ -56,7 +56,7 @@ public class PerTableVolumeChooserTest {
   }
 
   private void configureDefaultVolumeChooser(String className) {
-    EasyMock.expect(mockedServerConfigurationFactory.getConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
+    EasyMock.expect(mockedServerConfigurationFactory.getSystemConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
     EasyMock.expect(mockedAccumuloConfiguration.get(Property.TABLE_VOLUME_CHOOSER)).andReturn(className).anyTimes();
   }
 

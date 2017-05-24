@@ -89,7 +89,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
       log.trace("Looking up property: " + property);
     }
 
-    AccumuloConfiguration systemConfiguration = localConf.getConfiguration();
+    AccumuloConfiguration systemConfiguration = localConf.getSystemConfiguration();
     String clazz = systemConfiguration.get(property);
     // only if the custom property is not set to we fallback to the table volumn chooser setting
     if (null == clazz) {

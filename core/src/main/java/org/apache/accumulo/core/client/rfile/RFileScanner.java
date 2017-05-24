@@ -34,8 +34,8 @@ import org.apache.accumulo.core.client.impl.BaseIteratorEnvironment;
 import org.apache.accumulo.core.client.impl.ScannerOptions;
 import org.apache.accumulo.core.client.rfile.RFileScannerBuilder.InputArgs;
 import org.apache.accumulo.core.client.sample.SamplerConfiguration;
-import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ConfigurationCopy;
+import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Column;
@@ -43,8 +43,9 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.file.blockfile.cache.BlockCache;
+import org.apache.accumulo.core.file.blockfile.cache.BlockCacheManager;
 import org.apache.accumulo.core.file.blockfile.cache.CacheEntry;
-import org.apache.accumulo.core.file.blockfile.cache.LruBlockCache;
+import org.apache.accumulo.core.file.blockfile.cache.CacheType;
 import org.apache.accumulo.core.file.blockfile.impl.CachableBlockFile;
 import org.apache.accumulo.core.file.rfile.RFile;
 import org.apache.accumulo.core.file.rfile.RFile.Reader;
@@ -67,13 +68,12 @@ class RFileScanner extends ScannerOptions implements Scanner {
   private static final Range EMPTY_RANGE = new Range();
 
   private Range range;
+  private BlockCacheManager blockCacheManager = null;
   private BlockCache dataCache = null;
   private BlockCache indexCache = null;
   private Opts opts;
   private int batchSize = 1000;
   private long readaheadThreshold = 3;
-
-  private static final long CACHE_BLOCK_SIZE = AccumuloConfiguration.getDefaultConfiguration().getAsBytes(Property.TSERV_DEFAULT_BLOCKSIZE);
 
   static class Opts {
     InputArgs in;
@@ -109,6 +109,11 @@ class RFileScanner extends ScannerOptions implements Scanner {
     }
 
     @Override
+    public long getMaxHeapSize() {
+      return getMaxSize();
+    }
+
+    @Override
     public long getMaxSize() {
       return Integer.MAX_VALUE;
     }
@@ -135,15 +140,34 @@ class RFileScanner extends ScannerOptions implements Scanner {
     }
 
     this.opts = opts;
-    if (opts.indexCacheSize > 0) {
-      this.indexCache = new LruBlockCache(opts.indexCacheSize, CACHE_BLOCK_SIZE);
-    } else {
+
+    if (opts.indexCacheSize > 0 || opts.dataCacheSize > 0) {
+      ConfigurationCopy cc = new ConfigurationCopy(DefaultConfiguration.getInstance());
+      if (null != opts.tableConfig) {
+        opts.tableConfig.forEach(cc::set);
+      }
+
+      try {
+        blockCacheManager = BlockCacheManager.getClientInstance(cc);
+        if (opts.indexCacheSize > 0) {
+          cc.set(Property.TSERV_INDEXCACHE_SIZE, Long.toString(opts.indexCacheSize));
+        }
+        if (opts.dataCacheSize > 0) {
+          cc.set(Property.TSERV_DATACACHE_SIZE, Long.toString(opts.dataCacheSize));
+        }
+        blockCacheManager.start(cc);
+        this.indexCache = blockCacheManager.getBlockCache(CacheType.INDEX);
+        this.dataCache = blockCacheManager.getBlockCache(CacheType.DATA);
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    if (null == indexCache) {
       this.indexCache = new NoopCache();
     }
-
-    if (opts.dataCacheSize > 0) {
-      this.dataCache = new LruBlockCache(opts.dataCacheSize, CACHE_BLOCK_SIZE);
-    } else {
+    if (null == this.dataCache) {
       this.dataCache = new NoopCache();
     }
   }
@@ -281,7 +305,7 @@ class RFileScanner extends ScannerOptions implements Scanner {
       for (int i = 0; i < sources.length; i++) {
         FSDataInputStream inputStream = (FSDataInputStream) sources[i].getInputStream();
         readers.add(new RFile.Reader(new CachableBlockFile.Reader(inputStream, sources[i].getLength(), opts.in.getConf(), dataCache, indexCache,
-            AccumuloConfiguration.getDefaultConfiguration())));
+            DefaultConfiguration.getInstance())));
       }
 
       if (getSamplerConfiguration() != null) {
@@ -326,20 +350,19 @@ class RFileScanner extends ScannerOptions implements Scanner {
 
   @Override
   public void close() {
-    if (dataCache instanceof LruBlockCache) {
-      ((LruBlockCache) dataCache).shutdown();
-    }
-
-    if (indexCache instanceof LruBlockCache) {
-      ((LruBlockCache) indexCache).shutdown();
-    }
-
     try {
       for (RFileSource source : opts.in.getSources()) {
         source.getInputStream().close();
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+    try {
+      if (null != this.blockCacheManager) {
+        this.blockCacheManager.stop();
+      }
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
     }
   }
 }

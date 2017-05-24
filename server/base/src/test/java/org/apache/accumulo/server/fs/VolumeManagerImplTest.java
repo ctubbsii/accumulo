@@ -16,6 +16,10 @@
  */
 package org.apache.accumulo.server.fs;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.accumulo.core.conf.ConfigurationCopy;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.server.fs.VolumeManager.FileType;
@@ -24,10 +28,6 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 /**
  *
@@ -124,6 +124,6 @@ public class VolumeManagerImplTest {
     conf.set(Property.GENERAL_VOLUME_CHOOSER, WrongVolumeChooser.class.getName());
     VolumeManager vm = VolumeManagerImpl.get(conf);
     VolumeChooserEnvironment chooserEnv = new VolumeChooserEnvironment(Optional.of("sometable"));
-    String choice = vm.choose(chooserEnv, volumes.toArray(new String[0]));
+    vm.choose(chooserEnv, volumes.toArray(new String[0]));
   }
 }

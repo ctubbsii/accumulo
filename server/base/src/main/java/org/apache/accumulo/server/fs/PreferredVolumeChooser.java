@@ -68,7 +68,7 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
     if (env.hasTableId()) {
       volumes = localConf.getTableConfiguration(env.getTableId()).get(PREFERRED_VOLUMES_CUSTOM_KEY);
     } else { // env.hasScope()
-      volumes = localConf.getConfiguration().get(PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()));
+      volumes = localConf.getSystemConfiguration().get(PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()));
     }
 
     // throw an error if volumes not specified or empty

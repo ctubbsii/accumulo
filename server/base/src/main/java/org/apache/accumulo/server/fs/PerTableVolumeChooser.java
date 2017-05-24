@@ -16,6 +16,8 @@
  */
 package org.apache.accumulo.server.fs;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
@@ -25,8 +27,6 @@ import org.apache.accumulo.server.conf.TableConfiguration;
 import org.apache.accumulo.start.classloader.vfs.AccumuloVFSClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A {@link VolumeChooser} that delegates to another volume chooser based on the presence of an experimental table property,
@@ -70,7 +70,6 @@ public class PerTableVolumeChooser implements VolumeChooser {
   }
 
   private VolumeChooser getVolumeChooserForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {
-    VolumeChooser chooser;
     if (log.isTraceEnabled()) {
       log.trace("Table id: " + env.getTableId());
     }
@@ -81,7 +80,6 @@ public class PerTableVolumeChooser implements VolumeChooser {
   }
 
   private VolumeChooser getVolumeChooserForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {
-    VolumeChooser chooser;
     String property = VOLUME_CHOOSER_SCOPED_KEY(env.getScope());
 
     if (log.isTraceEnabled()) {
@@ -89,7 +87,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
       log.trace("Looking up property: " + property);
     }
 
-    AccumuloConfiguration systemConfiguration = localConf.getConfiguration();
+    AccumuloConfiguration systemConfiguration = localConf.getSystemConfiguration();
     String clazz = systemConfiguration.get(property);
     // only if the custom property is not set to we fallback to the table volumn chooser setting
     if (null == clazz) {

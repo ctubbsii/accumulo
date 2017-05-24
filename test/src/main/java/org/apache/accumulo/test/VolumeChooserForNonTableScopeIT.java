@@ -35,18 +35,13 @@ import org.junit.Test;
 public class VolumeChooserForNonTableScopeIT extends ConfigurableMacBase {
 
   private File volDirBase;
-  private Path v1, v2, v3, v4;
-  private String namespace1;
-  private String namespace2;
+  private Path v1, v2, v4;
   private String systemPreferredVolumes;
 
-  // similar to super but does not specify a fallback chooser
   @Override
   public void configure(MiniAccumuloConfigImpl cfg, Configuration hadoopCoreSite) {
     // Get 2 tablet servers
     cfg.setNumTservers(2);
-    namespace1 = "ns_" + getUniqueNames(2)[0];
-    namespace2 = "ns_" + getUniqueNames(2)[1];
 
     // Set the general volume chooser to the PerTableVolumeChooser so that different choosers can be specified
     Map<String,String> siteConfig = new HashMap<String,String>();
@@ -64,7 +59,8 @@ public class VolumeChooserForNonTableScopeIT extends ConfigurableMacBase {
     File v4f = new File(volDirBase, "v4");
     v1 = new Path("file://" + v1f.getAbsolutePath());
     v2 = new Path("file://" + v2f.getAbsolutePath());
-    v3 = new Path("file://" + v3f.getAbsolutePath());
+    // v3 not used
+    new Path("file://" + v3f.getAbsolutePath());
     v4 = new Path("file://" + v4f.getAbsolutePath());
 
     // this property is required

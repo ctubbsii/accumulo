@@ -16,7 +16,12 @@
  */
 package org.apache.accumulo.server.fs;
 
-import com.google.common.collect.Sets;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
@@ -26,11 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import com.google.common.collect.Sets;
 
 public class PreferredVolumeChooserTest {
   private static final int REQUIRED_NUMBER_TRIES = 20; // times to call choose for likely exercising of each preferred volume
@@ -54,7 +55,7 @@ public class PreferredVolumeChooserTest {
   }
 
   private void configureDefaultVolumes(String configuredVolumes) {
-    EasyMock.expect(mockedServerConfigurationFactory.getConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
+    EasyMock.expect(mockedServerConfigurationFactory.getSystemConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
     EasyMock.expect(mockedAccumuloConfiguration.get(PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY)).andReturn(configuredVolumes).anyTimes();
   }
 

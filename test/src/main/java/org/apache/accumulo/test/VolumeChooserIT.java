@@ -18,6 +18,7 @@ package org.apache.accumulo.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class VolumeChooserIT extends ConfigurableMacBase {
 
   @Override
   protected int defaultTimeoutSeconds() {
-    return 30;
+    return 60;
   }
 
   @Override
@@ -102,8 +103,8 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     siteConfig.put(PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY, systemPreferredVolumes); // exclude v4
     cfg.setSiteConfig(siteConfig);
 
-    siteConfig.put(Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + "logger.volume.chooser", PreferredVolumeChooser.class.getName());
-    siteConfig.put(Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + "logger.preferredVolumes", v2.toString());
+    siteConfig.put(PerTableVolumeChooser.VOLUME_CHOOSER_SCOPED_KEY("logger"), PreferredVolumeChooser.class.getName());
+    siteConfig.put(PreferredVolumeChooser.PREFERRED_VOLUMES_SCOPED_KEY("logger"), v2.toString());
     cfg.setSiteConfig(siteConfig);
 
     // Only add volumes 1, 2, and 4 to the list of instance volumes to have one volume that isn't in the options list when they are choosing
@@ -171,6 +172,15 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     }
     assertEquals("Did not see all the volumes. volumes: " + volumes.toString() + " volumes seen: " + volumesSeen.toString(), volumes.size(), volumesSeen.size());
     assertEquals("Wrong number of files", 26, fileCount);
+  }
+
+  public static void verifyNoVolumes(Connector connector, String tableName, Range tableRange) throws Exception {
+    Scanner scanner = connector.createScanner(MetadataTable.NAME, Authorizations.EMPTY);
+    scanner.setRange(tableRange);
+    scanner.fetchColumnFamily(DataFileColumnFamily.NAME);
+    for (Entry<Key,Value> entry : scanner) {
+      fail("Data incorrectly written to " + entry.getKey().getColumnQualifier().toString());
+    }
   }
 
   private void configureNamespace(Connector connector, String volumeChooserClassName, String configuredVolumes, String namespace) throws Exception {
@@ -308,61 +318,6 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     verifyVolumesForWritesToNewTable(connector, namespace2, v1.toString());
   }
 
-  // Test that uses one table with 10 split points each. It uses the StaticVolumeChooser, but no preferred volume is specified. This means that the volume
-  // is chosen randomly from all preferred instance volumes.
-  @Test
-  public void missingVolumePreferredVolumeChooser() throws Exception {
-    log.info("Starting missingVolumePreferredVolumeChooser");
-
-    // Create namespace
-    Connector connector = getConnector();
-    connector.namespaceOperations().create(namespace1);
-
-    // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace1, Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
-
-    // deliberately do not set the preferred volumes for the table, so it will use the system-configured preferred volumes
-
-    // Create table1 on namespace1
-    verifyVolumesForWritesToNewTable(connector, namespace1, systemPreferredVolumes);
-  }
-
-  // Test that uses one table with 10 split points each. It uses the PreferredVolumeChooser, but preferred volume is not an instance volume.
-  // This should fall back to the system-wide default volumes
-  @Test
-  public void notInstancePreferredVolumeChooser() throws Exception {
-    log.info("Starting notInstancePreferredVolumeChooser");
-
-    // Create namespace
-    Connector connector = getConnector();
-    connector.namespaceOperations().create(namespace1);
-
-    // Set properties on the namespace
-    String propertyName = Property.TABLE_VOLUME_CHOOSER.getKey();
-    String volume = PreferredVolumeChooser.class.getName();
-    connector.namespaceOperations().setProperty(namespace1, propertyName, volume);
-
-    // set to v3 which is not included in the list of instance volumes, so it should go to the
-    // system default preferred volumes
-    propertyName = PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY;
-    volume = v3.toString();
-    connector.namespaceOperations().setProperty(namespace1, propertyName, volume);
-
-    // should go to the system default preferred volumes if it couldn't use the specified volume
-    verifyVolumesForWritesToNewTable(connector, namespace1, systemPreferredVolumes);
-  }
-
-  @Test
-  public void defaultPreferredExcludesSpecialVolume() throws Exception {
-    log.info("Starting defaultPreferredExcludesVolume");
-    Connector connector = getConnector();
-
-    connector.namespaceOperations().create(namespace1);
-    connector.namespaceOperations().setProperty(namespace1, Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
-    // deliberately leave out which volumes are preferred so that it will use the default preferred volumes, which excludes volume 4
-    verifyVolumesForWritesToNewTable(connector, namespace1, systemPreferredVolumes);
-  }
-
   @Test
   public void includeSpecialVolumeForTable() throws Exception {
     log.info("Starting includeSpecialVolumeForTable");
@@ -372,36 +327,6 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     String configuredVolumes = v4.toString();
     configureNamespace(connector, PreferredVolumeChooser.class.getName(), configuredVolumes, namespace2);
     verifyVolumesForWritesToNewTable(connector, namespace2, configuredVolumes);
-  }
-
-  // Test that uses one table with 10 split points each. It does not specify a specific chooser, so the volume is chosen randomly from
-  // the globally preferred volumes
-  @Test
-  public void defaultsToPreferredChooser() throws Exception {
-    log.info("Starting defaultsToPreferredChooser");
-
-    Connector connector = getConnector();
-    String tableName = "anotherTable";
-    connector.tableOperations().create(tableName);
-    String tableID = connector.tableOperations().tableIdMap().get(tableName);
-
-    addSplits(connector, tableName);
-    writeAndReadData(connector, tableName);
-    verifyVolumes(connector, tableName, TabletsSection.getRange(tableID), systemPreferredVolumes);
-  }
-
-  @Test
-  public void waLogsSentToSystemDefault() throws Exception {
-    log.info("Starting waLogsSentToSystemDefault");
-
-    Connector connector = getConnector();
-    for (String tableName : new String[] {"aTable", "anotherTable"}) {
-      connector.tableOperations().create(tableName);
-      addSplits(connector, tableName);
-      writeDataToTable(connector, tableName);
-    }
-
-    verifyWaLogVolumes(connector, new Range(), systemPreferredVolumes);
   }
 
   @Test

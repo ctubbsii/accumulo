@@ -44,7 +44,6 @@ import org.apache.accumulo.core.data.thrift.IterInfo;
 import org.apache.accumulo.core.iterators.system.ColumnFamilySkippingIterator;
 import org.apache.accumulo.core.iterators.system.ColumnQualifierFilter;
 import org.apache.accumulo.core.iterators.system.DeletingIterator;
-import org.apache.accumulo.core.iterators.system.SynchronizedIterator;
 import org.apache.accumulo.core.iterators.system.VisibilityFilter;
 import org.apache.accumulo.core.iterators.user.VersioningIterator;
 import org.apache.accumulo.core.security.Authorizations;
@@ -255,7 +254,7 @@ public class IteratorUtil {
       Collection<IterInfo> iters, Map<String,Map<String,String>> iterOpts, IteratorEnvironment env, boolean useAccumuloClassLoader, String context,
       Map<String,Class<? extends SortedKeyValueIterator<K,V>>> classCache) throws IOException {
     // wrap the source in a SynchronizedIterator in case any of the additional configured iterators want to use threading
-    SortedKeyValueIterator<K,V> prev = new SynchronizedIterator<>(source);
+    SortedKeyValueIterator<K,V> prev = source;
 
     try {
       for (IterInfo iterInfo : iters) {
@@ -396,7 +395,7 @@ public class IteratorUtil {
       byte[] defaultVisibility) throws IOException {
     DeletingIterator delIter = new DeletingIterator(source, false);
     ColumnFamilySkippingIterator cfsi = new ColumnFamilySkippingIterator(delIter);
-    ColumnQualifierFilter colFilter = new ColumnQualifierFilter(cfsi, cols);
-    return new VisibilityFilter(colFilter, auths, defaultVisibility);
+    SortedKeyValueIterator<Key,Value> colFilter = ColumnQualifierFilter.wrap(cfsi, cols);
+    return VisibilityFilter.wrap(colFilter, auths, defaultVisibility);
   }
 }

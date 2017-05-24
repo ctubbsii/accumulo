@@ -48,6 +48,7 @@ import org.apache.accumulo.core.client.sample.Sampler;
 import org.apache.accumulo.core.client.sample.SamplerConfiguration;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ConfigurationCopy;
+import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
@@ -57,7 +58,10 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.file.FileSKVIterator;
-import org.apache.accumulo.core.file.blockfile.cache.LruBlockCache;
+import org.apache.accumulo.core.file.blockfile.cache.BlockCacheManager;
+import org.apache.accumulo.core.file.blockfile.cache.CacheType;
+import org.apache.accumulo.core.file.blockfile.cache.lru.LruBlockCache;
+import org.apache.accumulo.core.file.blockfile.cache.lru.LruBlockCacheManager;
 import org.apache.accumulo.core.file.blockfile.impl.CachableBlockFile;
 import org.apache.accumulo.core.file.rfile.RFile.Reader;
 import org.apache.accumulo.core.file.streams.PositionedOutputs;
@@ -205,11 +209,12 @@ public class RFileTest {
     protected AccumuloConfiguration accumuloConfiguration;
     public Reader reader;
     public SortedKeyValueIterator<Key,Value> iter;
+    private BlockCacheManager manager;
 
     public TestRFile(AccumuloConfiguration accumuloConfiguration) {
       this.accumuloConfiguration = accumuloConfiguration;
       if (this.accumuloConfiguration == null)
-        this.accumuloConfiguration = AccumuloConfiguration.getDefaultConfiguration();
+        this.accumuloConfiguration = DefaultConfiguration.getInstance();
     }
 
     public void openWriter(boolean startDLG) throws IOException {
@@ -264,10 +269,22 @@ public class RFileTest {
       in = new FSDataInputStream(bais);
       fileLength = data.length;
 
-      LruBlockCache indexCache = new LruBlockCache(100000000, 100000);
-      LruBlockCache dataCache = new LruBlockCache(100000000, 100000);
+      DefaultConfiguration dc = DefaultConfiguration.getInstance();
+      ConfigurationCopy cc = new ConfigurationCopy(dc);
+      cc.set(Property.TSERV_CACHE_MANAGER_IMPL, LruBlockCacheManager.class.getName());
+      try {
+        manager = BlockCacheManager.getInstance(cc);
+      } catch (Exception e) {
+        throw new RuntimeException("Error creating BlockCacheManager", e);
+      }
+      cc.set(Property.TSERV_DEFAULT_BLOCKSIZE, Long.toString(100000));
+      cc.set(Property.TSERV_DATACACHE_SIZE, Long.toString(100000000));
+      cc.set(Property.TSERV_INDEXCACHE_SIZE, Long.toString(100000000));
+      manager.start(cc);
+      LruBlockCache indexCache = (LruBlockCache) manager.getBlockCache(CacheType.INDEX);
+      LruBlockCache dataCache = (LruBlockCache) manager.getBlockCache(CacheType.DATA);
 
-      CachableBlockFile.Reader _cbr = new CachableBlockFile.Reader(in, fileLength, conf, dataCache, indexCache, AccumuloConfiguration.getDefaultConfiguration());
+      CachableBlockFile.Reader _cbr = new CachableBlockFile.Reader(in, fileLength, conf, dataCache, indexCache, DefaultConfiguration.getInstance());
       reader = new RFile.Reader(_cbr);
       if (cfsi)
         iter = new ColumnFamilySkippingIterator(reader);
@@ -278,6 +295,9 @@ public class RFileTest {
     public void closeReader() throws IOException {
       reader.close();
       in.close();
+      if (null != manager) {
+        manager.stop();
+      }
     }
 
     public void seek(Key nk) throws IOException {
@@ -1623,7 +1643,7 @@ public class RFileTest {
     byte data[] = baos.toByteArray();
     SeekableByteArrayInputStream bais = new SeekableByteArrayInputStream(data);
     FSDataInputStream in2 = new FSDataInputStream(bais);
-    AccumuloConfiguration aconf = AccumuloConfiguration.getDefaultConfiguration();
+    AccumuloConfiguration aconf = DefaultConfiguration.getInstance();
     CachableBlockFile.Reader _cbr = new CachableBlockFile.Reader(in2, data.length, CachedConfiguration.getInstance(), aconf);
     Reader reader = new RFile.Reader(_cbr);
     checkIndex(reader);
@@ -1668,7 +1688,7 @@ public class RFileTest {
   }
 
   private AccumuloConfiguration setAndGetAccumuloConfig(String cryptoConfSetting) {
-    ConfigurationCopy result = new ConfigurationCopy(AccumuloConfiguration.getDefaultConfiguration());
+    ConfigurationCopy result = new ConfigurationCopy(DefaultConfiguration.getInstance());
     Configuration conf = new Configuration(false);
     conf.addResource(cryptoConfSetting);
     for (Entry<String,String> e : conf) {
@@ -1930,7 +1950,7 @@ public class RFileTest {
         Hasher dataHasher = Hashing.md5().newHasher();
         List<Entry<Key,Value>> sampleData = new ArrayList<>();
 
-        ConfigurationCopy sampleConf = new ConfigurationCopy(conf == null ? AccumuloConfiguration.getDefaultConfiguration() : conf);
+        ConfigurationCopy sampleConf = new ConfigurationCopy(conf == null ? DefaultConfiguration.getInstance() : conf);
         sampleConf.set(Property.TABLE_SAMPLER, RowSampler.class.getName());
         sampleConf.set(Property.TABLE_SAMPLER_OPTS + "hasher", "murmur3_32");
         sampleConf.set(Property.TABLE_SAMPLER_OPTS + "modulus", modulus + "");
@@ -2011,7 +2031,7 @@ public class RFileTest {
         List<Entry<Key,Value>> sampleDataLG1 = new ArrayList<>();
         List<Entry<Key,Value>> sampleDataLG2 = new ArrayList<>();
 
-        ConfigurationCopy sampleConf = new ConfigurationCopy(conf == null ? AccumuloConfiguration.getDefaultConfiguration() : conf);
+        ConfigurationCopy sampleConf = new ConfigurationCopy(conf == null ? DefaultConfiguration.getInstance() : conf);
         sampleConf.set(Property.TABLE_SAMPLER, RowSampler.class.getName());
         sampleConf.set(Property.TABLE_SAMPLER_OPTS + "hasher", "murmur3_32");
         sampleConf.set(Property.TABLE_SAMPLER_OPTS + "modulus", modulus + "");

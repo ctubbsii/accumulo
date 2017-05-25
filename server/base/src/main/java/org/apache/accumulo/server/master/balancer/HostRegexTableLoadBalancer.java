@@ -196,15 +196,18 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
         }
       }
     }
-    String oobProperty = conf.getSystemConfiguration().get(HOST_BALANCER_OOB_CHECK_KEY);
+    HashMap<String,String> HOST_BALANCER_CONFIGS = new HashMap<>();
+    conf.getSystemConfiguration().getProperties(HOST_BALANCER_CONFIGS,
+        k -> k.equals(HOST_BALANCER_OOB_CHECK_KEY) || k.equals(HOST_BALANCER_REGEX_USING_IPS_KEY) || k.equals(HOST_BALANCER_REGEX_MAX_MIGRATIONS_KEY));
+    String oobProperty = HOST_BALANCER_CONFIGS.get(HOST_BALANCER_OOB_CHECK_KEY);
     if (null != oobProperty) {
       oobCheckMillis = ConfigurationTypeHelper.getTimeInMillis(oobProperty);
     }
-    String ipBased = conf.getSystemConfiguration().get(HOST_BALANCER_REGEX_USING_IPS_KEY);
+    String ipBased = HOST_BALANCER_CONFIGS.get(HOST_BALANCER_REGEX_USING_IPS_KEY);
     if (null != ipBased) {
       isIpBasedRegex = Boolean.parseBoolean(ipBased);
     }
-    String migrations = conf.getSystemConfiguration().get(HOST_BALANCER_REGEX_MAX_MIGRATIONS_KEY);
+    String migrations = HOST_BALANCER_CONFIGS.get(HOST_BALANCER_REGEX_MAX_MIGRATIONS_KEY);
     if (null != migrations) {
       maxTServerMigrations = Integer.parseInt(migrations);
     }

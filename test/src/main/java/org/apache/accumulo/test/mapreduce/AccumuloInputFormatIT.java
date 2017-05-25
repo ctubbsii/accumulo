@@ -27,7 +27,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
@@ -112,14 +115,19 @@ public class AccumuloInputFormatIT extends AccumuloClusterHarness {
     // Pass SSL and CredentialProvider options into the ClientConfiguration given to AccumuloInputFormat
     boolean sslEnabled = Boolean.valueOf(clusterClientConf.get(Property.INSTANCE_RPC_SSL_ENABLED));
     if (sslEnabled) {
-      ClientProperty[] sslProperties = new ClientProperty[] {ClientProperty.INSTANCE_RPC_SSL_ENABLED, ClientProperty.INSTANCE_RPC_SSL_CLIENT_AUTH,
+      EnumSet<ClientProperty> sslProperties = EnumSet.of(ClientProperty.INSTANCE_RPC_SSL_ENABLED, ClientProperty.INSTANCE_RPC_SSL_CLIENT_AUTH,
           ClientProperty.RPC_SSL_KEYSTORE_PATH, ClientProperty.RPC_SSL_KEYSTORE_TYPE, ClientProperty.RPC_SSL_KEYSTORE_PASSWORD,
           ClientProperty.RPC_SSL_TRUSTSTORE_PATH, ClientProperty.RPC_SSL_TRUSTSTORE_TYPE, ClientProperty.RPC_SSL_TRUSTSTORE_PASSWORD,
-          ClientProperty.RPC_USE_JSSE, ClientProperty.GENERAL_SECURITY_CREDENTIAL_PROVIDER_PATHS};
+          ClientProperty.RPC_USE_JSSE, ClientProperty.GENERAL_SECURITY_CREDENTIAL_PROVIDER_PATHS);
 
+      Map<String,String> props = new HashMap<>();
       for (ClientProperty prop : sslProperties) {
+        props.clear();
         // The default property is returned if it's not in the ClientConfiguration so we don't have to check if the value is actually defined
-        clientConf.setProperty(prop, clusterClientConf.get(prop.getKey()));
+        clusterClientConf.getProperties(props, k -> k.equals(prop.getKey()));
+        if (props.containsKey(prop.getKey())) {
+          clientConf.setProperty(prop, props.get(prop.getKey()));
+        }
       }
     }
 

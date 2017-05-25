@@ -164,7 +164,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
     final Instance localInstance = HdfsZooInstance.getInstance();
     final AccumuloConfiguration localConf = new ServerConfigurationFactory(localInstance).getSystemConfiguration();
 
-    log.debug("Replication RPC timeout is {}", localConf.get(Property.REPLICATION_RPC_TIMEOUT.getKey()));
+    log.debug("Replication RPC timeout is {}", localConf.get(Property.REPLICATION_RPC_TIMEOUT));
 
     final String principal = getPrincipal(localConf, target);
     final File keytab;

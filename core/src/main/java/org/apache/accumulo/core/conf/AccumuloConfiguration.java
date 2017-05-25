@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 
@@ -37,22 +36,6 @@ import org.slf4j.LoggerFactory;
 public abstract class AccumuloConfiguration implements Iterable<Entry<String,String>> {
 
   private static final Logger log = LoggerFactory.getLogger(AccumuloConfiguration.class);
-
-  /**
-   * Gets a property value from this configuration.
-   *
-   * <p>
-   * Note: this is inefficient, but convenient on occasion. For retrieving multiple properties, use {@link #getProperties(Map, Predicate)} with a custom filter.
-   *
-   * @param property
-   *          property to get
-   * @return property value
-   */
-  public String get(String property) {
-    Map<String,String> propMap = new HashMap<>(1);
-    getProperties(propMap, key -> Objects.equals(property, key));
-    return propMap.get(property);
-  }
 
   /**
    * Gets a property value from this configuration.

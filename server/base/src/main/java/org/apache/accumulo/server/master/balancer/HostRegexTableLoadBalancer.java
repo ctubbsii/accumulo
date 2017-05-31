@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
+import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.ConfigurationTypeHelper;
@@ -242,8 +243,8 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
   }
 
   @Override
-  public void init(ServerConfigurationFactory conf) {
-    super.init(conf);
+  public void init(Instance instance, ServerConfigurationFactory conf) {
+    super.init(instance, conf);
     parseConfiguration(conf);
   }
 

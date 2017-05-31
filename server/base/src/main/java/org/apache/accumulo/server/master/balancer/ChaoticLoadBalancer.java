@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.master.thrift.TableInfo;
@@ -163,6 +164,6 @@ public class ChaoticLoadBalancer extends TabletBalancer {
   }
 
   @Override
-  public void init(ServerConfigurationFactory conf) {}
+  public void init(Instance instance, ServerConfigurationFactory conf) {}
 
 }

@@ -42,7 +42,7 @@ public class HostRegexTableLoadBalancerReconfigurationTest extends BaseHostRegex
   @Test
   public void testConfigurationChanges() {
 
-    init(factory);
+    init(instance, factory);
     Map<KeyExtent,TServerInstance> unassigned = new HashMap<>();
     for (List<KeyExtent> extents : tableExtents.values()) {
       for (KeyExtent ke : extents) {

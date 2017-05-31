@@ -465,7 +465,7 @@ public class MasterClientServiceHandler extends FateServiceHandler implements Ma
     if (property.equals(Property.MASTER_TABLET_BALANCER.getKey())) {
       TabletBalancer balancer = master.getConfiguration().instantiateClassProperty(Property.MASTER_TABLET_BALANCER, TabletBalancer.class,
           new DefaultLoadBalancer());
-      balancer.init(master.getConfigurationFactory());
+      balancer.init(instance, master.getConfigurationFactory());
       master.tabletBalancer = balancer;
       log.info("tablet balancer changed to " + master.tabletBalancer.getClass().getName());
     }

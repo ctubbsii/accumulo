@@ -16,6 +16,8 @@
  */
 package org.apache.accumulo.server.master.balancer;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HostAndPort;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +27,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
-
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
@@ -44,9 +45,6 @@ import org.apache.thrift.TException;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.net.HostAndPort;
 
 public class TableLoadBalancerTest {
 
@@ -96,7 +94,7 @@ public class TableLoadBalancerTest {
     }
 
     @Override
-    public void init(ServerConfigurationFactory conf) {}
+    public void init(Instance instance, ServerConfigurationFactory conf) {}
 
     @Override
     public List<TabletStats> getOnlineTabletsForTable(TServerInstance tserver, String tableId) throws ThriftSecurityException, TException {
@@ -112,7 +110,7 @@ public class TableLoadBalancerTest {
     }
 
     @Override
-    public void init(ServerConfigurationFactory conf) {}
+    public void init(Instance instance, ServerConfigurationFactory conf) {}
 
     // use our new classname to test class loading
     @Override
@@ -144,7 +142,7 @@ public class TableLoadBalancerTest {
     ServerConfigurationFactory confFactory = new ServerConfigurationFactory(inst) {
       @Override
       public TableConfiguration getTableConfiguration(String tableId) {
-        return new TableConfiguration(inst, tableId, null) {
+        return new TableConfiguration(inst, tableId, getNamespaceConfigurationForTable(tableId)) {
           @Override
           public String get(Property property) {
             // fake the get table configuration so the test doesn't try to look in zookeeper for per-table classpath stuff
@@ -162,13 +160,13 @@ public class TableLoadBalancerTest {
     Set<KeyExtent> migrations = Collections.emptySet();
     List<TabletMigration> migrationsOut = new ArrayList<>();
     TableLoadBalancer tls = new TableLoadBalancer();
-    tls.init(confFactory);
+    tls.init(inst, confFactory);
     tls.balance(state, migrations, migrationsOut);
     Assert.assertEquals(0, migrationsOut.size());
 
     state.put(mkts("10.0.0.2", "0x02030405"), status());
     tls = new TableLoadBalancer();
-    tls.init(confFactory);
+    tls.init(inst, confFactory);
     tls.balance(state, migrations, migrationsOut);
     int count = 0;
     Map<String,Integer> movedByTable = new HashMap<>();

@@ -71,7 +71,7 @@ public class SimpleGarbageCollectorTest {
     opts = new Opts();
     systemConfig = createSystemConfig();
     ServerConfigurationFactory factory = createMock(ServerConfigurationFactory.class);
-    expect(factory.getInstance()).andReturn(instance).anyTimes();
+    // expect(factory.getInstance()).andReturn(instance).anyTimes();
     expect(factory.getSystemConfiguration()).andReturn(systemConfig).anyTimes();
     expect(factory.getSiteConfiguration()).andReturn(siteConfig).anyTimes();
 
@@ -102,7 +102,7 @@ public class SimpleGarbageCollectorTest {
     replay(instance, factory, siteConfig);
 
     credentials = SystemCredentials.get(instance);
-    gc = new SimpleGarbageCollector(opts, volMgr, factory);
+    gc = new SimpleGarbageCollector(opts, instance, volMgr, factory);
   }
 
   @Test

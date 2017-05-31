@@ -83,7 +83,7 @@ public class TableLoadBalancer extends TabletBalancer {
           if (newBalancer != null) {
             balancer = newBalancer;
             perTableBalancers.put(table, balancer);
-            balancer.init(configuration);
+            balancer.init(instance, configuration);
           }
 
           log.info("Loaded new class " + clazzName + " for table " + table);
@@ -105,7 +105,7 @@ public class TableLoadBalancer extends TabletBalancer {
         balancer = new DefaultLoadBalancer(table);
       }
       perTableBalancers.put(table, balancer);
-      balancer.init(configuration);
+      balancer.init(instance, configuration);
     }
     return balancer;
   }

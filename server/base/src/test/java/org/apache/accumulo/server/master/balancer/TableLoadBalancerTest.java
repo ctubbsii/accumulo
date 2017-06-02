@@ -94,7 +94,7 @@ public class TableLoadBalancerTest {
     }
 
     @Override
-    public void init(Instance instance, ServerConfigurationFactory conf) {}
+    public void init(TabletBalancerEnvironment tabletBalancerEnvironment) {}
 
     @Override
     public List<TabletStats> getOnlineTabletsForTable(TServerInstance tserver, String tableId) throws ThriftSecurityException, TException {
@@ -110,7 +110,7 @@ public class TableLoadBalancerTest {
     }
 
     @Override
-    public void init(Instance instance, ServerConfigurationFactory conf) {}
+    public void init(TabletBalancerEnvironment tabletBalancerEnvironment) {}
 
     // use our new classname to test class loading
     @Override
@@ -160,13 +160,13 @@ public class TableLoadBalancerTest {
     Set<KeyExtent> migrations = Collections.emptySet();
     List<TabletMigration> migrationsOut = new ArrayList<>();
     TableLoadBalancer tls = new TableLoadBalancer();
-    tls.init(inst, confFactory);
+    tls.init(new DefaultTabletBalancerEnvironment(inst, confFactory));
     tls.balance(state, migrations, migrationsOut);
     Assert.assertEquals(0, migrationsOut.size());
 
     state.put(mkts("10.0.0.2", "0x02030405"), status());
     tls = new TableLoadBalancer();
-    tls.init(inst, confFactory);
+    tls.init(new DefaultTabletBalancerEnvironment(inst, confFactory));
     tls.balance(state, migrations, migrationsOut);
     int count = 0;
     Map<String,Integer> movedByTable = new HashMap<>();

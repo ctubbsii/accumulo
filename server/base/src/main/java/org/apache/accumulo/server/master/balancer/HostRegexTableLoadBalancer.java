@@ -243,9 +243,9 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
   }
 
   @Override
-  public void init(Instance instance, ServerConfigurationFactory conf) {
-    super.init(instance, conf);
-    parseConfiguration(conf);
+  public void init(TabletBalancerEnvironment env) {
+    super.init(env);
+    parseConfiguration(env.getConfiguration());
   }
 
   @Override
@@ -383,12 +383,12 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
 
   @Override
   public void propertyChanged(String key) {
-    parseConfiguration(this.configuration);
+    parseConfiguration(tabletBalancerEnvironment.getConfiguration());
   }
 
   @Override
   public void propertiesChanged() {
-    parseConfiguration(this.configuration);
+    parseConfiguration(tabletBalancerEnvironment.getConfiguration());
   }
 
   @Override

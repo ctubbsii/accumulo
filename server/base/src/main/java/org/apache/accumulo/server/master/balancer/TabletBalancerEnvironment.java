@@ -16,7 +16,9 @@
  */
 package org.apache.accumulo.server.master.balancer;
 
+import java.util.Map;
 import org.apache.accumulo.core.client.Instance;
+import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.server.AccumuloServerContext;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 
@@ -25,18 +27,20 @@ import org.apache.accumulo.server.conf.ServerConfigurationFactory;
  */
 public class TabletBalancerEnvironment {
 
-  protected ServerConfigurationFactory configuration;
+  protected ServerConfigurationFactory configurationFactory;
   protected Instance instance;
   protected AccumuloServerContext context;
+  protected Map<String,String> customTableProperties;
 
-  public TabletBalancerEnvironment(Instance instance, ServerConfigurationFactory conf) {
-    context = new AccumuloServerContext(instance, conf);
+  public TabletBalancerEnvironment(Instance instance, ServerConfigurationFactory configurationFactory) {
+    context = new AccumuloServerContext(instance, configurationFactory);
     this.instance = instance;
-    configuration = conf;
+    this.configurationFactory = configurationFactory;
+    customTableProperties = this.configurationFactory.getSystemConfiguration().getAllPropertiesWithPrefix(Property.TABLE_ARBITRARY_PROP_PREFIX);
   }
 
   public ServerConfigurationFactory getServerConfigurationFactory() {
-    return configuration;
+    return configurationFactory;
   }
 
   public Instance getInstance() {
@@ -45,5 +49,12 @@ public class TabletBalancerEnvironment {
 
   public AccumuloServerContext getContext() {
     return context;
+  }
+
+  public Map<String, String> getCustomTableProperties() {
+    return customTableProperties;
+  }
+  public String getCustomTableProperty(String property) {
+    return customTableProperties.get(property);
   }
 }

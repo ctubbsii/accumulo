@@ -47,8 +47,7 @@ public class TableLoadBalancer extends TabletBalancer {
 
   private TabletBalancer constructNewBalancerForTable(String clazzName, String table) throws Exception {
     String context = null;
-    if (null != configuration)
-      context = configuration.getTableConfiguration(table).get(Property.TABLE_CLASSPATH);
+      context = tabletBalancerEnvironment.getServerConfigurationFactory().getTableConfiguration(table).get(Property.TABLE_CLASSPATH);
     Class<? extends TabletBalancer> clazz;
     if (context != null && !context.equals(""))
       clazz = AccumuloVFSClassLoader.getContextManager().loadClass(context, clazzName, TabletBalancer.class);
@@ -63,7 +62,7 @@ public class TableLoadBalancer extends TabletBalancer {
     if (tableState == null)
       return null;
     if (tableState.equals(TableState.ONLINE))
-      return configuration.getTableConfiguration(table).get(Property.TABLE_LOAD_BALANCER);
+      return tabletBalancerEnvironment.getServerConfigurationFactory().getTableConfiguration(table).get(Property.TABLE_LOAD_BALANCER);
     return null;
   }
 
@@ -83,7 +82,7 @@ public class TableLoadBalancer extends TabletBalancer {
           if (newBalancer != null) {
             balancer = newBalancer;
             perTableBalancers.put(table, balancer);
-            balancer.init(configuration);
+            balancer.init(tabletBalancerEnvironment);
           }
 
           log.info("Loaded new class " + clazzName + " for table " + table);
@@ -105,7 +104,7 @@ public class TableLoadBalancer extends TabletBalancer {
         balancer = new DefaultLoadBalancer(table);
       }
       perTableBalancers.put(table, balancer);
-      balancer.init(configuration);
+      balancer.init(tabletBalancerEnvironment);
     }
     return balancer;
   }
@@ -135,7 +134,7 @@ public class TableLoadBalancer extends TabletBalancer {
   protected TableOperations getTableOperations() {
     if (tops == null)
       try {
-        tops = context.getConnector().tableOperations();
+        tops = tabletBalancerEnvironment.getContext().getConnector().tableOperations();
       } catch (AccumuloException e) {
         log.error("Unable to access table operations from within table balancer", e);
       } catch (AccumuloSecurityException e) {

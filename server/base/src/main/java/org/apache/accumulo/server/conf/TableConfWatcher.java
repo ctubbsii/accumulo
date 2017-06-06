@@ -33,11 +33,13 @@ class TableConfWatcher implements Watcher {
   private static final Logger log = Logger.getLogger(TableConfWatcher.class);
   private final Instance instance;
   private final String tablesPrefix;
+  private final int tablesPrefixLength;
   private ServerConfigurationFactory scf;
 
   TableConfWatcher(Instance instance) {
     this.instance = instance;
     tablesPrefix = ZooUtil.getRoot(instance) + Constants.ZTABLES + "/";
+    tablesPrefixLength = tablesPrefix.length();
     scf = new ServerConfigurationFactory(instance);
   }
 
@@ -57,7 +59,7 @@ class TableConfWatcher implements Watcher {
 
     if (path != null) {
       if (path.startsWith(tablesPrefix)) {
-        tableId = path.substring(tablesPrefix.length());
+        tableId = path.substring(tablesPrefixLength);
         if (tableId.contains("/")) {
           tableId = tableId.substring(0, tableId.indexOf('/'));
           if (path.startsWith(tablesPrefix + tableId + Constants.ZTABLE_CONF + "/"))

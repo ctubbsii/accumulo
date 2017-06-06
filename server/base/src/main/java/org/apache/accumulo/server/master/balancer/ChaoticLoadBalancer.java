@@ -25,12 +25,14 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.master.thrift.TableInfo;
 import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.metadata.MetadataTable;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
+import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletMigration;
@@ -162,7 +164,16 @@ public class ChaoticLoadBalancer extends TabletBalancer {
     return 100;
   }
 
+  /**
+   * Initialize the TabletBalancer. This gives the balancer the opportunity to read the configuration.
+   *
+   * @deprecated since 2.0.0; use {@link #init(TabletBalancerEnvironment)} instead.
+   */
+  @Deprecated
   @Override
   public void init(ServerConfigurationFactory conf) {}
+
+  @Override
+  public void init(TabletBalancerEnvironment env) {}
 
 }

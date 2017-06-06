@@ -160,13 +160,13 @@ public class TableLoadBalancerTest {
     Set<KeyExtent> migrations = Collections.emptySet();
     List<TabletMigration> migrationsOut = new ArrayList<>();
     TableLoadBalancer tls = new TableLoadBalancer();
-    tls.init(new DefaultTabletBalancerEnvironment(inst, confFactory));
+    tls.init(new TabletBalancerEnvironment(inst, confFactory));
     tls.balance(state, migrations, migrationsOut);
     Assert.assertEquals(0, migrationsOut.size());
 
     state.put(mkts("10.0.0.2", "0x02030405"), status());
     tls = new TableLoadBalancer();
-    tls.init(new DefaultTabletBalancerEnvironment(inst, confFactory));
+    tls.init(new TabletBalancerEnvironment(inst, confFactory));
     tls.balance(state, migrations, migrationsOut);
     int count = 0;
     Map<String,Integer> movedByTable = new HashMap<>();

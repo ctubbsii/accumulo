@@ -31,7 +31,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.ConfigurationTypeHelper;
@@ -40,7 +39,6 @@ import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.server.conf.ServerConfiguration;
-import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletMigration;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -245,7 +243,7 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
   @Override
   public void init(TabletBalancerEnvironment env) {
     super.init(env);
-    parseConfiguration(env.getConfiguration());
+    parseConfiguration(env.getServerConfigurationFactory());
   }
 
   @Override
@@ -383,12 +381,12 @@ public class HostRegexTableLoadBalancer extends TableLoadBalancer implements Con
 
   @Override
   public void propertyChanged(String key) {
-    parseConfiguration(tabletBalancerEnvironment.getConfiguration());
+    parseConfiguration(tabletBalancerEnvironment.getServerConfigurationFactory());
   }
 
   @Override
   public void propertiesChanged() {
-    parseConfiguration(tabletBalancerEnvironment.getConfiguration());
+    parseConfiguration(tabletBalancerEnvironment.getServerConfigurationFactory());
   }
 
   @Override

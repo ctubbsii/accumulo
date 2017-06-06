@@ -64,7 +64,7 @@ public abstract class TabletBalancer {
    */
   @Deprecated
   public void init(ServerConfigurationFactory conf) {
-    init(new DefaultTabletBalancerEnvironment(HdfsZooInstance.getInstance(), conf));
+    init(new TabletBalancerEnvironment(HdfsZooInstance.getInstance(), conf));
   }
 
   /**

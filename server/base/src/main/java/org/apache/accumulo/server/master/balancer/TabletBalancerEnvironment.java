@@ -21,13 +21,29 @@ import org.apache.accumulo.server.AccumuloServerContext;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 
 /**
- *  Information required by the Tablet Balancer
+ * Default implementation of TabletBalancerEnvironment.
  */
-public interface TabletBalancerEnvironment {
+public class TabletBalancerEnvironment {
 
-  ServerConfigurationFactory getConfiguration();
+  protected ServerConfigurationFactory configuration;
+  protected Instance instance;
+  protected AccumuloServerContext context;
 
-  Instance getInstance();
+  public TabletBalancerEnvironment(Instance instance, ServerConfigurationFactory conf) {
+    context = new AccumuloServerContext(instance, conf);
+    this.instance = instance;
+    configuration = conf;
+  }
 
-  AccumuloServerContext getContext();
+  public ServerConfigurationFactory getServerConfigurationFactory() {
+    return configuration;
+  }
+
+  public Instance getInstance() {
+    return instance;
+  }
+
+  public AccumuloServerContext getContext() {
+    return context;
+  }
 }

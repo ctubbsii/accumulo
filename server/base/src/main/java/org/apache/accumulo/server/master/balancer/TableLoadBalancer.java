@@ -47,8 +47,8 @@ public class TableLoadBalancer extends TabletBalancer {
 
   private TabletBalancer constructNewBalancerForTable(String clazzName, String table) throws Exception {
     String context = null;
-    if (null != tabletBalancerEnvironment.getConfiguration())
-      context = tabletBalancerEnvironment.getConfiguration().getTableConfiguration(table).get(Property.TABLE_CLASSPATH);
+    if (null != tabletBalancerEnvironment.getServerConfigurationFactory())
+      context = tabletBalancerEnvironment.getServerConfigurationFactory().getTableConfiguration(table).get(Property.TABLE_CLASSPATH);
     Class<? extends TabletBalancer> clazz;
     if (context != null && !context.equals(""))
       clazz = AccumuloVFSClassLoader.getContextManager().loadClass(context, clazzName, TabletBalancer.class);
@@ -63,7 +63,7 @@ public class TableLoadBalancer extends TabletBalancer {
     if (tableState == null)
       return null;
     if (tableState.equals(TableState.ONLINE))
-      return tabletBalancerEnvironment.getConfiguration().getTableConfiguration(table).get(Property.TABLE_LOAD_BALANCER);
+      return tabletBalancerEnvironment.getServerConfigurationFactory().getTableConfiguration(table).get(Property.TABLE_LOAD_BALANCER);
     return null;
   }
 

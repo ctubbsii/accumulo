@@ -22,14 +22,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.volume.Volume;
 import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
+import org.apache.accumulo.server.conf.TableConfiguration;
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -43,11 +46,13 @@ import org.slf4j.LoggerFactory;
 public class PreferredVolumeChooser extends RandomVolumeChooser {
   private static final Logger log = LoggerFactory.getLogger(PreferredVolumeChooser.class);
 
-  public static final String PREFERRED_VOLUMES_CUSTOM_KEY = Property.TABLE_ARBITRARY_PROP_PREFIX.getKey() + "preferredVolumes";
+  public static final String TABLE_PREFERRED_VOLUMES = Property.TABLE_ARBITRARY_PROP_PREFIX.getKey() + "preferred.volumes";
 
-  public static final String PREFERRED_VOLUMES_SCOPED_KEY(String scope) {
-    return Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + scope + ".preferredVolumes";
+  public static final String SCOPED_PREFERRED_VOLUMES(String scope) {
+    return Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + scope + ".preferred.volumes";
   }
+
+  public static final String DEFAULT_SCOPED_PREFERRED_VOLUMES = SCOPED_PREFERRED_VOLUMES("scoped");
 
   @SuppressWarnings("unchecked")
   private final Map<String,Set<String>> parsedPreferredVolumes = Collections.synchronizedMap(new LRUMap(1000));
@@ -64,33 +69,65 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
 
     // get the volumes property
     ServerConfigurationFactory localConf = loadConf();
-    String volumes;
+    List<String> volumes;
     if (env.hasTableId()) {
-      volumes = localConf.getTableConfiguration(env.getTableId()).get(PREFERRED_VOLUMES_CUSTOM_KEY);
+      volumes = getPreferredVolumesForTable(env, localConf, options);
+      // localConf.getTableConfiguration(env.getTableId()).get(PREFERRED_VOLUMES_CUSTOM_KEY);
     } else { // env.hasScope()
-      volumes = localConf.getSystemConfiguration().get(PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()));
+      volumes = getPreferredVolumesForNonTable(env, localConf, options);
+      // localConf.getSystemConfiguration().get(PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()));
     }
 
+    // Randomly choose the volume from the preferred volumes
+    String choice = super.choose(env, volumes.toArray(EMPTY_STRING_ARRAY));
+    if (log.isTraceEnabled()) {
+      log.trace("Choice = " + choice);
+    }
+    return choice;
+  }
+
+  private List<String> getPreferredVolumesForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options)
+      throws AccumuloException {
+    if (log.isTraceEnabled()) {
+      log.trace("Looking up property " + TABLE_PREFERRED_VOLUMES + " for Table id: " + env.getTableId());
+    }
+    final TableConfiguration tableConf = localConf.getTableConfiguration(env.getTableId());
+    String volumes = tableConf.get(TABLE_PREFERRED_VOLUMES);
+
+    return getFilteredOptions(TABLE_PREFERRED_VOLUMES, volumes, options);
+  }
+
+  private List<String> getPreferredVolumesForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options)
+      throws AccumuloException {
+    String property = SCOPED_PREFERRED_VOLUMES(env.getScope());
+
+    if (log.isTraceEnabled()) {
+      log.trace("Looking up property: " + property);
+    }
+
+    AccumuloConfiguration systemConfiguration = localConf.getSystemConfiguration();
+    String volumes = systemConfiguration.get(property);
+
+    // only if the custom property is not set to we fallback to the default scoped preferred volumes
+    if (null == volumes) {
+      log.debug("Property not found: " + property + " using " + DEFAULT_SCOPED_PREFERRED_VOLUMES);
+      property = DEFAULT_SCOPED_PREFERRED_VOLUMES;
+      volumes = systemConfiguration.get(DEFAULT_SCOPED_PREFERRED_VOLUMES);
+    }
+
+    return getFilteredOptions(property, volumes, options);
+  }
+
+  private List<String> getFilteredOptions(String property, String volumes, String[] options) throws AccumuloException {
     // throw an error if volumes not specified or empty
     if (null == volumes || volumes.isEmpty()) {
-      String logmsg;
-      if (env.hasTableId()) {
-        logmsg = "Missing or empty " + PREFERRED_VOLUMES_CUSTOM_KEY + " property for TableID " + env.getTableId();
-      } else { // env.hasScope()
-        logmsg = "Missing or empty " + PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()) + " property for scope " + env.getScope();
-      }
+      String logmsg = "Missing or empty " + property + " property";
       log.error(logmsg);
       throw new AccumuloException(logmsg);
     }
 
     if (log.isTraceEnabled()) {
-      log.trace("In custom chooser");
-      log.trace("Volumes: " + volumes);
-      if (env.hasTableId()) {
-        log.trace("TableID: " + env.getTableId());
-      } else if (env.hasScope()) {
-        log.trace("scope: " + env.getScope());
-      }
+      log.trace("Found " + property + " = " + volumes);
     }
 
     ArrayList<String> filteredOptions = getIntersection(options, volumes);
@@ -98,16 +135,11 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
     // throw error if intersecting with preferred volumes resulted in the empty set
     if (filteredOptions.isEmpty()) {
       String logMessage = "After filtering preferred volumes, there are no valid instance volumes.";
-      log.warn(logMessage);
+      log.error(logMessage);
       throw new AccumuloException(logMessage);
     }
 
-    // Randomly choose the volume from the preferred volumes
-    String choice = super.choose(env, filteredOptions.toArray(EMPTY_STRING_ARRAY));
-    if (log.isTraceEnabled()) {
-      log.trace("Choice = " + choice);
-    }
-    return choice;
+    return filteredOptions;
   }
 
   private ArrayList<String> getIntersection(String[] options, String volumes) {

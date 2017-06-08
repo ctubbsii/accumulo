@@ -56,16 +56,20 @@ public class PreferredVolumeChooserTest {
 
   private void configureDefaultVolumes(String configuredVolumes) {
     EasyMock.expect(mockedServerConfigurationFactory.getSystemConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
-    EasyMock.expect(mockedAccumuloConfiguration.get(PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY)).andReturn(configuredVolumes).anyTimes();
+    EasyMock.expect(mockedAccumuloConfiguration.get(PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES)).andReturn(configuredVolumes).anyTimes();
   }
 
   private void configureTableVolumes(String configuredVolumes) {
     EasyMock.expect(mockedServerConfigurationFactory.getTableConfiguration(EasyMock.<String> anyObject())).andReturn(mockedTableConfiguration).anyTimes();
-    EasyMock.expect(mockedTableConfiguration.get(PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY)).andReturn(configuredVolumes).anyTimes();
+    EasyMock.expect(mockedTableConfiguration.get(PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES)).andReturn(configuredVolumes).anyTimes();
+  }
+
+  private void configureDefaultContextVolumes(String configuredVolumes) {
+    EasyMock.expect(mockedAccumuloConfiguration.get(PreferredVolumeChooser.DEFAULT_SCOPED_PREFERRED_VOLUMES)).andReturn(configuredVolumes).anyTimes();
   }
 
   private void configureContextVolumes(String configuredVolumes) {
-    EasyMock.expect(mockedAccumuloConfiguration.get("general.custom.logger.preferredVolumes")).andReturn(configuredVolumes).anyTimes();
+    EasyMock.expect(mockedAccumuloConfiguration.get(PreferredVolumeChooser.SCOPED_PREFERRED_VOLUMES("logger"))).andReturn(configuredVolumes).anyTimes();
   }
 
   private Set<String> chooseRepeatedlyForTable() throws AccumuloException {
@@ -201,6 +205,7 @@ public class PreferredVolumeChooserTest {
   public void testContextMissing() throws Exception {
     configureDefaultVolumes("1,3");
     configureContextVolumes(null);
+    configureDefaultContextVolumes(null);
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 

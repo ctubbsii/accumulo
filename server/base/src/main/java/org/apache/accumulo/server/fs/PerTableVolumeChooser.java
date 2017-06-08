@@ -29,8 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A {@link VolumeChooser} that delegates to another volume chooser based on the presence of an experimental table property,
- * {@link Property#TABLE_VOLUME_CHOOSER}. If it isn't found, defaults back to {@link RandomVolumeChooser}.
+ * A {@link VolumeChooser} that delegates to another volume chooser based on other properties: table.custom.volume.chooser for tables, and
+ * general.custom.scoped.volume.chooser for scopes. general.custor.{scope}.volume.chooser can override the system wide setting for
+ * general.custom.scoped.volume.chooser. At the this this was written, the only known scope was "logger".
  */
 public class PerTableVolumeChooser implements VolumeChooser {
   private static final Logger log = LoggerFactory.getLogger(PerTableVolumeChooser.class);
@@ -42,9 +43,13 @@ public class PerTableVolumeChooser implements VolumeChooser {
   // TODO has to be lazily initialized currently because of the reliance on HdfsZooInstance. see ACCUMULO-3411
   private volatile ServerConfigurationFactory serverConfs;
 
-  public static final String VOLUME_CHOOSER_SCOPED_KEY(String scope) {
+  public static final String TABLE_VOLUME_CHOOSER = Property.TABLE_ARBITRARY_PROP_PREFIX.getKey() + "volume.chooser";
+
+  public static final String SCOPED_VOLUME_CHOOSER(String scope) {
     return Property.GENERAL_ARBITRARY_PROP_PREFIX.getKey() + scope + ".volume.chooser";
   }
+
+  public static final String DEFAULT_SCOPED_VOLUME_CHOOSER = SCOPED_VOLUME_CHOOSER("scoped");
 
   @Override
   public String choose(VolumeChooserEnvironment env, String[] options) throws AccumuloException {
@@ -71,29 +76,28 @@ public class PerTableVolumeChooser implements VolumeChooser {
 
   private VolumeChooser getVolumeChooserForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {
     if (log.isTraceEnabled()) {
-      log.trace("Table id: " + env.getTableId());
+      log.trace("Looking up property " + TABLE_VOLUME_CHOOSER + " for Table id: " + env.getTableId());
     }
     final TableConfiguration tableConf = localConf.getTableConfiguration(env.getTableId());
-    String clazz = tableConf.get(Property.TABLE_VOLUME_CHOOSER);
+    String clazz = tableConf.get(TABLE_VOLUME_CHOOSER);
 
-    return createVolumeChooser(clazz, Property.TABLE_VOLUME_CHOOSER.getKey(), env.getTableId(), tableSpecificChooser);
+    return createVolumeChooser(clazz, TABLE_VOLUME_CHOOSER, env.getTableId(), tableSpecificChooser);
   }
 
   private VolumeChooser getVolumeChooserForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {
-    String property = VOLUME_CHOOSER_SCOPED_KEY(env.getScope());
+    String property = SCOPED_VOLUME_CHOOSER(env.getScope());
 
     if (log.isTraceEnabled()) {
-      log.trace("Scope: " + env.getScope());
       log.trace("Looking up property: " + property);
     }
 
     AccumuloConfiguration systemConfiguration = localConf.getSystemConfiguration();
     String clazz = systemConfiguration.get(property);
-    // only if the custom property is not set to we fallback to the table volumn chooser setting
+    // only if the custom property is not set to we fallback to the table volume chooser setting
     if (null == clazz) {
-      log.debug("Property not found: " + property + " using " + Property.TABLE_VOLUME_CHOOSER + " chooser.");
-      property = Property.TABLE_VOLUME_CHOOSER.getKey();
-      clazz = systemConfiguration.get(Property.TABLE_VOLUME_CHOOSER);
+      log.debug("Property not found: " + property + " using " + DEFAULT_SCOPED_VOLUME_CHOOSER);
+      property = DEFAULT_SCOPED_VOLUME_CHOOSER;
+      clazz = systemConfiguration.get(DEFAULT_SCOPED_VOLUME_CHOOSER);
     }
 
     return createVolumeChooser(clazz, property, env.getScope(), scopeSpecificChooser);

@@ -58,17 +58,21 @@ public class PerTableVolumeChooserTest {
 
   private void configureDefaultVolumeChooser(String className) {
     EasyMock.expect(mockedServerConfigurationFactory.getSystemConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
-    EasyMock.expect(mockedAccumuloConfiguration.get(Property.TABLE_VOLUME_CHOOSER)).andReturn(className).anyTimes();
+    EasyMock.expect(mockedAccumuloConfiguration.get(PerTableVolumeChooser.TABLE_VOLUME_CHOOSER)).andReturn(className).anyTimes();
   }
 
   private void configureChooserForTable(String className) {
     EasyMock.expect(mockedServerConfigurationFactory.getTableConfiguration(EasyMock.<String> anyObject())).andReturn(mockedTableConfiguration).anyTimes();
     EasyMock.expect(mockedTableConfiguration.get(Property.TABLE_CLASSPATH)).andReturn(null).anyTimes();
-    EasyMock.expect(mockedTableConfiguration.get(Property.TABLE_VOLUME_CHOOSER)).andReturn(className).anyTimes();
+    EasyMock.expect(mockedTableConfiguration.get(PerTableVolumeChooser.TABLE_VOLUME_CHOOSER)).andReturn(className).anyTimes();
+  }
+
+  private void configureDefaultContextVolumeChooser(String className) {
+    EasyMock.expect(mockedAccumuloConfiguration.get(PerTableVolumeChooser.DEFAULT_SCOPED_VOLUME_CHOOSER)).andReturn(className).anyTimes();
   }
 
   private void configureContextVolumeChooser(String className) {
-    EasyMock.expect(mockedAccumuloConfiguration.get("general.custom.logger.volume.chooser")).andReturn(className).anyTimes();
+    EasyMock.expect(mockedAccumuloConfiguration.get(PerTableVolumeChooser.SCOPED_VOLUME_CHOOSER("logger"))).andReturn(className).anyTimes();
   }
 
   private Set<String> chooseRepeatedlyForTable() throws AccumuloException {
@@ -232,10 +236,11 @@ public class PerTableVolumeChooserTest {
     EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
   }
 
-  @Test
+  @Test(expected = AccumuloException.class)
   public void testContextMissing() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysTwo.class.getName());
     configureContextVolumeChooser(null);
+    configureDefaultContextVolumeChooser(null);
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 

@@ -85,7 +85,7 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     Map<String,String> siteConfig = new HashMap<>();
     siteConfig.put(Property.GENERAL_VOLUME_CHOOSER.getKey(), PerTableVolumeChooser.class.getName());
     // if a table doesn't have a volume chooser, use the preferred volume chooser
-    siteConfig.put(Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
+    siteConfig.put(PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, PreferredVolumeChooser.class.getName());
 
     // Set up 4 different volume paths
     File baseDir = cfg.getDir();
@@ -100,11 +100,11 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     v4 = new Path("file://" + v4f.getAbsolutePath());
 
     systemPreferredVolumes = v1.toString() + "," + v2.toString();
-    siteConfig.put(PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY, systemPreferredVolumes); // exclude v4
+    siteConfig.put(PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES, systemPreferredVolumes); // exclude v4
     cfg.setSiteConfig(siteConfig);
 
-    siteConfig.put(PerTableVolumeChooser.VOLUME_CHOOSER_SCOPED_KEY("logger"), PreferredVolumeChooser.class.getName());
-    siteConfig.put(PreferredVolumeChooser.PREFERRED_VOLUMES_SCOPED_KEY("logger"), v2.toString());
+    siteConfig.put(PerTableVolumeChooser.SCOPED_VOLUME_CHOOSER("logger"), PreferredVolumeChooser.class.getName());
+    siteConfig.put(PreferredVolumeChooser.SCOPED_PREFERRED_VOLUMES("logger"), v2.toString());
     cfg.setSiteConfig(siteConfig);
 
     // Only add volumes 1, 2, and 4 to the list of instance volumes to have one volume that isn't in the options list when they are choosing
@@ -186,8 +186,8 @@ public class VolumeChooserIT extends ConfigurableMacBase {
   private void configureNamespace(Connector connector, String volumeChooserClassName, String configuredVolumes, String namespace) throws Exception {
     connector.namespaceOperations().create(namespace);
     // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace, Property.TABLE_VOLUME_CHOOSER.getKey(), volumeChooserClassName);
-    connector.namespaceOperations().setProperty(namespace, PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY, configuredVolumes);
+    connector.namespaceOperations().setProperty(namespace, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, volumeChooserClassName);
+    connector.namespaceOperations().setProperty(namespace, PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES, configuredVolumes);
   }
 
   private void verifyVolumesForWritesToNewTable(Connector connector, String myNamespace, String expectedVolumes) throws Exception {
@@ -236,16 +236,16 @@ public class VolumeChooserIT extends ConfigurableMacBase {
 
     // Set properties on the namespace
     // namespace 1 -> v2
-    connector.namespaceOperations().setProperty(namespace1, Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
-    connector.namespaceOperations().setProperty(namespace1, PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY, v2.toString());
+    connector.namespaceOperations().setProperty(namespace1, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, PreferredVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace1, PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES, v2.toString());
 
     // Create table1 on namespace1
     verifyVolumesForWritesToNewTable(connector, namespace1, v2.toString());
 
     connector.namespaceOperations().create(namespace2);
     // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace2, Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
-    connector.namespaceOperations().setProperty(namespace2, PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY, v1.toString());
+    connector.namespaceOperations().setProperty(namespace2, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, PreferredVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace2, PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES, v1.toString());
 
     // Create table2 on namespace2
     verifyVolumesForWritesToNewTable(connector, namespace2, v1.toString());
@@ -261,7 +261,7 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     connector.namespaceOperations().create(namespace1);
 
     // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace1, Property.TABLE_VOLUME_CHOOSER.getKey(), RandomVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace1, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, RandomVolumeChooser.class.getName());
 
     // Create table1 on namespace1
     String tableName = namespace1 + ".1";
@@ -279,7 +279,7 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     connector.namespaceOperations().create(namespace2);
 
     // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace2, Property.TABLE_VOLUME_CHOOSER.getKey(), RandomVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace2, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, RandomVolumeChooser.class.getName());
 
     // Create table2 on namespace2
     String tableName2 = namespace2 + ".1";
@@ -305,14 +305,14 @@ public class VolumeChooserIT extends ConfigurableMacBase {
     connector.namespaceOperations().create(namespace1);
 
     // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace1, Property.TABLE_VOLUME_CHOOSER.getKey(), RandomVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace1, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, RandomVolumeChooser.class.getName());
 
     // Create table1 on namespace1
     verifyVolumesForWritesToNewTable(connector, namespace1, v1.toString() + "," + v2.toString() + "," + v4.toString());
     connector.namespaceOperations().create(namespace2);
 
-    connector.namespaceOperations().setProperty(namespace2, Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
-    connector.namespaceOperations().setProperty(namespace2, PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY, v1.toString());
+    connector.namespaceOperations().setProperty(namespace2, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, PreferredVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace2, PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES, v1.toString());
 
     // Create table2 on namespace2
     verifyVolumesForWritesToNewTable(connector, namespace2, v1.toString());

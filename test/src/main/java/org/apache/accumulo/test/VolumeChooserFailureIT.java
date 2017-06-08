@@ -64,7 +64,7 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
     Map<String,String> siteConfig = new HashMap<>();
     siteConfig.put(Property.GENERAL_VOLUME_CHOOSER.getKey(), PerTableVolumeChooser.class.getName());
     // if a table doesn't have a volume chooser, use the preferred volume chooser
-    siteConfig.put(Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
+    siteConfig.put(PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, PreferredVolumeChooser.class.getName());
 
     // Set up 4 different volume paths
     File baseDir = cfg.getDir();
@@ -81,7 +81,7 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
     systemPreferredVolumes = v1.toString() + "," + v2.toString();
     cfg.setSiteConfig(siteConfig);
 
-    siteConfig.put(PerTableVolumeChooser.VOLUME_CHOOSER_SCOPED_KEY("logger"), PreferredVolumeChooser.class.getName());
+    siteConfig.put(PerTableVolumeChooser.SCOPED_VOLUME_CHOOSER("logger"), PreferredVolumeChooser.class.getName());
     // do not set preferred volumes
     cfg.setSiteConfig(siteConfig);
 
@@ -115,7 +115,7 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
     connector.namespaceOperations().create(namespace1);
 
     // Set properties on the namespace
-    connector.namespaceOperations().setProperty(namespace1, Property.TABLE_VOLUME_CHOOSER.getKey(), PreferredVolumeChooser.class.getName());
+    connector.namespaceOperations().setProperty(namespace1, PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, PreferredVolumeChooser.class.getName());
     // deliberately do not set preferred volumes
 
     // Create table1 on namespace1 (will fail)
@@ -134,13 +134,13 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
     connector.namespaceOperations().create(namespace1);
 
     // Set properties on the namespace
-    String propertyName = Property.TABLE_VOLUME_CHOOSER.getKey();
+    String propertyName = PerTableVolumeChooser.TABLE_VOLUME_CHOOSER;
     String volume = PreferredVolumeChooser.class.getName();
     connector.namespaceOperations().setProperty(namespace1, propertyName, volume);
 
     // set to v3 which is not included in the list of instance volumes, so it should go to the
     // system default preferred volumes
-    propertyName = PreferredVolumeChooser.PREFERRED_VOLUMES_CUSTOM_KEY;
+    propertyName = PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES;
     volume = v3.toString();
     connector.namespaceOperations().setProperty(namespace1, propertyName, volume);
 

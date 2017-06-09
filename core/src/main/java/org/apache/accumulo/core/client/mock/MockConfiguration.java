@@ -30,6 +30,11 @@ import org.apache.accumulo.core.conf.Property;
 class MockConfiguration extends AccumuloConfiguration {
   Map<String,String> map;
 
+  @Override
+  protected Map<String,String> getSource() {
+    return map;
+  }
+
   MockConfiguration(Map<String,String> settings) {
     map = settings;
   }

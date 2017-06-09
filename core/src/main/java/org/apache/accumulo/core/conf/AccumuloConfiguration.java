@@ -38,13 +38,22 @@ public abstract class AccumuloConfiguration implements Iterable<Entry<String,Str
   private static final Logger log = LoggerFactory.getLogger(AccumuloConfiguration.class);
 
   /**
+   * Gets the underlying configuration source.
+   *
+   * @return a map view of the underlying configuration
+   */
+  protected abstract Map<String,String> getSource();
+
+  /**
    * Gets a property value from this configuration.
    *
    * @param property
    *          property to get
    * @return property value
    */
-  public abstract String get(Property property);
+  public String get(Property property) {
+    return getSource().get(property.getKey());
+  }
 
   /**
    * Returns property key/value pairs in this configuration. The pairs include those defined in this configuration which pass the given filter, and those

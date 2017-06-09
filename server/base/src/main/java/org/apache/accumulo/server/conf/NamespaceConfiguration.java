@@ -36,6 +36,12 @@ import org.slf4j.LoggerFactory;
 public class NamespaceConfiguration extends ObservableConfiguration {
   private static final Logger log = LoggerFactory.getLogger(NamespaceConfiguration.class);
 
+  @Override
+  protected Map<String,String> getSource() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   private static final Map<PropCacheKey,ZooCache> propCaches = new java.util.HashMap<>();
 
   private final AccumuloConfiguration parent;

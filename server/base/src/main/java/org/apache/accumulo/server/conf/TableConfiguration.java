@@ -45,6 +45,12 @@ public class TableConfiguration extends ObservableConfiguration {
 
   private final String tableId;
 
+  @Override
+  protected Map<String,String> getSource() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   public TableConfiguration(Instance instance, String tableId, NamespaceConfiguration parent) {
     this.instance = requireNonNull(instance);
     this.tableId = requireNonNull(tableId);

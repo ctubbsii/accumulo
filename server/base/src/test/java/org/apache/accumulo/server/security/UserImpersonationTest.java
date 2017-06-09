@@ -49,6 +49,13 @@ public class UserImpersonationTest {
   public void setup() {
     cc = new ConfigurationCopy(new HashMap<String,String>());
     conf = new AccumuloConfiguration() {
+
+      @Override
+      protected Map<String,String> getSource() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
       DefaultConfiguration defaultConfig = DefaultConfiguration.getInstance();
 
       @Override

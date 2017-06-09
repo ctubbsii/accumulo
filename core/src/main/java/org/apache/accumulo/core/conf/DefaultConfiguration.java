@@ -31,6 +31,11 @@ public class DefaultConfiguration extends AccumuloConfiguration {
 
   private DefaultConfiguration() {}
 
+  @Override
+  protected Map<String,String> getSource() {
+    return resolvedProps;
+  }
+
   /**
    * Gets a default configuration.
    *

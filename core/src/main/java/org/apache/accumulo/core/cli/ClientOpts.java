@@ -366,6 +366,12 @@ public class ClientOpts extends Help {
         }
 
         @Override
+        protected Map<String,String> getSource() {
+          // TODO Auto-generated method stub
+          return null;
+        }
+
+        @Override
         public void getProperties(Map<String,String> props, Predicate<String> filter) {
           for (Entry<String,String> prop : DefaultConfiguration.getInstance())
             if (filter.test(prop.getKey()))

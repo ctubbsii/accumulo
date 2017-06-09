@@ -47,6 +47,13 @@ public class TCredentialsUpdatingInvocationHandlerTest {
   public void setup() {
     cc = new ConfigurationCopy();
     conf = new AccumuloConfiguration() {
+
+      @Override
+      protected Map<String,String> getSource() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
       @Override
       public String get(Property property) {
         String value = cc.get(property);

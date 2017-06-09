@@ -175,6 +175,13 @@ public class ClientContext {
     final AccumuloConfiguration defaults = DefaultConfiguration.getInstance();
 
     return new AccumuloConfiguration() {
+
+      @Override
+      protected Map<String,String> getSource() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
       @Override
       public String get(Property property) {
         final String key = property.getKey();

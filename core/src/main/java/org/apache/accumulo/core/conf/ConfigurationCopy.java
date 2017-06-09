@@ -26,7 +26,12 @@ import java.util.function.Predicate;
  * An {@link AccumuloConfiguration} which holds a flat copy of properties defined in another configuration
  */
 public class ConfigurationCopy extends AccumuloConfiguration {
-  final Map<String,String> copy = Collections.synchronizedMap(new HashMap<String,String>());
+  private final Map<String,String> copy = Collections.synchronizedMap(new HashMap<String,String>());
+
+  @Override
+  protected Map<String,String> getSource() {
+    return copy;
+  }
 
   /**
    * Creates a new configuration.

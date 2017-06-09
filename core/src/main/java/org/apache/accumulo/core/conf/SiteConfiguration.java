@@ -74,6 +74,11 @@ public class SiteConfiguration extends AccumuloConfiguration {
     staticConfigs = Collections.unmodifiableMap(temp);
   }
 
+  @Override
+  protected Map<String,String> getSource() {
+    return staticConfigs;
+  }
+
   /**
    * Gets an instance of this class. A new instance is only created on the first call.
    *

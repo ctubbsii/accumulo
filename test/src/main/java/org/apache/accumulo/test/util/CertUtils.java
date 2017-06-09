@@ -134,6 +134,12 @@ public class CertUtils {
           }
 
           @Override
+          protected Map<String,String> getSource() {
+            // TODO Auto-generated method stub
+            return null;
+          }
+
+          @Override
           public Iterator<Entry<String,String>> iterator() {
             TreeMap<String,String> map = new TreeMap<>();
             for (Entry<String,String> props : DefaultConfiguration.getInstance())

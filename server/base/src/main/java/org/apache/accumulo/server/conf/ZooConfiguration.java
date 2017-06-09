@@ -47,6 +47,12 @@ public class ZooConfiguration extends AccumuloConfiguration {
   }
 
   @Override
+  protected Map<String,String> getSource() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
   public void invalidateCache() {
     if (propCache != null)
       propCache.clear();

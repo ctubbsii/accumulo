@@ -37,6 +37,12 @@ public class ObservableConfigurationTest {
     }
 
     @Override
+    protected Map<String,String> getSource() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
     public void getProperties(Map<String,String> props, Predicate<String> filter) {}
   }
 

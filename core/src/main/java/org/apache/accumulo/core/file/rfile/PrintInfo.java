@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.accumulo.core.cli.Help;
-import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.SiteConfiguration;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
@@ -57,6 +56,8 @@ public class PrintInfo implements KeywordExecutable {
     boolean hash = false;
     @Parameter(names = {"--histogram"}, description = "print a histogram of the key-value sizes")
     boolean histogram = false;
+    @Parameter(names = {"--printIndex"}, description = "prints information about all the index entries")
+    boolean printIndex = false;
     @Parameter(names = {"--useSample"}, description = "Use sample data for --dump, --vis, --histogram options")
     boolean useSample = false;
     @Parameter(names = {"--summary"}, description = "Print summary data in file")
@@ -155,15 +156,14 @@ public class PrintInfo implements KeywordExecutable {
       }
       System.out.println("Reading file: " + path.makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString());
 
-      CachableBlockFile.Reader _rdr = new CachableBlockFile.Reader(fs, path, conf, null, null,
-          SiteConfiguration.getInstance(DefaultConfiguration.getInstance()));
+      CachableBlockFile.Reader _rdr = new CachableBlockFile.Reader(fs, path, conf, null, null, SiteConfiguration.getInstance());
       Reader iter = new RFile.Reader(_rdr);
       MetricsGatherer<Map<String,ArrayList<VisibilityMetric>>> vmg = new VisMetricsGatherer();
 
       if (opts.vis || opts.hash)
         iter.registerMetrics(vmg);
 
-      iter.printInfo();
+      iter.printInfo(opts.printIndex);
       System.out.println();
       org.apache.accumulo.core.file.rfile.bcfile.PrintInfo.main(new String[] {arg});
 

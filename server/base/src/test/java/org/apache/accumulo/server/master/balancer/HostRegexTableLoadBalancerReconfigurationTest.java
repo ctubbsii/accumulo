@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.fate.util.UtilWaitThread;
+import org.apache.accumulo.server.AccumuloServerContext;
 import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletMigration;
 import org.apache.thrift.TException;
@@ -42,7 +44,7 @@ public class HostRegexTableLoadBalancerReconfigurationTest extends BaseHostRegex
   @Test
   public void testConfigurationChanges() {
 
-    init(factory);
+    init(new AccumuloServerContext(instance, factory));
     Map<KeyExtent,TServerInstance> unassigned = new HashMap<>();
     for (List<KeyExtent> extents : tableExtents.values()) {
       for (KeyExtent ke : extents) {
@@ -78,7 +80,7 @@ public class HostRegexTableLoadBalancerReconfigurationTest extends BaseHostRegex
     DEFAULT_TABLE_PROPERTIES.put(HostRegexTableLoadBalancer.HOST_BALANCER_PREFIX + BAR.getTableName(), "r01.*");
     this.propertiesChanged();
     // Wait to trigger the out of bounds check and the repool check
-    UtilWaitThread.sleep(3000);
+    UtilWaitThread.sleep(10000);
     this.balance(Collections.unmodifiableSortedMap(allTabletServers), migrations, migrationsOut);
     Assert.assertEquals(5, migrationsOut.size());
     for (TabletMigration migration : migrationsOut) {
@@ -89,11 +91,11 @@ public class HostRegexTableLoadBalancerReconfigurationTest extends BaseHostRegex
   }
 
   @Override
-  public List<TabletStats> getOnlineTabletsForTable(TServerInstance tserver, String tableId) throws ThriftSecurityException, TException {
+  public List<TabletStats> getOnlineTabletsForTable(TServerInstance tserver, Table.ID tableId) throws ThriftSecurityException, TException {
     List<TabletStats> tablets = new ArrayList<>();
     // Report assignment information
     for (Entry<KeyExtent,TServerInstance> e : this.assignments.entrySet()) {
-      if (e.getValue().equals(tserver) && e.getKey().getTableId().toString().equals(tableId)) {
+      if (e.getValue().equals(tserver) && e.getKey().getTableId().equals(tableId)) {
         TabletStats ts = new TabletStats();
         ts.setExtent(e.getKey().toThrift());
         tablets.add(ts);

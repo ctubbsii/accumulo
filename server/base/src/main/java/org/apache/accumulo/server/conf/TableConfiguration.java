@@ -16,11 +16,14 @@
  */
 package org.apache.accumulo.server.conf;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.ObservableConfiguration;
 import org.apache.accumulo.core.conf.Property;
@@ -41,12 +44,12 @@ public class TableConfiguration extends ObservableConfiguration {
   private final NamespaceConfiguration parent;
   private ZooCacheFactory zcf = new ZooCacheFactory();
 
-  private final String tableId;
+  private final Table.ID tableId;
 
-  public TableConfiguration(Instance instance, String tableId, NamespaceConfiguration parent) {
-    this.instance = instance;
-    this.tableId = tableId;
-    this.parent = parent;
+  public TableConfiguration(Instance instance, Table.ID tableId, NamespaceConfiguration parent) {
+    this.instance = requireNonNull(instance);
+    this.tableId = requireNonNull(tableId);
+    this.parent = requireNonNull(parent);
   }
 
   void setZooCacheFactory(ZooCacheFactory zcf) {
@@ -56,7 +59,7 @@ public class TableConfiguration extends ObservableConfiguration {
   private synchronized ZooCachePropertyAccessor getPropCacheAccessor() {
     if (propCacheAccessor == null) {
       synchronized (propCaches) {
-        PropCacheKey key = new PropCacheKey(instance.getInstanceID(), tableId);
+        PropCacheKey key = new PropCacheKey(instance.getInstanceID(), tableId.canonicalID());
         ZooCache propCache = propCaches.get(key);
         if (propCache == null) {
           propCache = zcf.getZooCache(instance.getZooKeepers(), instance.getZooKeepersSessionTimeOut(), new TableConfWatcher(instance));
@@ -103,7 +106,7 @@ public class TableConfiguration extends ObservableConfiguration {
     getPropCacheAccessor().getProperties(props, getPath(), filter, parent, null);
   }
 
-  public String getTableId() {
+  public Table.ID getTableId() {
     return tableId;
   }
 

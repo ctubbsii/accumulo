@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 import org.apache.accumulo.server.conf.TableConfiguration;
@@ -60,7 +61,7 @@ public class PreferredVolumeChooserTest {
   }
 
   private void configureTableVolumes(String configuredVolumes) {
-    EasyMock.expect(mockedServerConfigurationFactory.getTableConfiguration(EasyMock.<String> anyObject())).andReturn(mockedTableConfiguration).anyTimes();
+    EasyMock.expect(mockedServerConfigurationFactory.getTableConfiguration(EasyMock.<Table.ID> anyObject())).andReturn(mockedTableConfiguration).anyTimes();
     EasyMock.expect(mockedTableConfiguration.get(PreferredVolumeChooser.TABLE_PREFERRED_VOLUMES)).andReturn(configuredVolumes).anyTimes();
   }
 
@@ -73,7 +74,7 @@ public class PreferredVolumeChooserTest {
   }
 
   private Set<String> chooseRepeatedlyForTable() throws AccumuloException {
-    VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.of("h"));
+    VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.of(new Table.ID("h")));
     Set<String> results = new HashSet<>();
     for (int i = 0; i < REQUIRED_NUMBER_TRIES; i++) {
       results.add(preferredVolumeChooser.choose(volumeChooserEnvironment, ALL_OPTIONS));

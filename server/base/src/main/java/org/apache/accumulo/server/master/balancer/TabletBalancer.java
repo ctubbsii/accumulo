@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.impl.KeyExtent;
@@ -33,6 +34,7 @@ import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Client;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.core.trace.Tracer;
 import org.apache.accumulo.server.AccumuloServerContext;
+import org.apache.accumulo.server.client.HdfsZooInstance;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletMigration;
@@ -55,16 +57,25 @@ public abstract class TabletBalancer {
 
   private static final Logger log = LoggerFactory.getLogger(TabletBalancer.class);
 
-  protected ServerConfigurationFactory configuration;
-
   protected AccumuloServerContext context;
 
   /**
    * Initialize the TabletBalancer. This gives the balancer the opportunity to read the configuration.
+   *
+   * @deprecated since 2.0.0; use {@link #init(AccumuloServerContext)} instead.
    */
+  @Deprecated
   public void init(ServerConfigurationFactory conf) {
-    context = new AccumuloServerContext(conf);
-    configuration = conf;
+    init(new AccumuloServerContext(HdfsZooInstance.getInstance(), conf));
+  }
+
+  /**
+   * Initialize the TabletBalancer. This gives the balancer the opportunity to read the configuration.
+   *
+   * @since 2.0.0
+   */
+  public void init(AccumuloServerContext context) {
+    this.context = context;
   }
 
   /**
@@ -194,11 +205,11 @@ public abstract class TabletBalancer {
    * @throws TException
    *           any other problem
    */
-  public List<TabletStats> getOnlineTabletsForTable(TServerInstance tserver, String tableId) throws ThriftSecurityException, TException {
+  public List<TabletStats> getOnlineTabletsForTable(TServerInstance tserver, Table.ID tableId) throws ThriftSecurityException, TException {
     log.debug("Scanning tablet server " + tserver + " for table " + tableId);
     Client client = ThriftUtil.getClient(new TabletClientService.Client.Factory(), tserver.getLocation(), context);
     try {
-      return client.getTabletStats(Tracer.traceInfo(), context.rpcCreds(), tableId);
+      return client.getTabletStats(Tracer.traceInfo(), context.rpcCreds(), tableId.canonicalID());
     } catch (TTransportException e) {
       log.error("Unable to connect to " + tserver + ": " + e);
     } finally {

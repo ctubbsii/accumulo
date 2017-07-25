@@ -42,6 +42,7 @@ import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.impl.MasterClient;
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.conf.SiteConfiguration;
 import org.apache.accumulo.core.gc.thrift.GCMonitorService;
@@ -64,24 +65,6 @@ import org.apache.accumulo.fate.util.LoggingRunnable;
 import org.apache.accumulo.fate.zookeeper.ZooLock.LockLossReason;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeMissingPolicy;
-import org.apache.accumulo.monitor.servlets.BulkImportServlet;
-import org.apache.accumulo.monitor.servlets.DefaultServlet;
-import org.apache.accumulo.monitor.servlets.GcStatusServlet;
-import org.apache.accumulo.monitor.servlets.JSONServlet;
-import org.apache.accumulo.monitor.servlets.LogServlet;
-import org.apache.accumulo.monitor.servlets.MasterServlet;
-import org.apache.accumulo.monitor.servlets.OperationServlet;
-import org.apache.accumulo.monitor.servlets.ProblemServlet;
-import org.apache.accumulo.monitor.servlets.ReplicationServlet;
-import org.apache.accumulo.monitor.servlets.ScanServlet;
-import org.apache.accumulo.monitor.servlets.ShellServlet;
-import org.apache.accumulo.monitor.servlets.TServersServlet;
-import org.apache.accumulo.monitor.servlets.TablesServlet;
-import org.apache.accumulo.monitor.servlets.VisServlet;
-import org.apache.accumulo.monitor.servlets.XMLServlet;
-import org.apache.accumulo.monitor.servlets.trace.ListType;
-import org.apache.accumulo.monitor.servlets.trace.ShowTrace;
-import org.apache.accumulo.monitor.servlets.trace.Summary;
 import org.apache.accumulo.server.Accumulo;
 import org.apache.accumulo.server.AccumuloServerContext;
 import org.apache.accumulo.server.HighlyAvailableService;
@@ -100,6 +83,15 @@ import org.apache.accumulo.server.util.time.SimpleTimer;
 import org.apache.accumulo.server.zookeeper.ZooLock;
 import org.apache.accumulo.server.zookeeper.ZooReaderWriter;
 import org.apache.zookeeper.KeeperException;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.mvc.MvcFeature;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,7 +157,7 @@ public class Monitor implements HighlyAvailableService {
 
   private static volatile boolean fetching = false;
   private static MasterMonitorInfo mmi;
-  private static Map<String,Map<ProblemType,Integer>> problemSummary = Collections.emptyMap();
+  private static Map<Table.ID,Map<ProblemType,Integer>> problemSummary = Collections.emptyMap();
   private static Exception problemException;
   private static GCStatus gcStatus;
 
@@ -412,7 +404,7 @@ public class Monitor implements HighlyAvailableService {
       if (locks != null && locks.size() > 0) {
         Collections.sort(locks);
         address = new ServerServices(new String(zk.getData(path + "/" + locks.get(0), null), UTF_8)).getAddress(Service.GC_CLIENT);
-        GCMonitorService.Client client = ThriftUtil.getClient(new GCMonitorService.Client.Factory(), address, new AccumuloServerContext(config));
+        GCMonitorService.Client client = ThriftUtil.getClient(new GCMonitorService.Client.Factory(), address, new AccumuloServerContext(instance, config));
         try {
           result = client.getStatus(Tracer.traceInfo(), getContext().rpcCreds());
         } finally {
@@ -436,10 +428,10 @@ public class Monitor implements HighlyAvailableService {
     VolumeManager fs = VolumeManagerImpl.get();
     instance = HdfsZooInstance.getInstance();
     config = new ServerConfigurationFactory(instance);
-    context = new AccumuloServerContext(config);
+    context = new AccumuloServerContext(instance, config);
     log.info("Version " + Constants.VERSION);
     log.info("Instance " + instance.getInstanceID());
-    Accumulo.init(fs, config, app);
+    Accumulo.init(fs, instance, config, app);
     Monitor monitor = new Monitor();
     // Servlets need access to limit requests when the monitor is not active, but Servlets are instantiated
     // via reflection. Expose the service this way instead.
@@ -461,25 +453,9 @@ public class Monitor implements HighlyAvailableService {
       try {
         log.debug("Creating monitor on port " + port);
         server = new EmbeddedWebServer(hostname, port);
-        server.addServlet(DefaultServlet.class, "/");
-        server.addServlet(OperationServlet.class, "/op");
-        server.addServlet(MasterServlet.class, "/master");
-        server.addServlet(TablesServlet.class, "/tables");
-        server.addServlet(TServersServlet.class, "/tservers");
-        server.addServlet(ProblemServlet.class, "/problems");
-        server.addServlet(GcStatusServlet.class, "/gc");
-        server.addServlet(LogServlet.class, "/log");
-        server.addServlet(XMLServlet.class, "/xml");
-        server.addServlet(JSONServlet.class, "/json");
-        server.addServlet(VisServlet.class, "/vis");
-        server.addServlet(ScanServlet.class, "/scans");
-        server.addServlet(BulkImportServlet.class, "/bulkImports");
-        server.addServlet(Summary.class, "/trace/summary");
-        server.addServlet(ListType.class, "/trace/listType");
-        server.addServlet(ShowTrace.class, "/trace/show");
-        server.addServlet(ReplicationServlet.class, "/replication");
-        if (server.isUsingSsl())
-          server.addServlet(ShellServlet.class, "/shell");
+        server.addServlet(getDefaultServlet(), "/resources/*");
+        server.addServlet(getRestServlet(), "/rest/*");
+        server.addServlet(getViewServlet(), "/*");
         server.start();
         break;
       } catch (Throwable ex) {
@@ -559,6 +535,30 @@ public class Monitor implements HighlyAvailableService {
     monitorInitialized.set(true);
   }
 
+  private ServletHolder getDefaultServlet() {
+    return new ServletHolder(new DefaultServlet() {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public Resource getResource(String pathInContext) {
+        return Resource.newClassPathResource(pathInContext);
+      }
+    });
+  }
+
+  private ServletHolder getViewServlet() {
+    final ResourceConfig rc = new ResourceConfig().packages("org.apache.accumulo.monitor.view")
+        .register(new LoggingFeature(java.util.logging.Logger.getLogger(this.getClass().getSimpleName()))).register(FreemarkerMvcFeature.class)
+        .property(MvcFeature.TEMPLATE_BASE_PATH, "/templates");
+    return new ServletHolder(new ServletContainer(rc));
+  }
+
+  private ServletHolder getRestServlet() {
+    final ResourceConfig rc = new ResourceConfig().packages("org.apache.accumulo.monitor.rest")
+        .register(new LoggingFeature(java.util.logging.Logger.getLogger(this.getClass().getSimpleName()))).register(JacksonFeature.class);
+    return new ServletHolder(new ServletContainer(rc));
+  }
+
   public static class ScanStats {
     public final long scanCount;
     public final Long oldestScan;
@@ -583,7 +583,7 @@ public class Monitor implements HighlyAvailableService {
     }
   }
 
-  protected static void fetchScans() throws Exception {
+  public static void fetchScans() throws Exception {
     if (instance == null)
       return;
     Connector c = context.getConnector();
@@ -761,7 +761,7 @@ public class Monitor implements HighlyAvailableService {
     return problemException;
   }
 
-  public static Map<String,Map<ProblemType,Integer>> getProblemSummary() {
+  public static Map<Table.ID,Map<ProblemType,Integer>> getProblemSummary() {
     return problemSummary;
   }
 
@@ -778,39 +778,27 @@ public class Monitor implements HighlyAvailableService {
   }
 
   public static List<Pair<Long,Double>> getLoadOverTime() {
-    synchronized (loadOverTime) {
-      return new ArrayList<>(loadOverTime);
-    }
+    return new ArrayList<>(loadOverTime);
   }
 
   public static List<Pair<Long,Double>> getIngestRateOverTime() {
-    synchronized (ingestRateOverTime) {
-      return new ArrayList<>(ingestRateOverTime);
-    }
+    return new ArrayList<>(ingestRateOverTime);
   }
 
   public static List<Pair<Long,Double>> getIngestByteRateOverTime() {
-    synchronized (ingestByteRateOverTime) {
-      return new ArrayList<>(ingestByteRateOverTime);
-    }
+    return new ArrayList<>(ingestByteRateOverTime);
   }
 
   public static List<Pair<Long,Integer>> getMinorCompactionsOverTime() {
-    synchronized (minorCompactionsOverTime) {
-      return new ArrayList<>(minorCompactionsOverTime);
-    }
+    return new ArrayList<>(minorCompactionsOverTime);
   }
 
   public static List<Pair<Long,Integer>> getMajorCompactionsOverTime() {
-    synchronized (majorCompactionsOverTime) {
-      return new ArrayList<>(majorCompactionsOverTime);
-    }
+    return new ArrayList<>(majorCompactionsOverTime);
   }
 
   public static List<Pair<Long,Double>> getLookupsOverTime() {
-    synchronized (lookupsOverTime) {
-      return new ArrayList<>(lookupsOverTime);
-    }
+    return new ArrayList<>(lookupsOverTime);
   }
 
   public static double getLookupRate() {
@@ -818,37 +806,23 @@ public class Monitor implements HighlyAvailableService {
   }
 
   public static List<Pair<Long,Integer>> getQueryRateOverTime() {
-    synchronized (queryRateOverTime) {
-      return new ArrayList<>(queryRateOverTime);
-    }
+    return new ArrayList<>(queryRateOverTime);
   }
 
   public static List<Pair<Long,Integer>> getScanRateOverTime() {
-    synchronized (scanRateOverTime) {
-      return new ArrayList<>(scanRateOverTime);
-    }
+    return new ArrayList<>(scanRateOverTime);
   }
 
   public static List<Pair<Long,Double>> getQueryByteRateOverTime() {
-    synchronized (queryByteRateOverTime) {
-      return new ArrayList<>(queryByteRateOverTime);
-    }
+    return new ArrayList<>(queryByteRateOverTime);
   }
 
   public static List<Pair<Long,Double>> getIndexCacheHitRateOverTime() {
-    synchronized (indexCacheHitRateOverTime) {
-      return new ArrayList<>(indexCacheHitRateOverTime);
-    }
+    return new ArrayList<>(indexCacheHitRateOverTime);
   }
 
   public static List<Pair<Long,Double>> getDataCacheHitRateOverTime() {
-    synchronized (dataCacheHitRateOverTime) {
-      return new ArrayList<>(dataCacheHitRateOverTime);
-    }
-  }
-
-  public static boolean isUsingSsl() {
-    return server.isUsingSsl();
+    return new ArrayList<>(dataCacheHitRateOverTime);
   }
 
   public static AccumuloServerContext getContext() {
@@ -859,4 +833,5 @@ public class Monitor implements HighlyAvailableService {
   public boolean isActiveService() {
     return monitorInitialized.get();
   }
+
 }

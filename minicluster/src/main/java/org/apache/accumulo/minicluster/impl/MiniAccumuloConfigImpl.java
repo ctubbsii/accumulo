@@ -30,6 +30,8 @@ import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.ServerType;
+import org.apache.accumulo.server.fs.PerTableVolumeChooser;
+import org.apache.accumulo.server.fs.RandomVolumeChooser;
 import org.apache.accumulo.server.util.PortUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -159,6 +161,8 @@ public class MiniAccumuloConfigImpl {
       mergePropWithRandomPort(Property.MONITOR_LOG4J_PORT.getKey());
       mergePropWithRandomPort(Property.REPLICATION_RECEIPT_SERVICE_PORT.getKey());
       mergePropWithRandomPort(Property.MASTER_REPLICATION_COORDINATOR_PORT.getKey());
+      mergeProp(PerTableVolumeChooser.TABLE_VOLUME_CHOOSER, RandomVolumeChooser.class.getName());
+      mergeProp(PerTableVolumeChooser.DEFAULT_SCOPED_VOLUME_CHOOSER, RandomVolumeChooser.class.getName());
 
       if (isUseCredentialProvider()) {
         updateConfigForCredentialProvider();

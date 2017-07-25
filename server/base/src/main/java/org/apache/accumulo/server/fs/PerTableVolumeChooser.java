@@ -40,6 +40,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
   private final ConcurrentHashMap<String,VolumeChooser> tableSpecificChooser = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String,VolumeChooser> scopeSpecificChooser = new ConcurrentHashMap<>();
   private final RandomVolumeChooser randomChooser = new RandomVolumeChooser();
+
   // TODO has to be lazily initialized currently because of the reliance on HdfsZooInstance. see ACCUMULO-3411
   private volatile ServerConfigurationFactory serverConfs;
 
@@ -81,7 +82,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
     final TableConfiguration tableConf = localConf.getTableConfiguration(env.getTableId());
     String clazz = tableConf.get(TABLE_VOLUME_CHOOSER);
 
-    return createVolumeChooser(clazz, TABLE_VOLUME_CHOOSER, env.getTableId(), tableSpecificChooser);
+    return createVolumeChooser(clazz, TABLE_VOLUME_CHOOSER, env.getTableId().canonicalID(), tableSpecificChooser);
   }
 
   private VolumeChooser getVolumeChooserForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) throws AccumuloException {

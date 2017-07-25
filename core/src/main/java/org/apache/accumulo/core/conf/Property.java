@@ -219,6 +219,8 @@ public enum Property {
   MASTER_BULK_TIMEOUT("master.bulk.timeout", "5m", PropertyType.TIMEDURATION, "The time to wait for a tablet server to process a bulk import request"),
   MASTER_BULK_RENAME_THREADS("master.bulk.rename.threadpool.size", "20", PropertyType.COUNT,
       "The number of threads to use when moving user files to bulk ingest directories under accumulo control"),
+  MASTER_BULK_TSERVER_REGEX("master.bulk.tserver.regex", "", PropertyType.STRING,
+      "Regular expression that defines the set of Tablet Servers that will perform bulk imports"),
   MASTER_MINTHREADS("master.server.threads.minimum", "20", PropertyType.COUNT, "The minimum number of threads to use to handle incoming requests."),
   MASTER_THREADCHECK("master.server.threadcheck.time", "1s", PropertyType.TIMEDURATION, "The time between adjustments of the server thread pool."),
   MASTER_RECOVERY_DELAY("master.recovery.delay", "10s", PropertyType.TIMEDURATION,
@@ -390,8 +392,11 @@ public enum Property {
   MONITOR_PREFIX("monitor.", null, PropertyType.PREFIX, "Properties in this category affect the behavior of the monitor web server."),
   MONITOR_PORT("monitor.port.client", "9995", PropertyType.PORT, "The listening port for the monitor's http service"),
   MONITOR_LOG4J_PORT("monitor.port.log4j", "4560", PropertyType.PORT, "The listening port for the monitor's log4j logging collection."),
+  @Deprecated
   MONITOR_BANNER_TEXT("monitor.banner.text", "", PropertyType.STRING, "The banner text displayed on the monitor page."),
+  @Deprecated
   MONITOR_BANNER_COLOR("monitor.banner.color", "#c4c4c4", PropertyType.STRING, "The color of the banner text displayed on the monitor page."),
+  @Deprecated
   MONITOR_BANNER_BACKGROUND("monitor.banner.background", "#304065", PropertyType.STRING,
       "The background color of the banner text displayed on the monitor page."),
 

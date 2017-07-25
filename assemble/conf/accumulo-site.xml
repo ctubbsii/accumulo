@@ -39,6 +39,15 @@
     <name>tserver.memory.maps.native.enabled</name>
     <value>true</value>
   </property>
+  <!-- Used by the PerTableVolumeChooser which is the default general.volume.chooser -->
+  <property>
+    <name>table.custom.volume.chooser</name>
+    <value>org.apache.accumulo.server.fs.RandomVolumeChooser</value>
+  </property>
+  <property>
+    <name>general.custom.scoped.volume.chooser</name>
+    <value>org.apache.accumulo.server.fs.RandomVolumeChooser</value>
+  </property>
   <!-- Set a correct user/password below -->
   <property>
     <name>trace.user</name>

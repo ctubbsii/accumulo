@@ -21,8 +21,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.impl.ClientContext;
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.impl.KeyExtent;
@@ -51,7 +53,8 @@ public class FindOfflineTablets {
   public static void main(String[] args) throws Exception {
     ClientOpts opts = new ClientOpts();
     opts.parseArgs(FindOfflineTablets.class.getName(), args);
-    AccumuloServerContext context = new AccumuloServerContext(new ServerConfigurationFactory(opts.getInstance()));
+    Instance instance = opts.getInstance();
+    AccumuloServerContext context = new AccumuloServerContext(instance, new ServerConfigurationFactory(opts.getInstance()));
     findOffline(context, null);
   }
 
@@ -99,7 +102,7 @@ public class FindOfflineTablets {
 
     Range range = MetadataSchema.TabletsSection.getRange();
     if (tableName != null) {
-      String tableId = Tables.getTableId(context.getInstance(), tableName);
+      Table.ID tableId = Tables.getTableId(context.getInstance(), tableName);
       range = new KeyExtent(tableId, null, null).toMetadataRange();
     }
 

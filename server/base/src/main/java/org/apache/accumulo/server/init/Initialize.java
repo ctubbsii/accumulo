@@ -42,6 +42,7 @@ import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.IteratorSetting.Column;
 import org.apache.accumulo.core.client.impl.Namespaces;
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.client.impl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.DefaultConfiguration;
@@ -355,7 +356,8 @@ public class Initialize implements KeywordExecutable {
       return false;
     }
 
-    final ServerConfigurationFactory confFactory = new ServerConfigurationFactory(HdfsZooInstance.getInstance());
+    final Instance instance = HdfsZooInstance.getInstance();
+    final ServerConfigurationFactory confFactory = new ServerConfigurationFactory(instance);
 
     // When we're using Kerberos authentication, we need valid credentials to perform initialization. If the user provided some, use them.
     // If they did not, fall back to the credentials present in accumulo-site.xml that the servers will use themselves.
@@ -385,7 +387,7 @@ public class Initialize implements KeywordExecutable {
     }
 
     try {
-      AccumuloServerContext context = new AccumuloServerContext(confFactory);
+      AccumuloServerContext context = new AccumuloServerContext(instance, confFactory);
       initSecurity(context, opts, uuid.toString(), rootUser);
     } catch (Exception e) {
       log.error("FATAL: Failed to initialize security", e);
@@ -450,11 +452,12 @@ public class Initialize implements KeywordExecutable {
   }
 
   private static class Tablet {
-    String tableId, dir;
+    Table.ID tableId;
+    String dir;
     Text prevEndRow, endRow;
     String[] files;
 
-    Tablet(String tableId, String dir, Text prevEndRow, Text endRow, String... files) {
+    Tablet(Table.ID tableId, String dir, Text prevEndRow, Text endRow, String... files) {
       this.tableId = tableId;
       this.dir = dir;
       this.prevEndRow = prevEndRow;
@@ -755,6 +758,11 @@ public class Initialize implements KeywordExecutable {
   }
 
   @Override
+  public UsageGroup usageGroup() {
+    return UsageGroup.CORE;
+  }
+
+  @Override
   public String description() {
     return "Initializes Accumulo";
   }
@@ -775,7 +783,7 @@ public class Initialize implements KeywordExecutable {
       if (opts.resetSecurity) {
         log.info("Resetting security on accumulo.");
         Instance instance = HdfsZooInstance.getInstance();
-        AccumuloServerContext context = new AccumuloServerContext(new ServerConfigurationFactory(instance));
+        AccumuloServerContext context = new AccumuloServerContext(instance, new ServerConfigurationFactory(instance));
         if (isInitialized(fs)) {
           if (!opts.forceResetSecurity) {
             ConsoleReader c = getConsoleReader();

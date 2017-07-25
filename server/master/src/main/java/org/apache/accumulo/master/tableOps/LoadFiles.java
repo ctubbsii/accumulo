@@ -33,8 +33,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.accumulo.core.client.impl.AcceptableThriftTableOperationException;
+import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.client.impl.thrift.ClientService;
 import org.apache.accumulo.core.client.impl.thrift.TableOperation;
 import org.apache.accumulo.core.client.impl.thrift.TableOperationExceptionType;
@@ -64,13 +66,13 @@ class LoadFiles extends MasterRepo {
   private static ExecutorService threadPool = null;
   private static final Logger log = LoggerFactory.getLogger(LoadFiles.class);
 
-  private String tableId;
+  private Table.ID tableId;
   private String source;
   private String bulk;
   private String errorDir;
   private boolean setTime;
 
-  public LoadFiles(String tableId, String source, String bulk, String errorDir, boolean setTime) {
+  public LoadFiles(Table.ID tableId, String source, String bulk, String errorDir, boolean setTime) {
     this.tableId = tableId;
     this.source = source;
     this.bulk = bulk;
@@ -112,8 +114,8 @@ class LoadFiles extends MasterRepo {
       // Maybe this is a re-try... clear the flag and try again
       fs.delete(writable);
       if (!fs.createNewFile(writable))
-        throw new AcceptableThriftTableOperationException(tableId, null, TableOperation.BULK_IMPORT, TableOperationExceptionType.BULK_BAD_ERROR_DIRECTORY,
-            "Unable to write to " + this.errorDir);
+        throw new AcceptableThriftTableOperationException(tableId.canonicalID(), null, TableOperation.BULK_IMPORT,
+            TableOperationExceptionType.BULK_BAD_ERROR_DIRECTORY, "Unable to write to " + this.errorDir);
     }
     fs.delete(writable);
 
@@ -135,38 +137,56 @@ class LoadFiles extends MasterRepo {
       // Use the threadpool to assign files one-at-a-time to the server
       final List<String> loaded = Collections.synchronizedList(new ArrayList<String>());
       final Random random = new Random();
-      final TServerInstance[] servers = master.onlineTabletServers().toArray(new TServerInstance[0]);
-      for (final String file : filesToLoad) {
-        results.add(executor.submit(new Callable<List<String>>() {
-          @Override
-          public List<String> call() {
-            List<String> failures = new ArrayList<>();
-            ClientService.Client client = null;
-            HostAndPort server = null;
-            try {
-              // get a connection to a random tablet server, do not prefer cached connections because
-              // this is running on the master and there are lots of connections to tablet servers
-              // serving the metadata tablets
-              long timeInMillis = master.getConfiguration().getTimeInMillis(Property.MASTER_BULK_TIMEOUT);
-              // Pair<String,Client> pair = ServerClient.getConnection(master, false, timeInMillis);
-              server = servers[random.nextInt(servers.length)].getLocation();
-              client = ThriftUtil.getTServerClient(server, master, timeInMillis);
-              List<String> attempt = Collections.singletonList(file);
-              log.debug("Asking " + server + " to bulk import " + file);
-              List<String> fail = client.bulkImportFiles(Tracer.traceInfo(), master.rpcCreds(), tid, tableId, attempt, errorDir, setTime);
-              if (fail.isEmpty()) {
-                loaded.add(file);
-              } else {
-                failures.addAll(fail);
-              }
-            } catch (Exception ex) {
-              log.error("rpc failed server:" + server + ", tid:" + tid + " " + ex);
-            } finally {
-              ThriftUtil.returnClient(client);
-            }
-            return failures;
+      final TServerInstance[] servers;
+      String prop = conf.get(Property.MASTER_BULK_TSERVER_REGEX);
+      if (null == prop || "".equals(prop)) {
+        servers = master.onlineTabletServers().toArray(new TServerInstance[0]);
+      } else {
+        Pattern regex = Pattern.compile(prop);
+        List<TServerInstance> subset = new ArrayList<>();
+        master.onlineTabletServers().forEach(t -> {
+          if (regex.matcher(t.host()).matches()) {
+            subset.add(t);
           }
-        }));
+        });
+        if (0 == subset.size()) {
+          log.warn("There are no tablet servers online that match supplied regex: {}", conf.get(Property.MASTER_BULK_TSERVER_REGEX));
+        }
+        servers = subset.toArray(new TServerInstance[0]);
+      }
+      if (servers.length > 0) {
+        for (final String file : filesToLoad) {
+          results.add(executor.submit(new Callable<List<String>>() {
+            @Override
+            public List<String> call() {
+              List<String> failures = new ArrayList<>();
+              ClientService.Client client = null;
+              HostAndPort server = null;
+              try {
+                // get a connection to a random tablet server, do not prefer cached connections because
+                // this is running on the master and there are lots of connections to tablet servers
+                // serving the metadata tablets
+                long timeInMillis = master.getConfiguration().getTimeInMillis(Property.MASTER_BULK_TIMEOUT);
+                // Pair<String,Client> pair = ServerClient.getConnection(master, false, timeInMillis);
+                server = servers[random.nextInt(servers.length)].getLocation();
+                client = ThriftUtil.getTServerClient(server, master, timeInMillis);
+                List<String> attempt = Collections.singletonList(file);
+                log.debug("Asking " + server + " to bulk import " + file);
+                List<String> fail = client.bulkImportFiles(Tracer.traceInfo(), master.rpcCreds(), tid, tableId.canonicalID(), attempt, errorDir, setTime);
+                if (fail.isEmpty()) {
+                  loaded.add(file);
+                } else {
+                  failures.addAll(fail);
+                }
+              } catch (Exception ex) {
+                log.error("rpc failed server:" + server + ", tid:" + tid + " " + ex);
+              } finally {
+                ThriftUtil.returnClient(client);
+              }
+              return failures;
+            }
+          }));
+        }
       }
       Set<String> failures = new HashSet<>();
       for (Future<List<String>> f : results)

@@ -62,6 +62,16 @@ public class VolumeManagerImplTest {
     fs.getFullPath(FileType.TABLE, "/t-0000001/C0000001.rf");
   }
 
+  @Test(expected = RuntimeException.class)
+  public void invalidChooserConfigured() throws Exception {
+    List<String> volumes = Arrays.asList("file://one/", "file://two/", "file://three/");
+    ConfigurationCopy conf = new ConfigurationCopy();
+    conf.set(INSTANCE_DFS_URI, volumes.get(0));
+    conf.set(Property.INSTANCE_VOLUMES, StringUtils.join(volumes, ","));
+    conf.set(Property.GENERAL_VOLUME_CHOOSER, "org.apache.accumulo.server.fs.ChooserThatDoesntExist");
+    VolumeManagerImpl.get(conf);
+  }
+
   @Test
   public void tabletDirWithTableId() throws Exception {
     String basePath = fs.getDefaultVolume().getBasePath();
@@ -105,7 +115,8 @@ public class VolumeManagerImplTest {
   @SuppressWarnings("deprecation")
   private static final Property INSTANCE_DFS_URI = Property.INSTANCE_DFS_URI;
 
-  @Test
+  // Expected to throw a runtime exception when the WrongVolumeChooser picks an invalid volume.
+  @Test(expected = RuntimeException.class)
   public void chooseFromOptions() throws Exception {
     List<String> volumes = Arrays.asList("file://one/", "file://two/", "file://three/");
     ConfigurationCopy conf = new ConfigurationCopy();

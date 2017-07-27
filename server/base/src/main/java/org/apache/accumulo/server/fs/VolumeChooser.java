@@ -16,6 +16,7 @@
  */
 package org.apache.accumulo.server.fs;
 
+import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.volume.Volume;
 
@@ -28,5 +29,5 @@ import org.apache.accumulo.core.volume.Volume;
  * benefit from using per-table configuration using {@link Property#TABLE_ARBITRARY_PROP_PREFIX}.
  */
 public interface VolumeChooser {
-  String choose(VolumeChooserEnvironment env, String[] options);
+  String choose(VolumeChooserEnvironment env, String[] options) throws AccumuloException;
 }

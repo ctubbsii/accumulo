@@ -142,19 +142,15 @@ public class PerTableVolumeChooserTest {
   }
 
   @Test
-  public void testEmptyEnvUsesInitScope() throws Exception {
+  public void testEmptyEnvUsesRandomChooser() throws Exception {
     VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.empty());
 
-    configureScopedVolumeChooser(VolumeChooserAlwaysOne.class.getName(), PerTableVolumeChooser.INIT_SCOPE);
-
-    EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
     Set<String> results = new HashSet<String>();
     for (int i = 0; i < REQUIRED_NUMBER_TRIES; i++) {
       results.add(perTableVolumeChooser.choose(volumeChooserEnvironment, ALL_OPTIONS));
     }
-    EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
-    Assert.assertEquals(Sets.newHashSet(Arrays.asList("1")), results);
+    Assert.assertEquals(Sets.newHashSet(Arrays.asList(ALL_OPTIONS)), results);
   }
 
   @Test

@@ -103,20 +103,14 @@ public class PreferredVolumeChooserTest {
   }
 
   @Test
-  public void testEmptyEnvUsesInitScope() throws Exception {
-    configureScopedVolumes("1", PreferredVolumeChooser.INIT_SCOPE);
-
-    EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
-
+  public void testEmptyEnvUsesRandomChooser() throws Exception {
     VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.empty());
     Set<String> results = new HashSet<>();
     for (int i = 0; i < REQUIRED_NUMBER_TRIES; i++) {
       results.add(preferredVolumeChooser.choose(volumeChooserEnvironment, ALL_OPTIONS));
     }
 
-    EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
-
-    Assert.assertEquals(Sets.newHashSet(Arrays.asList("1")), results);
+    Assert.assertEquals(Sets.newHashSet(Arrays.asList(ALL_OPTIONS)), results);
   }
 
   @Test

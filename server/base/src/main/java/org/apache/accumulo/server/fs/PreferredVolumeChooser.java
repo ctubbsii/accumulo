@@ -62,6 +62,12 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
 
   @Override
   public String choose(VolumeChooserEnvironment env, String[] options) {
+    if (!env.hasTableId() && (!env.hasScope() || env.getScope().equals(INIT_SCOPE))) {
+      // this should only happen during initialize
+      log.warn("No table id or scope, so it's not possible to determine preferred volumes.  Using all volumes.");
+      return super.choose(env, options);
+    }
+
     // get the volumes property
     ServerConfigurationFactory localConf = loadConf();
     List<String> volumes;
@@ -94,7 +100,7 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
   }
 
   private List<String> getPreferredVolumesForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options) {
-    String scope = env.hasScope() ? env.getScope() : INIT_SCOPE;
+    String scope = env.getScope();
     String property = SCOPED_PREFERRED_VOLUMES(scope);
 
     log.trace("Looking up property: {}", property);

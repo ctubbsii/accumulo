@@ -38,6 +38,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
   /* Track VolumeChooser instances so they can keep state. */
   private final ConcurrentHashMap<String,VolumeChooser> tableSpecificChooser = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String,VolumeChooser> scopeSpecificChooser = new ConcurrentHashMap<>();
+  private final RandomVolumeChooser randomChooser = new RandomVolumeChooser();
 
   // TODO has to be lazily initialized currently because of the reliance on HdfsZooInstance. see ACCUMULO-3411
   private volatile ServerConfigurationFactory serverConfs;
@@ -55,7 +56,12 @@ public class PerTableVolumeChooser implements VolumeChooser {
   @Override
   public String choose(VolumeChooserEnvironment env, String[] options) {
     log.trace("PerTableVolumeChooser.choose");
+
     VolumeChooser chooser;
+    if (!env.hasTableId() && (!env.hasScope() || env.getScope().equals(INIT_SCOPE))) {
+      // Should only get here during Initialize. Configurations are not yet available.
+      return randomChooser.choose(env, options);
+    }
 
     ServerConfigurationFactory localConf = loadConf();
     if (env.hasTableId()) {
@@ -83,7 +89,7 @@ public class PerTableVolumeChooser implements VolumeChooser {
   }
 
   private VolumeChooser getVolumeChooserForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf) {
-    String scope = env.hasScope() ? env.getScope() : INIT_SCOPE;
+    String scope = env.getScope();
     String property = SCOPED_VOLUME_CHOOSER(scope);
 
     log.trace("Looking up property: {}", property);

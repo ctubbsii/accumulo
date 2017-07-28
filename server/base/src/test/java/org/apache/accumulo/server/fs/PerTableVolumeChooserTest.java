@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
@@ -31,7 +30,9 @@ import org.apache.accumulo.server.conf.TableConfiguration;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.google.common.collect.Sets;
 
@@ -43,6 +44,9 @@ public class PerTableVolumeChooserTest {
   private TableConfiguration mockedTableConfiguration;
   private PerTableVolumeChooser perTableVolumeChooser;
   private AccumuloConfiguration mockedAccumuloConfiguration;
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void before() throws Exception {
@@ -62,6 +66,11 @@ public class PerTableVolumeChooserTest {
     EasyMock.expect(mockedAccumuloConfiguration.get(PerTableVolumeChooser.TABLE_VOLUME_CHOOSER)).andReturn(className).anyTimes();
   }
 
+  private void configureScopedVolumeChooser(String className, String scope) {
+    EasyMock.expect(mockedServerConfigurationFactory.getSystemConfiguration()).andReturn(mockedAccumuloConfiguration).anyTimes();
+    EasyMock.expect(mockedAccumuloConfiguration.get(PerTableVolumeChooser.SCOPED_VOLUME_CHOOSER(scope))).andReturn(className).anyTimes();
+  }
+
   private void configureChooserForTable(String className) {
     EasyMock.expect(mockedServerConfigurationFactory.getTableConfiguration(EasyMock.<Table.ID> anyObject())).andReturn(mockedTableConfiguration).anyTimes();
     EasyMock.expect(mockedTableConfiguration.get(Property.TABLE_CLASSPATH)).andReturn(null).anyTimes();
@@ -76,7 +85,7 @@ public class PerTableVolumeChooserTest {
     EasyMock.expect(mockedAccumuloConfiguration.get(PerTableVolumeChooser.SCOPED_VOLUME_CHOOSER("logger"))).andReturn(className).anyTimes();
   }
 
-  private Set<String> chooseRepeatedlyForTable() throws AccumuloException {
+  private Set<String> chooseRepeatedlyForTable() {
     VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.of(new Table.ID("h")));
     Set<String> results = new HashSet<String>();
     for (int i = 0; i < REQUIRED_NUMBER_TRIES; i++) {
@@ -111,7 +120,7 @@ public class PerTableVolumeChooserTest {
     }
 
     @Override
-    public String choose(VolumeChooserEnvironment env, String[] options) throws AccumuloException {
+    public String choose(VolumeChooserEnvironment env, String[] options) {
       for (String option : options) {
         if (onlyValidOption.equals(option)) {
           return onlyValidOption;
@@ -121,7 +130,7 @@ public class PerTableVolumeChooserTest {
     }
   }
 
-  private Set<String> chooseRepeatedlyForContext() throws AccumuloException {
+  private Set<String> chooseRepeatedlyForContext() {
     VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.empty());
     volumeChooserEnvironment.setScope("logger");
     Set<String> results = new HashSet<String>();
@@ -133,14 +142,19 @@ public class PerTableVolumeChooserTest {
   }
 
   @Test
-  public void testEmptyEnvUsesRandomChooser() throws Exception {
+  public void testEmptyEnvUsesInitScope() throws Exception {
     VolumeChooserEnvironment volumeChooserEnvironment = new VolumeChooserEnvironment(Optional.empty());
+
+    configureScopedVolumeChooser(VolumeChooserAlwaysOne.class.getName(), PerTableVolumeChooser.INIT_SCOPE);
+
+    EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
     Set<String> results = new HashSet<String>();
     for (int i = 0; i < REQUIRED_NUMBER_TRIES; i++) {
       results.add(perTableVolumeChooser.choose(volumeChooserEnvironment, ALL_OPTIONS));
     }
+    EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
-    Assert.assertEquals(Sets.newHashSet(Arrays.asList(ALL_OPTIONS)), results);
+    Assert.assertEquals(Sets.newHashSet(Arrays.asList("1")), results);
   }
 
   @Test
@@ -156,59 +170,58 @@ public class PerTableVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("2")), results);
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testTableMisconfigured() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysOne.class.getName());
     configureChooserForTable(INVALID_CHOOSER_CLASSNAME);
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForTable();
-
-    EasyMock.verify(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testTableMissing() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysOne.class.getName());
     configureChooserForTable(null);
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForTable();
-
-    EasyMock.verify(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testTableMisconfiguredAndDefaultEmpty() throws Exception {
     configureDefaultVolumeChooser("");
     configureChooserForTable(INVALID_CHOOSER_CLASSNAME);
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForTable();
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testTableEmptyConfig() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysThree.class.getName());
     configureChooserForTable("");
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForTable();
-
-    EasyMock.verify(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testTableAndDefaultEmpty() throws Exception {
     configureDefaultVolumeChooser("");
     configureChooserForTable("");
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedTableConfiguration, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForTable();
   }
 
@@ -225,19 +238,18 @@ public class PerTableVolumeChooserTest {
     Assert.assertEquals(Sets.newHashSet(Arrays.asList("1")), results);
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testContextMisconfigured() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysThree.class.getName());
     configureContextVolumeChooser(INVALID_CHOOSER_CLASSNAME);
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForContext();
-
-    EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testContextMissing() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysTwo.class.getName());
     configureContextVolumeChooser(null);
@@ -245,13 +257,11 @@ public class PerTableVolumeChooserTest {
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
-    Set<String> results = chooseRepeatedlyForContext();
-
-    EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
-    Assert.assertEquals(Sets.newHashSet(Arrays.asList("2")), results);
+    thrown.expect(RuntimeException.class);
+    chooseRepeatedlyForContext();
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testContextMisconfiguredAndDefaultEmpty() throws Exception {
     configureDefaultVolumeChooser("");
     configureChooserForTable("");
@@ -259,28 +269,29 @@ public class PerTableVolumeChooserTest {
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForContext();
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testContextAndDefaultBothEmpty() throws Exception {
     this.configureDefaultVolumeChooser("");
     configureContextVolumeChooser("");
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForContext();
   }
 
-  @Test(expected = AccumuloException.class)
+  @Test
   public void testContextEmptyConfig() throws Exception {
     configureDefaultVolumeChooser(VolumeChooserAlwaysTwo.class.getName());
     configureContextVolumeChooser("");
 
     EasyMock.replay(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
 
+    thrown.expect(RuntimeException.class);
     chooseRepeatedlyForContext();
-
-    EasyMock.verify(mockedServerConfigurationFactory, mockedAccumuloConfiguration);
   }
 }

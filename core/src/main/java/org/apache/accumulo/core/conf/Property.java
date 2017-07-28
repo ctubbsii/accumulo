@@ -191,7 +191,7 @@ public enum Property {
       + "server-internal scheduled tasks"),
   // If you update the default type, be sure to update the default used for initialization failures in VolumeManagerImpl
   @Experimental
-  GENERAL_VOLUME_CHOOSER("general.volume.chooser", "org.apache.accumulo.server.fs.PerTableVolumeChooser", PropertyType.CLASSNAME,
+  GENERAL_VOLUME_CHOOSER("general.volume.chooser", "org.apache.accumulo.server.fs.RandomVolumeChooser", PropertyType.CLASSNAME,
       "The class that will be used to select which volume will be used to create new files."),
   GENERAL_SECURITY_CREDENTIAL_PROVIDER_PATHS("general.security.credential.provider.paths", "", PropertyType.STRING,
       "Comma-separated list of paths to CredentialProviders"),

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.volume.Volume;
@@ -46,6 +45,8 @@ import org.slf4j.LoggerFactory;
 public class PreferredVolumeChooser extends RandomVolumeChooser {
   private static final Logger log = LoggerFactory.getLogger(PreferredVolumeChooser.class);
 
+  public static final String INIT_SCOPE = "init";
+
   public static final String TABLE_PREFERRED_VOLUMES = Property.TABLE_ARBITRARY_PROP_PREFIX.getKey() + "preferred.volumes";
 
   public static final String SCOPED_PREFERRED_VOLUMES(String scope) {
@@ -60,75 +61,65 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
   private volatile ServerConfigurationFactory serverConfs;
 
   @Override
-  public String choose(VolumeChooserEnvironment env, String[] options) throws AccumuloException {
-    if (!env.hasTableId() && !env.hasScope()) {
-      // this should only happen during initialize
-      log.warn("No table id or scope, so it's not possible to determine preferred volumes.  Using all volumes.");
-      return super.choose(env, options);
-    }
-
+  public String choose(VolumeChooserEnvironment env, String[] options) {
     // get the volumes property
     ServerConfigurationFactory localConf = loadConf();
     List<String> volumes;
     if (env.hasTableId()) {
       volumes = getPreferredVolumesForTable(env, localConf, options);
-      // localConf.getTableConfiguration(env.getTableId()).get(PREFERRED_VOLUMES_CUSTOM_KEY);
-    } else { // env.hasScope()
+    } else {
       volumes = getPreferredVolumesForNonTable(env, localConf, options);
-      // localConf.getSystemConfiguration().get(PREFERRED_VOLUMES_SCOPED_KEY(env.getScope()));
     }
 
     // Randomly choose the volume from the preferred volumes
     String choice = super.choose(env, volumes.toArray(EMPTY_STRING_ARRAY));
-    if (log.isTraceEnabled()) {
-      log.trace("Choice = " + choice);
-    }
+    log.trace("Choice = {}", choice);
+
     return choice;
   }
 
-  private List<String> getPreferredVolumesForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options)
-      throws AccumuloException {
-    if (log.isTraceEnabled()) {
-      log.trace("Looking up property " + TABLE_PREFERRED_VOLUMES + " for Table id: " + env.getTableId());
-    }
+  private List<String> getPreferredVolumesForTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options) {
+    log.trace("Looking up property {} + for Table id: {}", TABLE_PREFERRED_VOLUMES, env.getTableId());
+
     final TableConfiguration tableConf = localConf.getTableConfiguration(env.getTableId());
     String volumes = tableConf.get(TABLE_PREFERRED_VOLUMES);
+
+    // throw an error if volumes not specified or empty
+    if (null == volumes || volumes.isEmpty()) {
+      String logmsg = "Missing or empty " + TABLE_PREFERRED_VOLUMES + " property";
+      throw new RuntimeException(logmsg);
+    }
 
     return getFilteredOptions(TABLE_PREFERRED_VOLUMES, volumes, options);
   }
 
-  private List<String> getPreferredVolumesForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options)
-      throws AccumuloException {
-    String property = SCOPED_PREFERRED_VOLUMES(env.getScope());
+  private List<String> getPreferredVolumesForNonTable(VolumeChooserEnvironment env, ServerConfigurationFactory localConf, String[] options) {
+    String scope = env.hasScope() ? env.getScope() : INIT_SCOPE;
+    String property = SCOPED_PREFERRED_VOLUMES(scope);
 
-    if (log.isTraceEnabled()) {
-      log.trace("Looking up property: " + property);
-    }
+    log.trace("Looking up property: {}", property);
 
     AccumuloConfiguration systemConfiguration = localConf.getSystemConfiguration();
     String volumes = systemConfiguration.get(property);
 
     // only if the custom property is not set to we fallback to the default scoped preferred volumes
     if (null == volumes) {
-      log.debug("Property not found: " + property + " using " + DEFAULT_SCOPED_PREFERRED_VOLUMES);
-      property = DEFAULT_SCOPED_PREFERRED_VOLUMES;
+      log.debug("Property not found: {} using {}", property, DEFAULT_SCOPED_PREFERRED_VOLUMES);
       volumes = systemConfiguration.get(DEFAULT_SCOPED_PREFERRED_VOLUMES);
+
+      if (null == volumes || volumes.isEmpty()) {
+        String logmsg = "Missing or empty " + property + " and " + DEFAULT_SCOPED_PREFERRED_VOLUMES + " properties";
+        throw new RuntimeException(logmsg);
+      }
+
+      property = DEFAULT_SCOPED_PREFERRED_VOLUMES;
     }
 
     return getFilteredOptions(property, volumes, options);
   }
 
-  private List<String> getFilteredOptions(String property, String volumes, String[] options) throws AccumuloException {
-    // throw an error if volumes not specified or empty
-    if (null == volumes || volumes.isEmpty()) {
-      String logmsg = "Missing or empty " + property + " property";
-      log.error(logmsg);
-      throw new AccumuloException(logmsg);
-    }
-
-    if (log.isTraceEnabled()) {
-      log.trace("Found " + property + " = " + volumes);
-    }
+  private List<String> getFilteredOptions(String property, String volumes, String[] options) {
+    log.trace("Found {} = {}", property, volumes);
 
     ArrayList<String> filteredOptions = getIntersection(options, volumes);
 
@@ -136,7 +127,7 @@ public class PreferredVolumeChooser extends RandomVolumeChooser {
     if (filteredOptions.isEmpty()) {
       String logMessage = "After filtering preferred volumes, there are no valid instance volumes.";
       log.error(logMessage);
-      throw new AccumuloException(logMessage);
+      throw new RuntimeException(logMessage);
     }
 
     return filteredOptions;

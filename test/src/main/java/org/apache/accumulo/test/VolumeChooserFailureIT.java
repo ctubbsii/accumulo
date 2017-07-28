@@ -35,9 +35,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.io.Text;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class VolumeChooserFailureIT extends ConfigurableMacBase {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   private File volDirBase;
   private Path v1, v2, v3, v4;
@@ -100,7 +105,7 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
 
   // Test that uses one table with 10 split points each. It uses the PreferredVolumeChooser, but no preferred volume is specified.
   // This means that the volume chooser will fail and no instance volumes will be assigned.
-  @Test(expected = AccumuloException.class)
+  @Test
   public void missingVolumePreferredVolumeChooser() throws Exception {
     log.info("Starting missingVolumePreferredVolumeChooser");
 
@@ -114,12 +119,13 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
 
     // Create table1 on namespace1 (will fail)
     String tableName = namespace1 + ".1";
+    thrown.expect(AccumuloException.class);
     connector.tableOperations().create(tableName);
   }
 
   // Test that uses one table with 10 split points each. It uses the PreferredVolumeChooser, but preferred volume is not an instance volume.
   // This should fail.
-  @Test(expected = AccumuloException.class)
+  @Test
   public void notInstancePreferredVolumeChooser() throws Exception {
     log.info("Starting notInstancePreferredVolumeChooser");
 
@@ -140,6 +146,7 @@ public class VolumeChooserFailureIT extends ConfigurableMacBase {
 
     // Create table1 on namespace1 (will fail)
     String tableName = namespace1 + ".1";
+    thrown.expect(AccumuloException.class);
     connector.tableOperations().create(tableName);
   }
 

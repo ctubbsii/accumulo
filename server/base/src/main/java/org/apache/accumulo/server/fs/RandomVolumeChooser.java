@@ -18,13 +18,11 @@ package org.apache.accumulo.server.fs;
 
 import java.util.Random;
 
-import org.apache.accumulo.core.client.AccumuloException;
-
 public class RandomVolumeChooser implements VolumeChooser {
   private final Random random = new Random();
 
   @Override
-  public String choose(VolumeChooserEnvironment env, String[] options) throws AccumuloException {
+  public String choose(VolumeChooserEnvironment env, String[] options) {
     return options[random.nextInt(options.length)];
   }
 }

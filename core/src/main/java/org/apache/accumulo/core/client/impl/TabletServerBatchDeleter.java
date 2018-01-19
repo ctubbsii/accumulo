@@ -19,6 +19,7 @@ package org.apache.accumulo.core.client.impl;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.BatchDeleter;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;

@@ -31,7 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;

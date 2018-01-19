@@ -16,8 +16,8 @@
  */
 package org.apache.accumulo.core.metadata;
 
-import org.apache.accumulo.core.client.impl.Namespace;
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Namespace;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 
 /**

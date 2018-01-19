@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.master.thrift.TableInfo;
 import org.apache.accumulo.core.master.thrift.TabletServerStatus;

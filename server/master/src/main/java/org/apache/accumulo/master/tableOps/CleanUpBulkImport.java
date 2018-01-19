@@ -16,9 +16,9 @@
  */
 package org.apache.accumulo.master.tableOps;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.master.thrift.BulkImportState;
 import org.apache.accumulo.fate.Repo;
 import org.apache.accumulo.master.Master;

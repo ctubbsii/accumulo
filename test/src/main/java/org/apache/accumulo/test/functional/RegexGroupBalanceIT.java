@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
@@ -41,7 +42,6 @@ import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 
 public class RegexGroupBalanceIT extends ConfigurableMacBase {
 
@@ -81,7 +81,7 @@ public class RegexGroupBalanceIT extends ConfigurableMacBase {
     while (true) {
       Thread.sleep(250);
 
-      Table<String,String,MutableInt> groupLocationCounts = getCounts(conn, tablename);
+      HashBasedTable<String,String,MutableInt> groupLocationCounts = getCounts(conn, tablename);
 
       boolean allGood = true;
       allGood &= checkGroup(groupLocationCounts, "01", 1, 1, 3);
@@ -104,7 +104,7 @@ public class RegexGroupBalanceIT extends ConfigurableMacBase {
     while (true) {
       Thread.sleep(250);
 
-      Table<String,String,MutableInt> groupLocationCounts = getCounts(conn, tablename);
+      HashBasedTable<String,String,MutableInt> groupLocationCounts = getCounts(conn, tablename);
 
       boolean allGood = true;
       allGood &= checkGroup(groupLocationCounts, "01", 1, 2, 4);
@@ -123,7 +123,7 @@ public class RegexGroupBalanceIT extends ConfigurableMacBase {
     while (true) {
       Thread.sleep(250);
 
-      Table<String,String,MutableInt> groupLocationCounts = getCounts(conn, tablename);
+      HashBasedTable<String,String,MutableInt> groupLocationCounts = getCounts(conn, tablename);
 
       boolean allGood = true;
       allGood &= checkGroup(groupLocationCounts, "01", 1, 1, 1);
@@ -137,7 +137,7 @@ public class RegexGroupBalanceIT extends ConfigurableMacBase {
     }
   }
 
-  private boolean checkTabletsPerTserver(Table<String,String,MutableInt> groupLocationCounts, int minTabletPerTserver, int maxTabletsPerTserver,
+  private boolean checkTabletsPerTserver(HashBasedTable<String,String,MutableInt> groupLocationCounts, int minTabletPerTserver, int maxTabletsPerTserver,
       int totalTservser) {
     // check that each tserver has between min and max tablets
     for (Map<String,MutableInt> groups : groupLocationCounts.columnMap().values()) {
@@ -154,7 +154,7 @@ public class RegexGroupBalanceIT extends ConfigurableMacBase {
     return groupLocationCounts.columnKeySet().size() == totalTservser;
   }
 
-  private boolean checkGroup(Table<String,String,MutableInt> groupLocationCounts, String group, int min, int max, int tsevers) {
+  private boolean checkGroup(HashBasedTable<String,String,MutableInt> groupLocationCounts, String group, int min, int max, int tsevers) {
     Collection<MutableInt> counts = groupLocationCounts.row(group).values();
     if (counts.size() == 0) {
       return min == 0 && max == 0 && tsevers == 0;
@@ -162,14 +162,13 @@ public class RegexGroupBalanceIT extends ConfigurableMacBase {
     return min == Collections.min(counts).intValue() && max == Collections.max(counts).intValue() && counts.size() == tsevers;
   }
 
-  private Table<String,String,MutableInt> getCounts(Connector conn, String tablename) throws TableNotFoundException {
+  private HashBasedTable<String,String,MutableInt> getCounts(Connector conn, String tablename) throws TableNotFoundException {
     try (Scanner s = conn.createScanner(MetadataTable.NAME, Authorizations.EMPTY)) {
       s.fetchColumnFamily(MetadataSchema.TabletsSection.CurrentLocationColumnFamily.NAME);
-      org.apache.accumulo.core.client.impl.Table.ID tableId = org.apache.accumulo.core.client.impl.Table.ID.of(conn.tableOperations().tableIdMap()
-          .get(tablename));
+      Table.ID tableId = Table.ID.of(conn.tableOperations().tableIdMap().get(tablename));
       s.setRange(MetadataSchema.TabletsSection.getRange(tableId));
 
-      Table<String,String,MutableInt> groupLocationCounts = HashBasedTable.create();
+      HashBasedTable<String,String,MutableInt> groupLocationCounts = HashBasedTable.create();
 
       for (Entry<Key,Value> entry : s) {
         String group = entry.getKey().getRow().toString();

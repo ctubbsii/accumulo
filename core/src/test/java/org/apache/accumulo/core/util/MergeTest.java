@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 import org.apache.accumulo.core.util.Merge.Size;
 import org.apache.hadoop.io.Text;

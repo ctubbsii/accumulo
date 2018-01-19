@@ -16,9 +16,9 @@
  */
 package org.apache.accumulo.server.conf;
 
+import org.apache.accumulo.api.data.Namespace;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.impl.Namespace;
 import org.apache.accumulo.core.zookeeper.ZooUtil;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

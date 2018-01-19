@@ -18,8 +18,8 @@ package org.apache.accumulo.tserver.session;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.Durability;
-import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.thrift.TCredentials;
 

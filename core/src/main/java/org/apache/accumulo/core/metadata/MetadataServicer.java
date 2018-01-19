@@ -20,11 +20,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.SortedMap;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.impl.ClientContext;
-import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.data.impl.KeyExtent;
 
 /**

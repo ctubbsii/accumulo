@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
@@ -31,7 +32,6 @@ import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.client.impl.ClientContext;
-import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.replication.ReplicationTable;
 import org.easymock.EasyMock;
 import org.junit.BeforeClass;

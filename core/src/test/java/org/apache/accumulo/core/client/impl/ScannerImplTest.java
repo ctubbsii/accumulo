@@ -18,6 +18,7 @@ package org.apache.accumulo.core.client.impl;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.security.Authorizations;
 import org.easymock.EasyMock;

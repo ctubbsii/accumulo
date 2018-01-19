@@ -19,7 +19,7 @@ package org.apache.accumulo.shell.commands;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.impl.Namespace;
+import org.apache.accumulo.api.data.Namespace;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.accumulo.shell.Shell;

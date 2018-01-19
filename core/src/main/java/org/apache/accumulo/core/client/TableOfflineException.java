@@ -16,7 +16,7 @@
  */
 package org.apache.accumulo.core.client;
 
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.impl.Tables;
 
 public class TableOfflineException extends RuntimeException {

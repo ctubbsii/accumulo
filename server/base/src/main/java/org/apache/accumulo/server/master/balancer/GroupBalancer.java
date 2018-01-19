@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.IsolatedScanner;
 import org.apache.accumulo.core.client.RowIterator;
 import org.apache.accumulo.core.client.Scanner;
@@ -54,7 +55,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
 
 /**
  * A balancer that evenly spreads groups of tablets across all tablet server. This balancer accomplishes the following two goals :
@@ -450,7 +450,7 @@ public abstract class GroupBalancer extends TabletBalancer {
 
   private static class Moves {
 
-    private final Table<TServerInstance,String,List<Move>> moves = HashBasedTable.create();
+    private final HashBasedTable<TServerInstance,String,List<Move>> moves = HashBasedTable.create();
     private int totalMoves = 0;
 
     public void move(String group, int num, TserverGroupInfo src, TserverGroupInfo dest) {
@@ -497,7 +497,7 @@ public abstract class GroupBalancer extends TabletBalancer {
   }
 
   private void balanceExtraExtra(Map<TServerInstance,TserverGroupInfo> tservers, int maxExtraGroups, Moves moves) {
-    Table<String,TServerInstance,TserverGroupInfo> surplusExtra = HashBasedTable.create();
+    HashBasedTable<String,TServerInstance,TserverGroupInfo> surplusExtra = HashBasedTable.create();
     for (TserverGroupInfo tgi : tservers.values()) {
       Map<String,Integer> extras = tgi.getExtras();
       if (extras.size() > maxExtraGroups) {
@@ -615,7 +615,7 @@ public abstract class GroupBalancer extends TabletBalancer {
 
   private void balanceExtraExpected(Map<TServerInstance,TserverGroupInfo> tservers, int expectedExtra, Moves moves) {
 
-    Table<String,TServerInstance,TserverGroupInfo> extraSurplus = HashBasedTable.create();
+    HashBasedTable<String,TServerInstance,TserverGroupInfo> extraSurplus = HashBasedTable.create();
 
     for (TserverGroupInfo tgi : tservers.values()) {
       Map<String,Integer> extras = tgi.getExtras();
@@ -774,7 +774,7 @@ public abstract class GroupBalancer extends TabletBalancer {
         Scanner scanner = new IsolatedScanner(context.getConnector().createScanner(MetadataTable.NAME, Authorizations.EMPTY));
         scanner.fetchColumnFamily(MetadataSchema.TabletsSection.CurrentLocationColumnFamily.NAME);
         MetadataSchema.TabletsSection.TabletColumnFamily.PREV_ROW_COLUMN.fetch(scanner);
-        scanner.setRange(MetadataSchema.TabletsSection.getRange(org.apache.accumulo.core.client.impl.Table.ID.of(tableId)));
+        scanner.setRange(MetadataSchema.TabletsSection.getRange(Table.ID.of(tableId)));
 
         RowIterator rowIter = new RowIterator(scanner);
 

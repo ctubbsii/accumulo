@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.impl.Namespace;
+import org.apache.accumulo.api.data.Namespace;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.proxy.Proxy;

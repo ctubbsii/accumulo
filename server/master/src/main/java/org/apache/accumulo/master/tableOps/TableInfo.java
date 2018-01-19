@@ -19,8 +19,8 @@ package org.apache.accumulo.master.tableOps;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.accumulo.core.client.impl.Namespace;
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Namespace;
+import org.apache.accumulo.api.data.Table;
 
 class TableInfo implements Serializable {
 

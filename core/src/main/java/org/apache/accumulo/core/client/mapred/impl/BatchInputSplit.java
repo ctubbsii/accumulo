@@ -19,7 +19,7 @@ package org.apache.accumulo.core.client.mapred.impl;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.mapred.InputSplit;
 

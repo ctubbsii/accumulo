@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.RowIterator;
 import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.impl.Table;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;

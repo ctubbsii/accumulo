@@ -77,6 +77,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.accumulo</groupId>
+      <artifactId>accumulo-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-fate</artifactId>
     </dependency>
     <dependency>
@@ -151,6 +155,7 @@
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
             <excludes>
+              <exclude>src/main/resources/META-INF/services/org.apache.accumulo.spi.AccumuloClientFactory</exclude>
               <exclude>src/test/resources/shelltest.txt</exclude>
               <exclude>src/test/resources/org/apache/accumulo/core/file/rfile/*.rf</exclude>
               <exclude>src/test/resources/*.jceks</exclude>

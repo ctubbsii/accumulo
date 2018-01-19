@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -1772,8 +1773,8 @@ public class TableOperationsImpl extends TableOperationsHelper {
   }
 
   @Override
-  public void addSummarizers(String tableName, SummarizerConfiguration... newConfigs) throws AccumuloException, AccumuloSecurityException,
-      TableNotFoundException {
+  public void addSummarizers(String tableName, SummarizerConfiguration... newConfigs)
+      throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
     HashSet<SummarizerConfiguration> currentConfigs = new HashSet<>(SummarizerConfiguration.fromTableProperties(getProperties(tableName)));
     HashSet<SummarizerConfiguration> newConfigSet = new HashSet<>(Arrays.asList(newConfigs));
 

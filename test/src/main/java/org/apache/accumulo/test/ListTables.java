@@ -18,7 +18,7 @@ package org.apache.accumulo.test;
 
 import java.util.Map.Entry;
 
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.server.cli.ClientOpts;
 

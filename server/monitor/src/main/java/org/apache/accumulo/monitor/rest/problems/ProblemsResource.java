@@ -34,7 +34,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.accumulo.core.client.impl.Table;
+import org.apache.accumulo.api.data.Table;
 import org.apache.accumulo.core.client.impl.Tables;
 import org.apache.accumulo.monitor.Monitor;
 import org.apache.accumulo.server.client.HdfsZooInstance;

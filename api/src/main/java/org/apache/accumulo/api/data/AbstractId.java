@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.accumulo.core.client.impl;
+package org.apache.accumulo.api.data;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 public abstract class AbstractId implements Comparable<AbstractId>, Serializable {
 
-  private static final long serialVersionUID = -155513612834787244L;
+  private static final long serialVersionUID = 1L;
   private final String canonical;
   private Integer hashCode = null;
 
@@ -44,7 +44,7 @@ public abstract class AbstractId implements Comparable<AbstractId>, Serializable
   }
 
   public boolean isEmpty() {
-    return canonical.isEmpty();
+    return canonicalID().isEmpty();
   }
 
   /**
@@ -70,14 +70,14 @@ public abstract class AbstractId implements Comparable<AbstractId>, Serializable
    */
   @Override
   public String toString() {
-    return canonical;
+    return canonicalID();
   }
 
   /**
    * Return a UTF_8 byte[] of the canonical ID.
    */
   public final byte[] getUtf8() {
-    return canonical.getBytes(UTF_8);
+    return canonicalID().getBytes(UTF_8);
   }
 
   @Override

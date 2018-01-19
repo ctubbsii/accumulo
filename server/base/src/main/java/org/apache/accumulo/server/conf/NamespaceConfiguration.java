@@ -19,9 +19,9 @@ package org.apache.accumulo.server.conf;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.apache.accumulo.api.data.Namespace;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.impl.Namespace;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ConfigurationObserver;
 import org.apache.accumulo.core.conf.ObservableConfiguration;

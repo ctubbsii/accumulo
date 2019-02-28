@@ -57,7 +57,7 @@ import org.apache.accumulo.core.replication.thrift.ReplicationServicer;
 import org.apache.accumulo.core.replication.thrift.ReplicationServicer.Client;
 import org.apache.accumulo.core.replication.thrift.WalEdits;
 import org.apache.accumulo.core.securityImpl.thrift.TCredentials;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.server.ServerContext;
 import org.apache.accumulo.server.fs.VolumeManager;
@@ -75,9 +75,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
-import org.apache.htrace.impl.ProbabilitySampler;
+import org.apache.htrace.core.ProbabilitySampler;
+import org.apache.htrace.core.TraceScope;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +90,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
   private String instanceName, zookeepers;
   private AccumuloConfiguration conf;
   private VolumeManager fs;
+  private ServerContext tserverContext;
 
   protected void setConf(AccumuloConfiguration conf) {
     this.conf = conf;
@@ -106,6 +106,8 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
   @Override
   public void configure(ServerContext context, String configuration) {
     requireNonNull(configuration);
+
+    this.tserverContext = context;
 
     // instance_name,zookeepers
     int index = configuration.indexOf(',');
@@ -209,7 +211,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
       final ReplicaSystemHelper helper, final AccumuloConfiguration localConf,
       final ClientContext peerContext, final UserGroupInformation accumuloUgi) {
     double tracePercent = localConf.getFraction(Property.REPLICATION_TRACE_PERCENT);
-    ProbabilitySampler sampler = TraceUtil.probabilitySampler(tracePercent);
+    ProbabilitySampler sampler = Trace.probabilitySampler(tracePercent);
     try (TraceScope replicaSpan = Trace.startSpan("AccumuloReplicaSystem", sampler)) {
 
       // Remote identifier is an integer (table id) in this case.
@@ -222,7 +224,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
         log.debug("Attempt {}", i);
         String peerTserverStr;
         log.debug("Fetching peer tserver address");
-        try (TraceScope span = Trace.startSpan("Fetch peer tserver")) {
+        try (TraceScope span = tserverContext.getTracer().newScope("Fetch peer tserver")) {
           // Ask the master on the remote what TServer we should talk with to replicate the data
           peerTserverStr = ReplicationClient.executeCoordinatorWithReturn(peerContext,
               client -> client.getServicerAddress(remoteTableId, peerContext.rpcCreds()));
@@ -250,11 +252,11 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
         final long sizeLimit = conf.getAsBytes(Property.REPLICATION_MAX_UNIT_SIZE);
         try {
           if (p.getName().endsWith(RFILE_SUFFIX)) {
-            try (TraceScope span = Trace.startSpan("RFile replication")) {
+            try (TraceScope span = tserverContext.getTracer().newScope("RFile replication")) {
               finalStatus = replicateRFiles(peerContext, peerTserver, target, p, status, timeout);
             }
           } else {
-            try (TraceScope span = Trace.startSpan("WAL replication")) {
+            try (TraceScope span = tserverContext.getTracer().newScope("WAL replication")) {
               finalStatus = replicateLogs(peerContext, peerTserver, target, p, status, sizeLimit,
                   remoteTableId, peerContext.rpcCreds(), helper, accumuloUgi, timeout);
             }
@@ -331,7 +333,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
     try (final FSDataInputStream fsinput = fs.open(p);
         final DataInputStream input = getWalStream(p, fsinput)) {
       log.debug("Skipping unwanted data in WAL");
-      try (TraceScope span = Trace.startSpan("Consume WAL prefix")) {
+      try (TraceScope span = tserverContext.getTracer().newScope("Consume WAL prefix")) {
         if (span.getSpan() != null) {
           span.getSpan().addKVAnnotation("file", p.toString());
         }
@@ -351,7 +353,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
       final AtomicReference<Exception> exceptionRef = new AtomicReference<>();
       while (true) {
         ReplicationStats replResult;
-        try (TraceScope span = Trace.startSpan("Replicate WAL batch")) {
+        try (TraceScope span = tserverContext.getTracer().newScope("Replicate WAL batch")) {
           if (span.getSpan() != null) {
             // Set some trace context
             span.getSpan().addKVAnnotation("Batch size (bytes)", Long.toString(sizeLimit));
@@ -385,7 +387,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
 
         // If we got a different status
         if (!currentStatus.equals(lastStatus)) {
-          try (TraceScope span = Trace.startSpan("Update replication table")) {
+          try (TraceScope span = tserverContext.getTracer().newScope("Update replication table")) {
             if (accumuloUgi != null) {
               final Status copy = currentStatus;
               accumuloUgi.doAs((PrivilegedAction<Void>) () -> {
@@ -448,7 +450,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
       } else {
         newStatus = Status.newBuilder(status).setBegin(status.getEnd()).build();
       }
-      try (TraceScope span = Trace.startSpan("Update replication table")) {
+      try (TraceScope span = tserverContext.getTracer().newScope("Update replication table")) {
         helper.recordNewStatus(p, newStatus, target);
       } catch (TableNotFoundException tnfe) {
         log.error(
@@ -624,7 +626,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
   }
 
   public DataInputStream getWalStream(Path p, FSDataInputStream input) throws IOException {
-    try (TraceScope span = Trace.startSpan("Read WAL header")) {
+    try (TraceScope span = tserverContext.getTracer().newScope("Read WAL header")) {
       if (span.getSpan() != null) {
         span.getSpan().addKVAnnotation("file", p.toString());
       }

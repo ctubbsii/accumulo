@@ -46,7 +46,7 @@ import org.apache.accumulo.server.cli.ServerUtilOpts;
 import org.apache.accumulo.server.fs.VolumeManager;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.hadoop.fs.Path;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 
 import com.beust.jcommander.Parameter;
 

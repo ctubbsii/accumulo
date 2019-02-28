@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.htrace.wrappers.TraceRunnable;
+import org.apache.htrace.core.TraceRunnable;
 
 /**
  * {@link TraceRunnable} objects placed in this queue <b>must</b> wrap a {@link Runnable} which is

@@ -17,7 +17,10 @@
 namespace java org.apache.accumulo.core.trace.thrift
 namespace cpp org.apache.accumulo.core.trace.thrift
 
+// Thrift-serialized form of htrace SpanId high/low bits
 struct TInfo {
+  // parent's SpanId high bits (common for all spans within a trace)
   1:i64 traceId
+  // parent's SpanId low bits (unique per span)
   2:i64 parentId
 }

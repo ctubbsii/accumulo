@@ -39,7 +39,7 @@ import org.apache.accumulo.core.conf.ConfigurationCopy;
 import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.conf.SiteConfiguration;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.server.ServerContext;
 import org.apache.accumulo.server.client.ClientServiceHandler;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
@@ -315,7 +315,7 @@ public class TServerUtilsTest {
     expect(ctx.getClientTimeoutInMillis()).andReturn((long) 1000).anyTimes();
     replay(ctx);
     ClientServiceHandler clientHandler = new ClientServiceHandler(ctx, null, null);
-    Iface rpcProxy = TraceUtil.wrapService(clientHandler);
+    Iface rpcProxy = Trace.wrapService(ctx.getTracer(), clientHandler);
     Processor<Iface> processor = new Processor<>(rpcProxy);
     // "localhost" explicitly to make sure we can always bind to that interface (avoids DNS
     // misconfiguration)

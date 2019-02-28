@@ -38,14 +38,12 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.accumulo.core.trace.TraceUtil;
 import org.apache.accumulo.core.util.FastFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.TraceScope;
-import org.apache.htrace.wrappers.TraceProxy;
+import org.apache.htrace.core.TraceScope;
 
 import com.beust.jcommander.Parameter;
 
@@ -105,7 +103,6 @@ public class ContinuousIngest {
         }
 
         BatchWriter bw = client.createBatchWriter(clientOpts.tableName);
-        bw = TraceProxy.trace(bw, TraceUtil.countSampler(1024));
 
         Random r = new SecureRandom();
 

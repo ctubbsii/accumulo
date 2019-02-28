@@ -38,7 +38,7 @@ import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletLocationState;
 import org.apache.accumulo.server.master.state.TabletState;
 import org.apache.accumulo.server.master.state.ZooTabletStateStore;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

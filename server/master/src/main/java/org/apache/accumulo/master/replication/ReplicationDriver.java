@@ -19,13 +19,12 @@ package org.apache.accumulo.master.replication;
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.Property;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.Daemon;
 import org.apache.accumulo.fate.util.UtilWaitThread;
 import org.apache.accumulo.master.Master;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
-import org.apache.htrace.impl.ProbabilitySampler;
+import org.apache.htrace.core.ProbabilitySampler;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +53,7 @@ public class ReplicationDriver extends Daemon {
   @Override
   public void run() {
     ProbabilitySampler sampler =
-        TraceUtil.probabilitySampler(conf.getFraction(Property.REPLICATION_TRACE_PERCENT));
+        Trace.probabilitySampler(conf.getFraction(Property.REPLICATION_TRACE_PERCENT));
 
     long millisToWait = conf.getTimeInMillis(Property.REPLICATION_DRIVER_DELAY);
     log.debug("Waiting {}ms before starting main replication loop", millisToWait);

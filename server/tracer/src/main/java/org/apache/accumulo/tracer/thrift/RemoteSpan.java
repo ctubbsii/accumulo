@@ -28,9 +28,9 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
 
   private static final org.apache.thrift.protocol.TField SENDER_FIELD_DESC = new org.apache.thrift.protocol.TField("sender", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField SVC_FIELD_DESC = new org.apache.thrift.protocol.TField("svc", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField TRACE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("traceId", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField SPAN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("spanId", org.apache.thrift.protocol.TType.I64, (short)4);
-  private static final org.apache.thrift.protocol.TField PARENT_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("parentIds", org.apache.thrift.protocol.TType.LIST, (short)11);
+  private static final org.apache.thrift.protocol.TField TRACER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tracerId", org.apache.thrift.protocol.TType.STRING, (short)12);
+  private static final org.apache.thrift.protocol.TField SPAN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("spanId", org.apache.thrift.protocol.TType.STRING, (short)13);
+  private static final org.apache.thrift.protocol.TField PARENT_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("parentIds", org.apache.thrift.protocol.TType.LIST, (short)14);
   private static final org.apache.thrift.protocol.TField START_FIELD_DESC = new org.apache.thrift.protocol.TField("start", org.apache.thrift.protocol.TType.I64, (short)6);
   private static final org.apache.thrift.protocol.TField STOP_FIELD_DESC = new org.apache.thrift.protocol.TField("stop", org.apache.thrift.protocol.TType.I64, (short)7);
   private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)8);
@@ -42,9 +42,9 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
 
   public @org.apache.thrift.annotation.Nullable java.lang.String sender; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String svc; // required
-  public long traceId; // required
-  public long spanId; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> parentIds; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String tracerId; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String spanId; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> parentIds; // required
   public long start; // required
   public long stop; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String description; // required
@@ -55,9 +55,9 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SENDER((short)1, "sender"),
     SVC((short)2, "svc"),
-    TRACE_ID((short)3, "traceId"),
-    SPAN_ID((short)4, "spanId"),
-    PARENT_IDS((short)11, "parentIds"),
+    TRACER_ID((short)12, "tracerId"),
+    SPAN_ID((short)13, "spanId"),
+    PARENT_IDS((short)14, "parentIds"),
     START((short)6, "start"),
     STOP((short)7, "stop"),
     DESCRIPTION((short)8, "description"),
@@ -82,11 +82,11 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
           return SENDER;
         case 2: // SVC
           return SVC;
-        case 3: // TRACE_ID
-          return TRACE_ID;
-        case 4: // SPAN_ID
+        case 12: // TRACER_ID
+          return TRACER_ID;
+        case 13: // SPAN_ID
           return SPAN_ID;
-        case 11: // PARENT_IDS
+        case 14: // PARENT_IDS
           return PARENT_IDS;
         case 6: // START
           return START;
@@ -139,10 +139,8 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
   }
 
   // isset id assignments
-  private static final int __TRACEID_ISSET_ID = 0;
-  private static final int __SPANID_ISSET_ID = 1;
-  private static final int __START_ISSET_ID = 2;
-  private static final int __STOP_ISSET_ID = 3;
+  private static final int __START_ISSET_ID = 0;
+  private static final int __STOP_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -151,13 +149,13 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SVC, new org.apache.thrift.meta_data.FieldMetaData("svc", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TRACE_ID, new org.apache.thrift.meta_data.FieldMetaData("traceId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.TRACER_ID, new org.apache.thrift.meta_data.FieldMetaData("tracerId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SPAN_ID, new org.apache.thrift.meta_data.FieldMetaData("spanId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PARENT_IDS, new org.apache.thrift.meta_data.FieldMetaData("parentIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.STOP, new org.apache.thrift.meta_data.FieldMetaData("stop", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -181,9 +179,9 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
   public RemoteSpan(
     java.lang.String sender,
     java.lang.String svc,
-    long traceId,
-    long spanId,
-    java.util.List<java.lang.Long> parentIds,
+    java.lang.String tracerId,
+    java.lang.String spanId,
+    java.util.List<java.lang.String> parentIds,
     long start,
     long stop,
     java.lang.String description,
@@ -193,10 +191,8 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
     this();
     this.sender = sender;
     this.svc = svc;
-    this.traceId = traceId;
-    setTraceIdIsSet(true);
+    this.tracerId = tracerId;
     this.spanId = spanId;
-    setSpanIdIsSet(true);
     this.parentIds = parentIds;
     this.start = start;
     setStartIsSet(true);
@@ -218,10 +214,14 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
     if (other.isSetSvc()) {
       this.svc = other.svc;
     }
-    this.traceId = other.traceId;
-    this.spanId = other.spanId;
+    if (other.isSetTracerId()) {
+      this.tracerId = other.tracerId;
+    }
+    if (other.isSetSpanId()) {
+      this.spanId = other.spanId;
+    }
     if (other.isSetParentIds()) {
-      java.util.List<java.lang.Long> __this__parentIds = new java.util.ArrayList<java.lang.Long>(other.parentIds);
+      java.util.List<java.lang.String> __this__parentIds = new java.util.ArrayList<java.lang.String>(other.parentIds);
       this.parentIds = __this__parentIds;
     }
     this.start = other.start;
@@ -250,10 +250,8 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
   public void clear() {
     this.sender = null;
     this.svc = null;
-    setTraceIdIsSet(false);
-    this.traceId = 0;
-    setSpanIdIsSet(false);
-    this.spanId = 0;
+    this.tracerId = null;
+    this.spanId = null;
     this.parentIds = null;
     setStartIsSet(false);
     this.start = 0;
@@ -314,50 +312,54 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
     }
   }
 
-  public long getTraceId() {
-    return this.traceId;
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getTracerId() {
+    return this.tracerId;
   }
 
-  public RemoteSpan setTraceId(long traceId) {
-    this.traceId = traceId;
-    setTraceIdIsSet(true);
+  public RemoteSpan setTracerId(@org.apache.thrift.annotation.Nullable java.lang.String tracerId) {
+    this.tracerId = tracerId;
     return this;
   }
 
-  public void unsetTraceId() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TRACEID_ISSET_ID);
+  public void unsetTracerId() {
+    this.tracerId = null;
   }
 
-  /** Returns true if field traceId is set (has been assigned a value) and false otherwise */
-  public boolean isSetTraceId() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TRACEID_ISSET_ID);
+  /** Returns true if field tracerId is set (has been assigned a value) and false otherwise */
+  public boolean isSetTracerId() {
+    return this.tracerId != null;
   }
 
-  public void setTraceIdIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TRACEID_ISSET_ID, value);
+  public void setTracerIdIsSet(boolean value) {
+    if (!value) {
+      this.tracerId = null;
+    }
   }
 
-  public long getSpanId() {
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getSpanId() {
     return this.spanId;
   }
 
-  public RemoteSpan setSpanId(long spanId) {
+  public RemoteSpan setSpanId(@org.apache.thrift.annotation.Nullable java.lang.String spanId) {
     this.spanId = spanId;
-    setSpanIdIsSet(true);
     return this;
   }
 
   public void unsetSpanId() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SPANID_ISSET_ID);
+    this.spanId = null;
   }
 
   /** Returns true if field spanId is set (has been assigned a value) and false otherwise */
   public boolean isSetSpanId() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SPANID_ISSET_ID);
+    return this.spanId != null;
   }
 
   public void setSpanIdIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SPANID_ISSET_ID, value);
+    if (!value) {
+      this.spanId = null;
+    }
   }
 
   public int getParentIdsSize() {
@@ -365,23 +367,23 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<java.lang.Long> getParentIdsIterator() {
+  public java.util.Iterator<java.lang.String> getParentIdsIterator() {
     return (this.parentIds == null) ? null : this.parentIds.iterator();
   }
 
-  public void addToParentIds(long elem) {
+  public void addToParentIds(java.lang.String elem) {
     if (this.parentIds == null) {
-      this.parentIds = new java.util.ArrayList<java.lang.Long>();
+      this.parentIds = new java.util.ArrayList<java.lang.String>();
     }
     this.parentIds.add(elem);
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<java.lang.Long> getParentIds() {
+  public java.util.List<java.lang.String> getParentIds() {
     return this.parentIds;
   }
 
-  public RemoteSpan setParentIds(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> parentIds) {
+  public RemoteSpan setParentIds(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> parentIds) {
     this.parentIds = parentIds;
     return this;
   }
@@ -567,11 +569,11 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
       }
       break;
 
-    case TRACE_ID:
+    case TRACER_ID:
       if (value == null) {
-        unsetTraceId();
+        unsetTracerId();
       } else {
-        setTraceId((java.lang.Long)value);
+        setTracerId((java.lang.String)value);
       }
       break;
 
@@ -579,7 +581,7 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
       if (value == null) {
         unsetSpanId();
       } else {
-        setSpanId((java.lang.Long)value);
+        setSpanId((java.lang.String)value);
       }
       break;
 
@@ -587,7 +589,7 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
       if (value == null) {
         unsetParentIds();
       } else {
-        setParentIds((java.util.List<java.lang.Long>)value);
+        setParentIds((java.util.List<java.lang.String>)value);
       }
       break;
 
@@ -643,8 +645,8 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
     case SVC:
       return getSvc();
 
-    case TRACE_ID:
-      return getTraceId();
+    case TRACER_ID:
+      return getTracerId();
 
     case SPAN_ID:
       return getSpanId();
@@ -682,8 +684,8 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
       return isSetSender();
     case SVC:
       return isSetSvc();
-    case TRACE_ID:
-      return isSetTraceId();
+    case TRACER_ID:
+      return isSetTracerId();
     case SPAN_ID:
       return isSetSpanId();
     case PARENT_IDS:
@@ -735,21 +737,21 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
         return false;
     }
 
-    boolean this_present_traceId = true;
-    boolean that_present_traceId = true;
-    if (this_present_traceId || that_present_traceId) {
-      if (!(this_present_traceId && that_present_traceId))
+    boolean this_present_tracerId = true && this.isSetTracerId();
+    boolean that_present_tracerId = true && that.isSetTracerId();
+    if (this_present_tracerId || that_present_tracerId) {
+      if (!(this_present_tracerId && that_present_tracerId))
         return false;
-      if (this.traceId != that.traceId)
+      if (!this.tracerId.equals(that.tracerId))
         return false;
     }
 
-    boolean this_present_spanId = true;
-    boolean that_present_spanId = true;
+    boolean this_present_spanId = true && this.isSetSpanId();
+    boolean that_present_spanId = true && that.isSetSpanId();
     if (this_present_spanId || that_present_spanId) {
       if (!(this_present_spanId && that_present_spanId))
         return false;
-      if (this.spanId != that.spanId)
+      if (!this.spanId.equals(that.spanId))
         return false;
     }
 
@@ -822,9 +824,13 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
     if (isSetSvc())
       hashCode = hashCode * 8191 + svc.hashCode();
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(traceId);
+    hashCode = hashCode * 8191 + ((isSetTracerId()) ? 131071 : 524287);
+    if (isSetTracerId())
+      hashCode = hashCode * 8191 + tracerId.hashCode();
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(spanId);
+    hashCode = hashCode * 8191 + ((isSetSpanId()) ? 131071 : 524287);
+    if (isSetSpanId())
+      hashCode = hashCode * 8191 + spanId.hashCode();
 
     hashCode = hashCode * 8191 + ((isSetParentIds()) ? 131071 : 524287);
     if (isSetParentIds())
@@ -877,12 +883,12 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.valueOf(isSetTraceId()).compareTo(other.isSetTraceId());
+    lastComparison = java.lang.Boolean.valueOf(isSetTracerId()).compareTo(other.isSetTracerId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTraceId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.traceId, other.traceId);
+    if (isSetTracerId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tracerId, other.tracerId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -994,12 +1000,20 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("traceId:");
-    sb.append(this.traceId);
+    sb.append("tracerId:");
+    if (this.tracerId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.tracerId);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("spanId:");
-    sb.append(this.spanId);
+    if (this.spanId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.spanId);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("parentIds:");
@@ -1102,31 +1116,31 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TRACE_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.traceId = iprot.readI64();
-              struct.setTraceIdIsSet(true);
+          case 12: // TRACER_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.tracerId = iprot.readString();
+              struct.setTracerIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // SPAN_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.spanId = iprot.readI64();
+          case 13: // SPAN_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.spanId = iprot.readString();
               struct.setSpanIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 11: // PARENT_IDS
+          case 14: // PARENT_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-                struct.parentIds = new java.util.ArrayList<java.lang.Long>(_list0.size);
-                long _elem1;
+                struct.parentIds = new java.util.ArrayList<java.lang.String>(_list0.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1;
                 for (int _i2 = 0; _i2 < _list0.size; ++_i2)
                 {
-                  _elem1 = iprot.readI64();
+                  _elem1 = iprot.readString();
                   struct.parentIds.add(_elem1);
                 }
                 iprot.readListEnd();
@@ -1224,12 +1238,6 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
         oprot.writeString(struct.svc);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(TRACE_ID_FIELD_DESC);
-      oprot.writeI64(struct.traceId);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(SPAN_ID_FIELD_DESC);
-      oprot.writeI64(struct.spanId);
-      oprot.writeFieldEnd();
       oprot.writeFieldBegin(START_FIELD_DESC);
       oprot.writeI64(struct.start);
       oprot.writeFieldEnd();
@@ -1266,13 +1274,23 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
         }
         oprot.writeFieldEnd();
       }
+      if (struct.tracerId != null) {
+        oprot.writeFieldBegin(TRACER_ID_FIELD_DESC);
+        oprot.writeString(struct.tracerId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.spanId != null) {
+        oprot.writeFieldBegin(SPAN_ID_FIELD_DESC);
+        oprot.writeString(struct.spanId);
+        oprot.writeFieldEnd();
+      }
       if (struct.parentIds != null) {
         oprot.writeFieldBegin(PARENT_IDS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.parentIds.size()));
-          for (long _iter12 : struct.parentIds)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.parentIds.size()));
+          for (java.lang.String _iter12 : struct.parentIds)
           {
-            oprot.writeI64(_iter12);
+            oprot.writeString(_iter12);
           }
           oprot.writeListEnd();
         }
@@ -1302,7 +1320,7 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
       if (struct.isSetSvc()) {
         optionals.set(1);
       }
-      if (struct.isSetTraceId()) {
+      if (struct.isSetTracerId()) {
         optionals.set(2);
       }
       if (struct.isSetSpanId()) {
@@ -1333,18 +1351,18 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
       if (struct.isSetSvc()) {
         oprot.writeString(struct.svc);
       }
-      if (struct.isSetTraceId()) {
-        oprot.writeI64(struct.traceId);
+      if (struct.isSetTracerId()) {
+        oprot.writeString(struct.tracerId);
       }
       if (struct.isSetSpanId()) {
-        oprot.writeI64(struct.spanId);
+        oprot.writeString(struct.spanId);
       }
       if (struct.isSetParentIds()) {
         {
           oprot.writeI32(struct.parentIds.size());
-          for (long _iter13 : struct.parentIds)
+          for (java.lang.String _iter13 : struct.parentIds)
           {
-            oprot.writeI64(_iter13);
+            oprot.writeString(_iter13);
           }
         }
       }
@@ -1391,21 +1409,21 @@ public class RemoteSpan implements org.apache.thrift.TBase<RemoteSpan, RemoteSpa
         struct.setSvcIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.traceId = iprot.readI64();
-        struct.setTraceIdIsSet(true);
+        struct.tracerId = iprot.readString();
+        struct.setTracerIdIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.spanId = iprot.readI64();
+        struct.spanId = iprot.readString();
         struct.setSpanIdIsSet(true);
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list16 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.parentIds = new java.util.ArrayList<java.lang.Long>(_list16.size);
-          long _elem17;
+          org.apache.thrift.protocol.TList _list16 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parentIds = new java.util.ArrayList<java.lang.String>(_list16.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem17;
           for (int _i18 = 0; _i18 < _list16.size; ++_i18)
           {
-            _elem17 = iprot.readI64();
+            _elem17 = iprot.readString();
             struct.parentIds.add(_elem17);
           }
         }

@@ -62,7 +62,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.dataImpl.thrift.TConstraintViolationSummary;
 import org.apache.accumulo.core.tabletserver.thrift.ConstraintViolationException;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.BadArgumentException;
 import org.apache.accumulo.core.util.format.DefaultFormatter;
 import org.apache.accumulo.core.util.format.Formatter;
@@ -340,7 +340,7 @@ public class Shell extends ShellOptions implements KeywordExecutable {
         }
       }
       try {
-        TraceUtil.enableClientTraces(InetAddress.getLocalHost().getHostName(), "shell",
+        Trace.createTracerForClient(InetAddress.getLocalHost().getHostName(), "shell",
             clientProperties);
         this.setTableName("");
         accumuloClient = Accumulo.newClient().from(clientProperties).as(principal, token).build();
@@ -517,7 +517,6 @@ public class Shell extends ShellOptions implements KeywordExecutable {
       System.exit(start());
     } finally {
       shutdown();
-      TraceUtil.disable();
     }
   }
 

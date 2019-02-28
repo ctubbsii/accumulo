@@ -48,10 +48,7 @@ public class TracesForTypeInformation {
   }
 
   protected String getIDFromSpan(RemoteSpan span) {
-    if (span == null)
-      return null;
-
-    return String.format("%s", Long.toHexString(span.traceId));
+    return span == null ? null : span.tracerId;
   }
 
   protected Long getDateFromSpan(RemoteSpan span) {

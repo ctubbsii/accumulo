@@ -60,7 +60,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class ThriftUtil {
   private static final Logger log = LoggerFactory.getLogger(ThriftUtil.class);
 
-  private static final TraceProtocolFactory protocolFactory = new TraceProtocolFactory();
   private static final TFramedTransport.Factory transportFactory =
       new TFramedTransport.Factory(Integer.MAX_VALUE);
   private static final Map<Integer,TTransportFactory> factoryCache = new HashMap<>();
@@ -75,8 +74,8 @@ public class ThriftUtil {
    *
    * @return The default Thrift TProtocolFactory for RPC
    */
-  public static TProtocolFactory protocolFactory() {
-    return protocolFactory;
+  public static TProtocolFactory protocolFactory(ClientContext context) {
+    return new TraceProtocolFactory(context);
   }
 
   /**
@@ -91,8 +90,9 @@ public class ThriftUtil {
   /**
    * Create a Thrift client using the given factory and transport
    */
-  public static <T extends TServiceClient> T createClient(TServiceClientFactory<T> factory,
-      TTransport transport) {
+  public static <T extends TServiceClient> T createClient(ClientContext context,
+      TServiceClientFactory<T> factory, TTransport transport) {
+    TProtocolFactory protocolFactory = protocolFactory(context);
     return factory.getClient(protocolFactory.getProtocol(transport),
         protocolFactory.getProtocol(transport));
   }
@@ -128,7 +128,7 @@ public class ThriftUtil {
       HostAndPort address, ClientContext context) throws TTransportException {
     TTransport transport = ThriftTransportPool.getInstance().getTransport(address,
         context.getClientTimeoutInMillis(), context);
-    return createClient(factory, transport);
+    return createClient(context, factory, transport);
   }
 
   /**
@@ -148,7 +148,7 @@ public class ThriftUtil {
       HostAndPort address, ClientContext context, long timeout) throws TTransportException {
     TTransport transport =
         ThriftTransportPool.getInstance().getTransport(address, timeout, context);
-    return createClient(factory, transport);
+    return createClient(context, factory, transport);
   }
 
   /**
@@ -225,8 +225,9 @@ public class ThriftUtil {
    * @see #transportFactory(int)
    */
   public static synchronized TTransportFactory transportFactory(long maxFrameSize) {
-    if (maxFrameSize > Integer.MAX_VALUE || maxFrameSize < 1)
+    if (maxFrameSize > Integer.MAX_VALUE || maxFrameSize < 1) {
       throw new RuntimeException("Thrift transport frames are limited to " + Integer.MAX_VALUE);
+    }
     return transportFactory((int) maxFrameSize);
   }
 
@@ -514,8 +515,9 @@ public class ThriftUtil {
       return new TSocket(socket);
     } catch (Exception e) {
       try {
-        if (socket != null)
+        if (socket != null) {
           socket.close();
+        }
       } catch (IOException ioe) {}
 
       throw new TTransportException("Could not connect to " + host + " on port " + port, e);

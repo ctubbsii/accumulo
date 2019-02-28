@@ -31,11 +31,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.fate.zookeeper.ZooReader;
 import org.apache.accumulo.tracer.thrift.RemoteSpan;
 import org.apache.accumulo.tracer.thrift.SpanReceiver.Client;
-import org.apache.htrace.HTraceConfiguration;
+import org.apache.htrace.core.HTraceConfiguration;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -71,12 +71,12 @@ public class ZooTraceClient extends AsyncSpanReceiver<String,Client> implements 
   public ZooTraceClient(HTraceConfiguration conf) {
     super(conf);
 
-    String keepers = conf.get(TraceUtil.TRACER_ZK_HOST);
+    String keepers = conf.get(Trace.TRACER_ZK_HOST);
     if (keepers == null)
-      throw new IllegalArgumentException("Must configure " + TraceUtil.TRACER_ZK_HOST);
-    int timeout = conf.getInt(TraceUtil.TRACER_ZK_TIMEOUT, DEFAULT_TIMEOUT);
+      throw new IllegalArgumentException("Must configure " + Trace.TRACER_ZK_HOST);
+    int timeout = conf.getInt(Trace.TRACER_ZK_TIMEOUT, DEFAULT_TIMEOUT);
     zoo = new ZooReader(keepers, timeout);
-    path = conf.get(TraceUtil.TRACER_ZK_PATH, Constants.ZTRACERS);
+    path = conf.get(Trace.TRACER_ZK_PATH, Constants.ZTRACERS);
     setInitialTraceHosts();
   }
 

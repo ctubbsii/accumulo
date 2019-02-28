@@ -44,7 +44,7 @@ import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.TableId;
 import org.apache.accumulo.core.master.thrift.BulkImportState;
 import org.apache.accumulo.core.rpc.ThriftUtil;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.SimpleThreadPool;
 import org.apache.accumulo.fate.Repo;
@@ -55,7 +55,6 @@ import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.htrace.wrappers.TraceExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,8 +81,9 @@ class LoadFiles extends MasterRepo {
 
   @Override
   public long isReady(long tid, Master master) {
-    if (master.onlineTabletServers().size() == 0)
+    if (master.onlineTabletServers().size() == 0) {
       return 500;
+    }
     return 0;
   }
 
@@ -92,7 +92,7 @@ class LoadFiles extends MasterRepo {
       int threadPoolSize = master.getConfiguration().getCount(Property.MASTER_BULK_THREADPOOL_SIZE);
       ThreadPoolExecutor pool = new SimpleThreadPool(threadPoolSize, "bulk import");
       pool.allowCoreThreadTimeOut(true);
-      threadPool = new TraceExecutorService(pool);
+      threadPool = master.getContext().getTracer().newTraceExecutorService(pool, null);
     }
     return threadPool;
   }
@@ -113,23 +113,26 @@ class LoadFiles extends MasterRepo {
     if (!fs.createNewFile(writable)) {
       // Maybe this is a re-try... clear the flag and try again
       fs.delete(writable);
-      if (!fs.createNewFile(writable))
+      if (!fs.createNewFile(writable)) {
         throw new AcceptableThriftTableOperationException(tableId.canonical(), null,
             TableOperation.BULK_IMPORT, TableOperationExceptionType.BULK_BAD_ERROR_DIRECTORY,
             "Unable to write to " + this.errorDir);
+      }
     }
     fs.delete(writable);
 
     final Set<String> filesToLoad = Collections.synchronizedSet(new HashSet<>());
-    for (FileStatus f : files)
+    for (FileStatus f : files) {
       filesToLoad.add(f.getPath().toString());
+    }
 
     final int RETRIES = Math.max(1, conf.getCount(Property.MASTER_BULK_RETRIES));
     for (int attempt = 0; attempt < RETRIES && filesToLoad.size() > 0; attempt++) {
       List<Future<Void>> results = new ArrayList<>();
 
-      if (master.onlineTabletServers().size() == 0)
+      if (master.onlineTabletServers().size() == 0) {
         log.warn("There are no tablet server to process bulk import, waiting (tid = " + tid + ")");
+      }
 
       while (master.onlineTabletServers().size() == 0) {
         sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
@@ -172,7 +175,7 @@ class LoadFiles extends MasterRepo {
               List<String> attempt1 = Collections.singletonList(file);
               log.debug("Asking " + server + " to bulk import " + file);
               List<String> fail =
-                  client.bulkImportFiles(TraceUtil.traceInfo(), master.getContext().rpcCreds(), tid,
+                  client.bulkImportFiles(Trace.traceInfo(), master.getContext().rpcCreds(), tid,
                       tableId.canonical(), attempt1, errorDir, setTime);
               if (fail.isEmpty()) {
                 loaded.add(file);
@@ -223,8 +226,9 @@ class LoadFiles extends MasterRepo {
       }
       i++;
     }
-    if (i < max)
+    if (i < max) {
       result.delete(result.length() - 2, result.length());
+    }
     result.append("]");
     return result.toString();
   }

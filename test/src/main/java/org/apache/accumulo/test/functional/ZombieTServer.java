@@ -25,12 +25,13 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.accumulo.core.Constants;
+import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.SiteConfiguration;
 import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.securityImpl.thrift.TCredentials;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Iface;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Processor;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.trace.thrift.TInfo;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.ServerServices;
@@ -44,7 +45,6 @@ import org.apache.accumulo.server.ServerContext;
 import org.apache.accumulo.server.metrics.Metrics;
 import org.apache.accumulo.server.rpc.ServerAddress;
 import org.apache.accumulo.server.rpc.TServerUtils;
-import org.apache.accumulo.server.rpc.ThriftServerType;
 import org.apache.accumulo.server.zookeeper.TransactionWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,12 +101,19 @@ public class ZombieTServer {
     Random random = new SecureRandom();
     random.setSeed(System.currentTimeMillis() % 1000);
     int port = random.nextInt(30000) + 2000;
-    ServerContext context = new ServerContext(new SiteConfiguration());
+    SiteConfiguration siteConfig = new SiteConfiguration();
+    ServerContext context = new ServerContext(siteConfig) {
+      @Override
+      public AccumuloConfiguration getConfiguration() {
+        // avoid contacting ZK for system configuration
+        return siteConfig;
+      }
+    };
     TransactionWatcher watcher = new TransactionWatcher(context);
     final ThriftClientHandler tch = new ThriftClientHandler(context, watcher);
     Processor<Iface> processor = new Processor<>(tch);
     ServerAddress serverPort = TServerUtils.startTServer(
-        Metrics.initSystem(ZombieTServer.class.getSimpleName()), context.getConfiguration(),
+        Metrics.initSystem(ZombieTServer.class.getSimpleName()), context,
         ThriftServerType.CUSTOM_HS_HA, processor, "ZombieTServer", "walking dead", 2, 1, 1000,
         10 * 1024 * 1024, null, null, -1, HostAndPort.fromParts("0.0.0.0", port));
 
@@ -124,7 +131,7 @@ public class ZombieTServer {
       @Override
       public void lostLock(final LockLossReason reason) {
         try {
-          tch.halt(TraceUtil.traceInfo(), null, null);
+          tch.halt(Trace.traceInfo(), null, null);
         } catch (Exception ex) {
           log.error("Exception", ex);
           System.exit(1);
@@ -136,7 +143,7 @@ public class ZombieTServer {
       @Override
       public void unableToMonitorLockNode(Throwable e) {
         try {
-          tch.halt(TraceUtil.traceInfo(), null, null);
+          tch.halt(Trace.traceInfo(), null, null);
         } catch (Exception ex) {
           log.error("Exception", ex);
           System.exit(1);

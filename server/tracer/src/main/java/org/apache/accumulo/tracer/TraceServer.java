@@ -138,7 +138,7 @@ public class TraceServer implements Watcher, AutoCloseable {
   class Receiver implements Iface {
     @Override
     public void span(RemoteSpan s) throws TException {
-      String idString = Long.toHexString(s.traceId);
+      String idString = s.tracerId;
       String startString = Long.toHexString(s.start);
       Mutation spanMutation = new Mutation(new Text(idString));
       Mutation indexMutation = new Mutation(new Text("idx:" + s.svc + ":" + startString));
@@ -148,9 +148,9 @@ public class TraceServer implements Watcher, AutoCloseable {
       ByteArrayTransport transport = new ByteArrayTransport();
       TCompactProtocol protocol = new TCompactProtocol(transport);
       s.write(protocol);
-      String parentString = s.getParentIdsSize() == 0 ? "" : s.getParentIds().stream()
-          .map(x -> Long.toHexString(x)).collect(Collectors.toList()).toString();
-      put(spanMutation, "span", parentString + ":" + Long.toHexString(s.spanId), transport.get(),
+      String parentString = s.getParentIdsSize() == 0 ? ""
+          : s.getParentIds().stream().map(String::valueOf).collect(Collectors.toList()).toString();
+      put(spanMutation, "span", parentString + ":" + String.valueOf(s.spanId), transport.get(),
           transport.len());
       // Map the root span to time so we can look up traces by time
       Mutation timeMutation = null;

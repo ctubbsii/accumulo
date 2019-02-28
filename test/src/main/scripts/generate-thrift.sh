@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script will regenerate the thrift code for accumulo-trace.
+# This script will regenerate the thrift code for accumulo-proxy
 INCLUDED_MODULES=(-)
 BASE_OUTPUT_PACKAGE='org.apache.accumulo'
 PACKAGES_TO_GENERATE=(test.rpc)

@@ -45,8 +45,7 @@ import org.apache.accumulo.server.replication.StatusUtil;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +84,7 @@ public class CloseWriteAheadLogReferences implements Runnable {
     }
 
     HashSet<String> closed = null;
-    try (TraceScope findWalsSpan = Trace.startSpan("findReferencedWals")) {
+    try (TraceScope findWalsSpan = context.getTracer().newScope("findReferencedWals")) {
       sw.start();
       closed = getClosedLogs();
     } finally {
@@ -96,7 +95,8 @@ public class CloseWriteAheadLogReferences implements Runnable {
     sw.reset();
 
     long recordsClosed = 0;
-    try (TraceScope updateReplicationSpan = Trace.startSpan("updateReplicationTable")) {
+    try (
+        TraceScope updateReplicationSpan = context.getTracer().newScope("updateReplicationTable")) {
       sw.start();
       recordsClosed = updateReplicationEntries(context, closed);
     } finally {

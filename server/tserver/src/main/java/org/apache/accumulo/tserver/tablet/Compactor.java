@@ -64,8 +64,7 @@ import org.apache.accumulo.tserver.TabletIteratorEnvironment;
 import org.apache.accumulo.tserver.compaction.MajorCompactionReason;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,9 +270,11 @@ public class Compactor implements Callable<CompactionStats> {
           try {
             mfw.close();
           } finally {
-            if (!fs.deleteRecursively(outputFile.path()))
-              if (fs.exists(outputFile.path()))
+            if (!fs.deleteRecursively(outputFile.path())) {
+              if (fs.exists(outputFile.path())) {
                 log.error("Unable to delete {}", outputFile);
+              }
+            }
           }
         }
       } catch (IOException | RuntimeException e) {
@@ -326,8 +327,9 @@ public class Compactor implements Callable<CompactionStats> {
 
         readers.clear();
 
-        if (e instanceof IOException)
+        if (e instanceof IOException) {
           throw (IOException) e;
+        }
         throw new IOException("Failed to open map data files", e);
       }
     }
@@ -339,7 +341,7 @@ public class Compactor implements Callable<CompactionStats> {
       boolean inclusive, FileSKVWriter mfw, CompactionStats majCStats)
       throws IOException, CompactionCanceledException {
     ArrayList<FileSKVIterator> readers = new ArrayList<>(filesToCompact.size());
-    try (TraceScope span = Trace.startSpan("compact")) {
+    try (TraceScope span = context.getTracer().newScope("compact")) {
       long entriesCompacted = 0;
       List<SortedKeyValueIterator<Key,Value>> iters = openMapDataFiles(readers);
 
@@ -356,14 +358,15 @@ public class Compactor implements Callable<CompactionStats> {
       // if(env.getIteratorScope() )
 
       TabletIteratorEnvironment iterEnv;
-      if (env.getIteratorScope() == IteratorScope.majc)
+      if (env.getIteratorScope() == IteratorScope.majc) {
         iterEnv = new TabletIteratorEnvironment(context, IteratorScope.majc, !propogateDeletes,
             acuTableConf, getExtent().getTableId(), getMajorCompactionReason());
-      else if (env.getIteratorScope() == IteratorScope.minc)
+      } else if (env.getIteratorScope() == IteratorScope.minc) {
         iterEnv = new TabletIteratorEnvironment(context, IteratorScope.minc, acuTableConf,
             getExtent().getTableId());
-      else
+      } else {
         throw new IllegalArgumentException();
+      }
 
       SortedKeyValueIterator<Key,Value> itr = iterEnv.getTopLevelIterator(IterConfigUtil
           .convertItersAndLoad(env.getIteratorScope(), cfsi, acuTableConf, iterators, iterEnv));
@@ -376,7 +379,7 @@ public class Compactor implements Callable<CompactionStats> {
         mfw.startNewLocalityGroup(lgName, columnFamilies);
       }
 
-      try (TraceScope write = Trace.startSpan("write")) {
+      try (TraceScope write = context.getTracer().newScope("write")) {
         while (itr.hasTop() && env.isCompactionEnabled()) {
           mfw.append(itr.getTopKey(), itr.getTopValue());
           itr.next();

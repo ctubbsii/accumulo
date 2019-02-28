@@ -64,7 +64,6 @@
         <include>org.apache.commons:commons-text</include>
         <include>org.apache.commons:commons-vfs2</include>
         <include>org.apache.htrace:htrace-core4</include>
-        <include>org.apache.htrace:htrace-core</include>
         <include>org.apache.thrift:libthrift</include>
         <include>org.eclipse.jetty:jetty-continuation</include>
         <include>org.eclipse.jetty:jetty-http</include>

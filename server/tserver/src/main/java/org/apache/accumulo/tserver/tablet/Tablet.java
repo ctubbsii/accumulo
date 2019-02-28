@@ -86,7 +86,7 @@ import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.spi.cache.BlockCache;
 import org.apache.accumulo.core.tabletserver.log.LogEntry;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.LocalityGroupUtil;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.accumulo.core.util.ratelimit.RateLimiter;
@@ -142,9 +142,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
-import org.apache.htrace.impl.ProbabilitySampler;
+import org.apache.htrace.core.ProbabilitySampler;
+import org.apache.htrace.core.TraceScope;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.slf4j.Logger;
@@ -839,7 +838,7 @@ public class Tablet {
     try {
       Thread.currentThread().setName("Minor compacting " + this.extent);
       CompactionStats stats;
-      try (TraceScope span = Trace.startSpan("write")) {
+      try (TraceScope span = context.getTracer().newScope("write")) {
         count = memTable.getNumEntries();
 
         DataFileValue dfv = null;
@@ -852,7 +851,7 @@ public class Tablet {
         stats = compactor.call();
       }
 
-      try (TraceScope span = Trace.startSpan("bringOnline")) {
+      try (TraceScope span = context.getTracer().newScope("bringOnline")) {
         getDatafileManager().bringMinorCompactionOnline(tmpDatafile, newDatafile, mergeFile,
             new DataFileValue(stats.getFileSize(), stats.getEntriesWritten()), commitSession,
             flushId);
@@ -1922,7 +1921,7 @@ public class Tablet {
 
         AccumuloConfiguration tableConf = createCompactionConfiguration(tableConfiguration, plan);
 
-        try (TraceScope span = Trace.startSpan("compactFiles")) {
+        try (TraceScope span = context.getTracer().newScope("compactFiles")) {
           CompactionEnv cenv = new CompactionEnv() {
             @Override
             public boolean isCompactionEnabled() {
@@ -2086,7 +2085,7 @@ public class Tablet {
 
     double tracePercent =
         tabletServer.getConfiguration().getFraction(Property.TSERV_MAJC_TRACE_PERCENT);
-    ProbabilitySampler sampler = TraceUtil.probabilitySampler(tracePercent);
+    ProbabilitySampler sampler = Trace.probabilitySampler(tracePercent);
     try (TraceScope span = Trace.startSpan("majorCompaction", sampler)) {
 
       majCStats = _majorCompact(reason);

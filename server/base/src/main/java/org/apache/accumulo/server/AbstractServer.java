@@ -21,11 +21,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
+import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.conf.SiteConfiguration;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.server.metrics.Metrics;
 import org.apache.accumulo.server.security.SecurityUtil;
 import org.apache.hadoop.metrics2.MetricsSystem;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +52,25 @@ public abstract class AbstractServer implements AutoCloseable, Runnable {
     log.info("Instance " + context.getInstanceID());
     ServerUtil.init(context, appName);
     this.metricsSystem = Metrics.initSystem(getClass().getSimpleName());
-    TraceUtil.enableServerTraces(hostname, appName, context.getConfiguration());
     if (context.getSaslParams() != null) {
       // Server-side "client" check to make sure we're logged in as a user we expect to be
       context.enforceKerberosLogin();
     }
+  }
+
+  public Tracer getTracer(String name, Sampler sampler) {
+    AccumuloConfiguration conf = context.getConfiguration();
+    // @formatter:off
+    Tracer t = Trace.createTracer(hostname, name,
+        conf.get(Property.TRACE_SPAN_RECEIVERS),
+        conf.get(Property.INSTANCE_ZK_HOST),
+        conf.getTimeInMillis(Property.INSTANCE_ZK_TIMEOUT),
+        conf.get(Property.TRACE_ZK_PATH),
+        conf.getAllPropertiesWithPrefix(Property.TRACE_SPAN_RECEIVER_PREFIX),
+        Property.TRACE_SPAN_RECEIVER_PREFIX.getKey());
+    // @formatter:on
+    t.addSampler(sampler);
+    return t;
   }
 
   /**
@@ -96,8 +113,6 @@ public abstract class AbstractServer implements AutoCloseable, Runnable {
   }
 
   @Override
-  public void close() {
-    TraceUtil.disable();
-  }
+  public void close() {}
 
 }

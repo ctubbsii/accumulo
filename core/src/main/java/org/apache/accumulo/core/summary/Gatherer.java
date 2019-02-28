@@ -66,7 +66,7 @@ import org.apache.accumulo.core.spi.cache.BlockCache;
 import org.apache.accumulo.core.spi.crypto.CryptoService;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Client;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.trace.thrift.TInfo;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.CancelFlagFuture;
@@ -500,8 +500,7 @@ public class Gatherer {
    */
   public Future<SummaryCollection> processPartition(ExecutorService execSrv, int modulus,
       int remainder) {
-    PartitionFuture future =
-        new PartitionFuture(TraceUtil.traceInfo(), execSrv, modulus, remainder);
+    PartitionFuture future = new PartitionFuture(Trace.traceInfo(), execSrv, modulus, remainder);
     future.initiateProcessing();
     return future;
   }
@@ -590,7 +589,7 @@ public class Gatherer {
 
     AtomicBoolean cancelFlag = new AtomicBoolean(false);
 
-    TInfo tinfo = TraceUtil.traceInfo();
+    TInfo tinfo = Trace.traceInfo();
     for (int i = 0; i < numRequest; i++) {
       futures.add(
           CompletableFuture.supplyAsync(new GatherRequest(tinfo, i, numRequest, cancelFlag), es));

@@ -81,8 +81,7 @@ import org.apache.accumulo.tserver.compaction.MajorCompactionReason;
 import org.apache.accumulo.tserver.compaction.MajorCompactionRequest;
 import org.apache.accumulo.tserver.session.ScanSession;
 import org.apache.accumulo.tserver.tablet.Tablet;
-import org.apache.htrace.wrappers.TraceExecutorService;
-import org.apache.htrace.wrappers.TraceRunnable;
+import org.apache.htrace.core.TraceRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +138,7 @@ public class TabletServerResourceManager {
       throw new IllegalArgumentException(
           "Cannot create two executor services with same name " + name);
     }
-    tp = new TraceExecutorService(tp);
+    tp = context.getTracer().newTraceExecutorService(tp, null);
     threadPools.put(name, tp);
     return tp;
   }

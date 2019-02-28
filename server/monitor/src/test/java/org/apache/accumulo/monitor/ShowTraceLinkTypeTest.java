@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.apache.accumulo.tracer.thrift.RemoteSpan;
+import org.apache.htrace.core.SpanId;
 import org.junit.Test;
 
 public class ShowTraceLinkTypeTest {
   private static RemoteSpan rs(long start, long stop, String description) {
-    return new RemoteSpan("sender", "svc", 0L, 0L, Collections.singletonList(0L), start, stop,
-        description, Collections.emptyMap(), Collections.emptyList());
+    return new RemoteSpan("sender", "svc", "dummyTracer", SpanId.INVALID.toString(),
+        Collections.singletonList(SpanId.INVALID.toString()), start, stop, description,
+        Collections.emptyMap(), Collections.emptyList());
   }
 
   @Test

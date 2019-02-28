@@ -81,11 +81,11 @@ public class TraceFormatter implements Formatter {
       RemoteSpan span = getRemoteSpan(next);
       result.append("----------------------\n");
       result.append(String.format(" %12s:%s%n", "name", span.description));
-      result.append(String.format(" %12s:%s%n", "trace", Long.toHexString(span.traceId)));
+      result.append(String.format(" %12s:%s%n", "trace", span.tracerId));
       result.append(String.format(" %12s:%s%n", "loc", span.svc + "@" + span.sender));
-      result.append(String.format(" %12s:%s%n", "span", Long.toHexString(span.spanId)));
+      result.append(String.format(" %12s:%s%n", "span", String.valueOf(span.spanId)));
       String parentString = span.getParentIdsSize() == 0 ? "" : span.getParentIds().stream()
-          .map(x -> Long.toHexString(x)).collect(Collectors.toList()).toString();
+          .map(String::valueOf).collect(Collectors.toList()).toString();
       result.append(String.format(" %12s:%s%n", "parent", parentString));
       result.append(String.format(" %12s:%s%n", "start", dateFormatter.format(span.start)));
       result.append(String.format(" %12s:%s%n", "ms", span.stop - span.start));

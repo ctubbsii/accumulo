@@ -16,8 +16,8 @@
  */
 package org.apache.accumulo.core.rpc;
 
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.accumulo.core.clientImpl.ClientContext;
+import org.apache.htrace.core.TraceScope;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TMessage;
@@ -30,6 +30,11 @@ import org.apache.thrift.transport.TTransport;
  */
 public class TraceProtocolFactory extends TCompactProtocol.Factory {
   private static final long serialVersionUID = 1L;
+  private final ClientContext context;
+
+  public TraceProtocolFactory(ClientContext context) {
+    this.context = context;
+  }
 
   @Override
   public TProtocol getProtocol(TTransport trans) {
@@ -38,7 +43,7 @@ public class TraceProtocolFactory extends TCompactProtocol.Factory {
 
       @Override
       public void writeMessageBegin(TMessage message) throws TException {
-        span = Trace.startSpan("client:" + message.name);
+        span = context.getTracer().newScope("client:" + message.name);
         super.writeMessageBegin(message);
       }
 

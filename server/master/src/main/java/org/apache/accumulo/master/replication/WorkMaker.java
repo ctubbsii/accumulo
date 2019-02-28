@@ -42,8 +42,7 @@ import org.apache.accumulo.server.replication.StatusUtil;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +71,7 @@ public class WorkMaker {
       return;
     }
 
-    try (TraceScope span = Trace.startSpan("replicationWorkMaker")) {
+    try (TraceScope span = context.getTracer().newScope("replicationWorkMaker")) {
       final Scanner s;
       try {
         s = ReplicationTable.getScanner(client);
@@ -128,7 +127,7 @@ public class WorkMaker {
         // TODO Don't replicate if it's a only a newFile entry (nothing to replicate yet)
         // -- Another scanner over the WorkSection can make this relatively cheap
         if (!replicationTargets.isEmpty()) {
-          try (TraceScope workSpan = Trace.startSpan("createWorkMutations")) {
+          try (TraceScope workSpan = context.getTracer().newScope("createWorkMutations")) {
             addWorkRecord(file, entry.getValue(), replicationTargets, tableId);
           }
         } else {

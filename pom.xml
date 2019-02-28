@@ -124,8 +124,7 @@
     <forkCount>1</forkCount>
     <hadoop.version>3.1.1</hadoop.version>
     <hk2.version>2.5.0</hk2.version>
-    <htrace.hadoop.version>4.1.0-incubating</htrace.hadoop.version>
-    <htrace.version>3.2.0-incubating</htrace.version>
+    <htrace.version>4.1.0-incubating</htrace.version>
     <it.failIfNoSpecifiedTests>false</it.failIfNoSpecifiedTests>
     <jackson.version>2.9.9</jackson.version>
     <javax.el.version>3.0.1-b06</javax.el.version>
@@ -497,13 +496,8 @@
       </dependency>
       <dependency>
         <groupId>org.apache.htrace</groupId>
-        <artifactId>htrace-core</artifactId>
-        <version>${htrace.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.htrace</groupId>
         <artifactId>htrace-core4</artifactId>
-        <version>${htrace.hadoop.version}</version>
+        <version>${htrace.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>

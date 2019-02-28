@@ -39,7 +39,7 @@ import org.apache.accumulo.core.master.thrift.MasterMonitorInfo;
 import org.apache.accumulo.core.master.thrift.TableInfo;
 import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.fate.util.UtilWaitThread;
 import org.apache.accumulo.minicluster.ServerType;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloConfigImpl;
@@ -112,7 +112,7 @@ public class BalanceAfterCommsFailureIT extends ConfigurableMacBase {
       while (true) {
         try {
           client = MasterClient.getConnectionWithRetry(context);
-          stats = client.getMasterStats(TraceUtil.traceInfo(), context.rpcCreds());
+          stats = client.getMasterStats(Trace.traceInfo(), context.rpcCreds());
           break;
         } catch (ThriftNotActiveServiceException e) {
           // Let it loop, fetching a new location

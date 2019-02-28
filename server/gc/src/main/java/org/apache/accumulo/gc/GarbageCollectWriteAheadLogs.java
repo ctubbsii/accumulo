@@ -56,8 +56,7 @@ import org.apache.accumulo.server.master.state.TabletState;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +128,7 @@ public class GarbageCollectWriteAheadLogs {
       Map<TServerInstance,Set<UUID>> logsByServer;
       Map<UUID,Pair<WalState,Path>> logsState;
       Map<UUID,Path> recoveryLogs;
-      try (TraceScope span = Trace.startSpan("getCandidates")) {
+      try (TraceScope span = context.getTracer().newScope("getCandidates")) {
         status.currentLog.started = System.currentTimeMillis();
 
         recoveryLogs = getSortedWALogs();
@@ -154,7 +153,7 @@ public class GarbageCollectWriteAheadLogs {
       Set<TServerInstance> currentServers = liveServers.getCurrentServers();
 
       Map<UUID,TServerInstance> uuidToTServer;
-      try (TraceScope span = Trace.startSpan("removeEntriesInUse")) {
+      try (TraceScope span = context.getTracer().newScope("removeEntriesInUse")) {
         uuidToTServer = removeEntriesInUse(logsByServer, currentServers, logsState, recoveryLogs);
         count = uuidToTServer.size();
       } catch (Exception ex) {
@@ -166,7 +165,7 @@ public class GarbageCollectWriteAheadLogs {
       log.info(String.format("%d log entries scanned in %.2f seconds", count,
           (logEntryScanStop - fileScanStop) / 1000.));
 
-      try (TraceScope span = Trace.startSpan("removeReplicationEntries")) {
+      try (TraceScope span = context.getTracer().newScope("removeReplicationEntries")) {
         count = removeReplicationEntries(uuidToTServer);
       } catch (Exception ex) {
         log.error("Unable to scan replication table", ex);
@@ -178,7 +177,7 @@ public class GarbageCollectWriteAheadLogs {
           (replicationEntryScanStop - logEntryScanStop) / 1000.));
 
       long removeStop;
-      try (TraceScope span = Trace.startSpan("removeFiles")) {
+      try (TraceScope span = context.getTracer().newScope("removeFiles")) {
 
         logsState.keySet().retainAll(uuidToTServer.keySet());
         count = removeFiles(logsState.values(), status);
@@ -191,7 +190,7 @@ public class GarbageCollectWriteAheadLogs {
         log.info("{} recovery logs removed", count);
       }
 
-      try (TraceScope span = Trace.startSpan("removeMarkers")) {
+      try (TraceScope span = context.getTracer().newScope("removeMarkers")) {
         count = removeTabletServerMarkers(uuidToTServer, logsByServer, currentServers);
         long removeMarkersStop = System.currentTimeMillis();
         log.info(String.format("%d markers removed in %.2f seconds", count,

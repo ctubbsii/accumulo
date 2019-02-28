@@ -148,7 +148,7 @@ import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Iface;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Processor;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.trace.thrift.TInfo;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.ColumnFQ;
@@ -263,8 +263,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSystem;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TServiceClient;
@@ -1034,7 +1033,7 @@ public class TabletServer extends AbstractServer {
         TabletServer.this.resourceManager.waitUntilCommitsAreEnabled();
       }
 
-      try (TraceScope prep = Trace.startSpan("prep")) {
+      try (TraceScope prep = getContext().getTracer().newScope("prep")) {
         for (Entry<Tablet,? extends List<Mutation>> entry : us.queuedMutations.entrySet()) {
 
           Tablet tablet = entry.getKey();
@@ -1095,7 +1094,7 @@ public class TabletServer extends AbstractServer {
         throw new RuntimeException(error);
       }
       try {
-        try (TraceScope wal = Trace.startSpan("wal")) {
+        try (TraceScope wal = getContext().getTracer().newScope("wal")) {
           while (true) {
             try {
               long t1 = System.currentTimeMillis();
@@ -1116,7 +1115,7 @@ public class TabletServer extends AbstractServer {
           }
         }
 
-        try (TraceScope commit = Trace.startSpan("commit")) {
+        try (TraceScope commit = getContext().getTracer().newScope("commit")) {
           long t1 = System.currentTimeMillis();
           sendables.forEach((commitSession, mutations) -> {
             commitSession.commit(mutations);
@@ -1250,7 +1249,7 @@ public class TabletServer extends AbstractServer {
         final List<Mutation> mutations = Collections.singletonList(mutation);
 
         CommitSession cs;
-        try (TraceScope prep = Trace.startSpan("prep")) {
+        try (TraceScope prep = getContext().getTracer().newScope("prep")) {
           cs = tablet.prepareMutationsForCommit(
               new TservConstraintEnv(getContext(), security, credentials), mutations);
         }
@@ -1263,7 +1262,7 @@ public class TabletServer extends AbstractServer {
         // instead of always looping on true, skip completely when durability is NONE
         while (durability != Durability.NONE) {
           try {
-            try (TraceScope wal = Trace.startSpan("wal")) {
+            try (TraceScope wal = getContext().getTracer().newScope("wal")) {
               logger.log(cs, mutation, durability);
             }
             break;
@@ -1272,7 +1271,7 @@ public class TabletServer extends AbstractServer {
           }
         }
 
-        try (TraceScope commit = Trace.startSpan("commit")) {
+        try (TraceScope commit = getContext().getTracer().newScope("commit")) {
           cs.commit(mutations);
         }
       } catch (TConstraintViolationException e) {
@@ -1350,7 +1349,7 @@ public class TabletServer extends AbstractServer {
 
       boolean sessionCanceled = sess.interruptFlag.get();
 
-      try (TraceScope prepSpan = Trace.startSpan("prep")) {
+      try (TraceScope prepSpan = getContext().getTracer().newScope("prep")) {
         long t1 = System.currentTimeMillis();
         for (Entry<KeyExtent,List<ServerConditionalMutation>> entry : es) {
           final Tablet tablet = getOnlineTablet(entry.getKey());
@@ -1410,7 +1409,7 @@ public class TabletServer extends AbstractServer {
         updateAvgPrepTime(t2 - t1, es.size());
       }
 
-      try (TraceScope walSpan = Trace.startSpan("wal")) {
+      try (TraceScope walSpan = getContext().getTracer().newScope("wal")) {
         while (loggables.size() > 0) {
           try {
             long t1 = System.currentTimeMillis();
@@ -1428,7 +1427,7 @@ public class TabletServer extends AbstractServer {
         }
       }
 
-      try (TraceScope commitSpan = Trace.startSpan("commit")) {
+      try (TraceScope commitSpan = getContext().getTracer().newScope("commit")) {
         long t1 = System.currentTimeMillis();
         sendables.forEach(CommitSession::commit);
         long t2 = System.currentTimeMillis();
@@ -1453,11 +1452,12 @@ public class TabletServer extends AbstractServer {
       // get as many locks as possible w/o blocking... defer any rows that are locked
       List<RowLock> locks = rowLocks.acquireRowlocks(updates, deferred);
       try {
-        try (TraceScope checkSpan = Trace.startSpan("Check conditions")) {
+        try (TraceScope checkSpan = getContext().getTracer().newScope("Check conditions")) {
           checkConditions(updates, results, cs, symbols);
         }
 
-        try (TraceScope updateSpan = Trace.startSpan("apply conditional mutations")) {
+        try (TraceScope updateSpan =
+            getContext().getTracer().newScope("apply conditional mutations")) {
           writeConditionalMutations(updates, results, cs);
         }
       } finally {
@@ -2605,7 +2605,7 @@ public class TabletServer extends AbstractServer {
   private HostAndPort startTabletClientService() throws UnknownHostException {
     // start listening for client connection last
     clientHandler = new ThriftClientHandler();
-    Iface rpcProxy = TraceUtil.wrapService(clientHandler);
+    Iface rpcProxy = Trace.wrapService(getContext().getTracer(), clientHandler);
     final Processor<Iface> processor;
     if (getContext().getThriftServerType() == ThriftServerType.SASL) {
       Iface tcredProxy = TCredentialsUpdatingWrapper.service(rpcProxy, ThriftClientHandler.class,
@@ -2622,7 +2622,7 @@ public class TabletServer extends AbstractServer {
 
   private void startReplicationService() throws UnknownHostException {
     final ReplicationServicerHandler handler = new ReplicationServicerHandler(this);
-    ReplicationServicer.Iface rpcProxy = TraceUtil.wrapService(handler);
+    ReplicationServicer.Iface rpcProxy = Trace.wrapService(getContext().getTracer(), handler);
     ReplicationServicer.Iface repl =
         TCredentialsUpdatingWrapper.service(rpcProxy, handler.getClass(), getConfiguration());
     ReplicationServicer.Processor<ReplicationServicer.Iface> processor =

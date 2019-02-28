@@ -27,6 +27,7 @@ import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.clientImpl.ClientContext;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.TableId;
@@ -44,8 +45,7 @@ import org.apache.accumulo.server.fs.VolumeManager;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +82,8 @@ public class StatusMaker {
   }
 
   public void run() {
-    try (TraceScope span = Trace.startSpan("replicationStatusMaker")) {
+    try (
+        TraceScope span = ((ClientContext) client).getTracer().newScope("replicationStatusMaker")) {
       // Read from a source table (typically accumulo.metadata)
       final Scanner s;
       try {
@@ -125,7 +126,8 @@ public class StatusMaker {
         log.debug("Creating replication status record for {} on table {} with {}.", file, tableId,
             ProtobufUtil.toString(status));
 
-        try (TraceScope workSpan = Trace.startSpan("createStatusMutations")) {
+        try (TraceScope workSpan =
+            ((ClientContext) client).getTracer().newScope("createStatusMutations")) {
           // Create entries in the replication table from the metadata table
           if (!addStatusRecord(file, tableId, entry.getValue())) {
             continue;
@@ -133,13 +135,15 @@ public class StatusMaker {
         }
 
         if (status.getClosed()) {
-          try (TraceScope orderSpan = Trace.startSpan("recordStatusOrder")) {
+          try (TraceScope orderSpan =
+              ((ClientContext) client).getTracer().newScope("recordStatusOrder")) {
             if (!addOrderRecord(file, tableId, status, entry.getValue())) {
               continue;
             }
           }
 
-          try (TraceScope deleteSpan = Trace.startSpan("deleteClosedStatus")) {
+          try (TraceScope deleteSpan =
+              ((ClientContext) client).getTracer().newScope("deleteClosedStatus")) {
             deleteStatusRecord(entry.getKey());
           }
         }

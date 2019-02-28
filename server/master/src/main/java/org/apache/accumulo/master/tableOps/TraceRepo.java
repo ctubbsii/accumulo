@@ -16,46 +16,50 @@
  */
 package org.apache.accumulo.master.tableOps;
 
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.trace.thrift.TInfo;
 import org.apache.accumulo.fate.Repo;
-import org.apache.htrace.TraceScope;
+import org.apache.accumulo.master.Master;
+import org.apache.htrace.core.TraceScope;
 
-public class TraceRepo<T> implements Repo<T> {
+public class TraceRepo implements Repo<Master> {
 
   private static final long serialVersionUID = 1L;
 
-  long traceId;
-  long parentId;
-  Repo<T> repo;
+  long traceId; // the parent's "high" 64 bits (same all spans within a trace)
+  long parentId; // the parent's "low" 64 bits (unique per span)
+  Repo<Master> repo;
 
-  public TraceRepo(Repo<T> repo) {
+  public TraceRepo(Repo<Master> repo) {
     this.repo = repo;
-    TInfo tinfo = TraceUtil.traceInfo();
+    TInfo tinfo = Trace.traceInfo();
     traceId = tinfo.traceId;
     parentId = tinfo.parentId;
   }
 
   @Override
-  public long isReady(long tid, T environment) throws Exception {
-    try (TraceScope t = TraceUtil.trace(new TInfo(traceId, parentId), repo.getDescription())) {
+  public long isReady(long tid, Master environment) throws Exception {
+    try (TraceScope t = Trace.trace(environment.getContext().getTracer(),
+        new TInfo(traceId, parentId), repo.getDescription())) {
       return repo.isReady(tid, environment);
     }
   }
 
   @Override
-  public Repo<T> call(long tid, T environment) throws Exception {
-    try (TraceScope t = TraceUtil.trace(new TInfo(traceId, parentId), repo.getDescription())) {
-      Repo<T> result = repo.call(tid, environment);
+  public Repo<Master> call(long tid, Master environment) throws Exception {
+    try (TraceScope t = Trace.trace(environment.getContext().getTracer(),
+        new TInfo(traceId, parentId), repo.getDescription())) {
+      Repo<Master> result = repo.call(tid, environment);
       if (result == null)
         return null;
-      return new TraceRepo<>(result);
+      return new TraceRepo(result);
     }
   }
 
   @Override
-  public void undo(long tid, T environment) throws Exception {
-    try (TraceScope t = TraceUtil.trace(new TInfo(traceId, parentId), repo.getDescription())) {
+  public void undo(long tid, Master environment) throws Exception {
+    try (TraceScope t = Trace.trace(environment.getContext().getTracer(),
+        new TInfo(traceId, parentId), repo.getDescription())) {
       repo.undo(tid, environment);
     }
   }

@@ -26,22 +26,22 @@ import java.util.Set;
 import org.apache.accumulo.tracer.thrift.RemoteSpan;
 
 public class SpanTree {
-  final Map<Long,List<Long>> parentChildren = new HashMap<>();
-  public final Map<Long,RemoteSpan> nodes = new HashMap<>();
-  private final List<Long> rootSpans = new ArrayList<>();
+  final Map<String,List<String>> parentChildren = new HashMap<>();
+  public final Map<String,RemoteSpan> nodes = new HashMap<>();
+  private final List<String> rootSpans = new ArrayList<>();
 
   public void addNode(RemoteSpan span) {
     nodes.put(span.spanId, span);
     if (span.getParentIdsSize() == 0) {
       rootSpans.add(span.spanId);
     }
-    for (Long parentId : span.getParentIds()) {
+    span.getParentIds().forEach(parentId -> {
       parentChildren.computeIfAbsent(parentId, id -> new ArrayList<>()).add(span.spanId);
-    }
+    });
   }
 
-  public Set<Long> visit(SpanTreeVisitor visitor) {
-    Set<Long> visited = new HashSet<>();
+  public Set<String> visit(SpanTreeVisitor visitor) {
+    Set<String> visited = new HashSet<>();
     if (rootSpans.isEmpty())
       return visited;
     RemoteSpan rootSpan = nodes.get(rootSpans.iterator().next());
@@ -51,16 +51,16 @@ public class SpanTree {
     return visited;
   }
 
-  private void recurse(int level, RemoteSpan node, SpanTreeVisitor visitor, Set<Long> visited) {
+  private void recurse(int level, RemoteSpan node, SpanTreeVisitor visitor, Set<String> visited) {
     // improbable case: duplicate spanId in a trace tree: prevent
     // infinite recursion
     if (visited.contains(node.spanId))
       return;
     visited.add(node.spanId);
     List<RemoteSpan> children = new ArrayList<>();
-    List<Long> childrenIds = parentChildren.get(node.spanId);
+    List<String> childrenIds = parentChildren.get(node.spanId);
     if (childrenIds != null) {
-      for (Long childId : childrenIds) {
+      for (String childId : childrenIds) {
         RemoteSpan child = nodes.get(childId);
         if (child != null) {
           children.add(child);

@@ -34,12 +34,11 @@ import org.apache.accumulo.core.data.PartialKey;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Sampler;
-import org.apache.htrace.Span;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.Span;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,20 +90,19 @@ public class VerifyIngest {
     Opts opts = new Opts();
     opts.parseArgs(VerifyIngest.class.getName(), args);
     if (opts.trace) {
-      TraceUtil.enableClientTraces(null, null, new Properties());
+      Trace.createTracerForClient("localhost", "VerifyIngest", new Properties());
     }
     try (TraceScope clientSpan =
         Trace.startSpan(VerifyIngest.class.getSimpleName(), Sampler.ALWAYS)) {
       Span span = clientSpan.getSpan();
-      if (span != null)
+      if (span != null) {
         span.addKVAnnotation("cmdLine", Arrays.asList(args).toString());
+      }
 
       try (AccumuloClient client = Accumulo.newClient().from(opts.getClientProps()).build()) {
         verifyIngest(client, opts.getVerifyParams());
       }
 
-    } finally {
-      TraceUtil.disable();
     }
   }
 

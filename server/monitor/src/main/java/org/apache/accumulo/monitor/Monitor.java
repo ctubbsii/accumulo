@@ -51,7 +51,7 @@ import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.rpc.ThriftUtil;
 import org.apache.accumulo.core.tabletserver.thrift.ActiveScan;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService.Client;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.Daemon;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.Pair;
@@ -252,7 +252,7 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
         try {
           client = MasterClient.getConnection(context);
           if (client != null) {
-            mmi = client.getMasterStats(TraceUtil.traceInfo(), context.rpcCreds());
+            mmi = client.getMasterStats(Trace.traceInfo(), context.rpcCreds());
             retry = false;
           } else {
             mmi = null;
@@ -396,7 +396,7 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
         GCMonitorService.Client client =
             ThriftUtil.getClient(new GCMonitorService.Client.Factory(), address, context);
         try {
-          result = client.getStatus(TraceUtil.traceInfo(), context.rpcCreds());
+          result = client.getStatus(Trace.traceInfo(), context.rpcCreds());
         } finally {
           ThriftUtil.returnClient(client);
         }

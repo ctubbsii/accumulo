@@ -50,7 +50,7 @@ public class TraceTableStats {
     long nonzeroCount = 0L;
     long zeroCount = 0L;
     ArrayList<Long> log10SpanLength = new ArrayList<>();
-    Set<Long> traceIds = new HashSet<>();
+    Set<String> traceIds = new HashSet<>();
 
     public SpanTypeCount() {
       for (int i = 0; i < 7; i++)
@@ -128,7 +128,7 @@ public class TraceTableStats {
   }
 
   private static void increment(SpanTypeCount stc, RemoteSpan span) {
-    stc.traceIds.add(span.getTraceId());
+    stc.traceIds.add(span.getTracerId());
     if (span.stop == span.start) {
       stc.zeroCount++;
       incrementIndex(stc.log10SpanLength, 0);

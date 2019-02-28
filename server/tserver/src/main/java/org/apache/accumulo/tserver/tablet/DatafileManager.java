@@ -48,8 +48,7 @@ import org.apache.accumulo.server.util.MasterMetadataUtil;
 import org.apache.accumulo.server.util.MetadataTableUtil;
 import org.apache.accumulo.server.util.ReplicationTableUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,22 +120,26 @@ class DatafileManager {
     synchronized (tablet) {
       Set<FileRef> absFilePaths = scanFileReservations.remove(reservationId);
 
-      if (absFilePaths == null)
+      if (absFilePaths == null) {
         throw new IllegalArgumentException("Unknown scan reservation id " + reservationId);
+      }
 
       boolean notify = false;
       for (FileRef path : absFilePaths) {
         long refCount = fileScanReferenceCounts.decrement(path, 1);
         if (refCount == 0) {
-          if (filesToDeleteAfterScan.remove(path))
+          if (filesToDeleteAfterScan.remove(path)) {
             filesToDelete.add(path);
+          }
           notify = true;
-        } else if (refCount < 0)
+        } else if (refCount < 0) {
           throw new IllegalStateException("Scan ref count for " + path + " is " + refCount);
+        }
       }
 
-      if (notify)
+      if (notify) {
         tablet.notifyAll();
+      }
     }
 
     if (filesToDelete.size() > 0) {
@@ -147,17 +150,19 @@ class DatafileManager {
   }
 
   void removeFilesAfterScan(Set<FileRef> scanFiles) {
-    if (scanFiles.size() == 0)
+    if (scanFiles.size() == 0) {
       return;
+    }
 
     Set<FileRef> filesToDelete = new HashSet<>();
 
     synchronized (tablet) {
       for (FileRef path : scanFiles) {
-        if (fileScanReferenceCounts.get(path) == 0)
+        if (fileScanReferenceCounts.get(path) == 0) {
           filesToDelete.add(path);
-        else
+        } else {
           filesToDeleteAfterScan.add(path);
+        }
       }
     }
 
@@ -173,11 +178,13 @@ class DatafileManager {
     long startTime = System.currentTimeMillis();
     TreeSet<FileRef> inUse = new TreeSet<>();
 
-    try (TraceScope waitForScans = Trace.startSpan("waitForScans")) {
+    try (TraceScope waitForScans =
+        tablet.getTabletServer().getContext().getTracer().newScope("waitForScans")) {
       synchronized (tablet) {
         if (blockNewScans) {
-          if (reservationsBlocked)
+          if (reservationsBlocked) {
             throw new IllegalStateException();
+          }
 
           reservationsBlocked = true;
         }
@@ -194,8 +201,9 @@ class DatafileManager {
         }
 
         for (FileRef path : pathsToWaitFor) {
-          if (fileScanReferenceCounts.get(path) > 0)
+          if (fileScanReferenceCounts.get(path) > 0) {
             inUse.add(path);
+          }
         }
 
         if (blockNewScans) {
@@ -214,8 +222,9 @@ class DatafileManager {
     String bulkDir = null;
 
     Map<FileRef,DataFileValue> paths = new HashMap<>();
-    for (Entry<FileRef,DataFileValue> entry : pathsString.entrySet())
+    for (Entry<FileRef,DataFileValue> entry : pathsString.entrySet()) {
       paths.put(entry.getKey(), entry.getValue());
+    }
 
     for (FileRef tpath : paths.keySet()) {
 
@@ -231,10 +240,11 @@ class DatafileManager {
         throw new IOException("Data file " + tpath + " not in table dirs");
       }
 
-      if (bulkDir == null)
+      if (bulkDir == null) {
         bulkDir = tpath.path().getParent().toString();
-      else if (!bulkDir.equals(tpath.path().getParent().toString()))
+      } else if (!bulkDir.equals(tpath.path().getParent().toString())) {
         throw new IllegalArgumentException("bulk files in different dirs " + bulkDir + " " + tpath);
+      }
 
     }
 
@@ -249,9 +259,10 @@ class DatafileManager {
         if (setTime) {
           for (DataFileValue dfv : paths.values()) {
             long nextTime = tablet.getAndUpdateTime();
-            if (nextTime < bulkTime)
+            if (nextTime < bulkTime) {
               throw new IllegalStateException(
                   "Time went backwards unexpectedly " + nextTime + " " + bulkTime);
+            }
             bulkTime = nextTime;
             dfv.setTime(bulkTime);
           }
@@ -282,13 +293,15 @@ class DatafileManager {
   }
 
   FileRef reserveMergingMinorCompactionFile() {
-    if (mergingMinorCompactionFile != null)
+    if (mergingMinorCompactionFile != null) {
       throw new IllegalStateException(
           "Tried to reserve merging minor compaction file when already reserved  : "
               + mergingMinorCompactionFile);
+    }
 
-    if (tablet.getExtent().isRootTablet())
+    if (tablet.getExtent().isRootTablet()) {
       return null;
+    }
 
     int maxFiles = tablet.getTableConfiguration().getMaxFilesPerTablet();
 
@@ -298,8 +311,9 @@ class DatafileManager {
     // largest file is returned for merging.. the following check mostly
     // avoids this case, except for the case where major compactions fail or
     // are canceled
-    if (majorCompactingFiles.size() > 0 && datafileSizes.size() == maxFiles)
+    if (majorCompactingFiles.size() > 0 && datafileSizes.size() == maxFiles) {
       return null;
+    }
 
     if (datafileSizes.size() >= maxFiles) {
       // find the smallest file
@@ -320,8 +334,9 @@ class DatafileManager {
         }
       }
 
-      if (minName == null)
+      if (minName == null) {
         return null;
+      }
 
       mergingMinorCompactionFile = minName;
       return minName;
@@ -333,8 +348,9 @@ class DatafileManager {
   void unreserveMergingMinorCompactionFile(FileRef file) {
     if ((file == null && mergingMinorCompactionFile != null)
         || (file != null && mergingMinorCompactionFile == null) || (file != null
-            && mergingMinorCompactionFile != null && !file.equals(mergingMinorCompactionFile)))
+            && mergingMinorCompactionFile != null && !file.equals(mergingMinorCompactionFile))) {
       throw new IllegalStateException("Disagreement " + file + " " + mergingMinorCompactionFile);
+    }
 
     mergingMinorCompactionFile = null;
   }
@@ -387,14 +403,16 @@ class DatafileManager {
     // memory was updated... assuming the file is always in use by scans leads to
     // one unneeded metadata update when it was not actually in use
     Set<FileRef> filesInUseByScans = Collections.emptySet();
-    if (absMergeFile != null)
+    if (absMergeFile != null) {
       filesInUseByScans = Collections.singleton(absMergeFile);
+    }
 
     // very important to write delete entries outside of log lock, because
     // this metadata write does not go up... it goes sideways or to itself
-    if (absMergeFile != null)
+    if (absMergeFile != null) {
       MetadataTableUtil.addDeleteEntries(tablet.getExtent(), Collections.singleton(absMergeFile),
           tablet.getContext());
+    }
 
     Set<String> unusedWalLogs = tablet.beginClearingUnusedLogs();
     boolean replicate =
@@ -486,11 +504,12 @@ class DatafileManager {
     // must do this after list of files in memory is updated above
     removeFilesAfterScan(filesInUseByScans);
 
-    if (absMergeFile != null)
+    if (absMergeFile != null) {
       log.debug("TABLET_HIST {} MinC [{},memory] -> {}", tablet.getExtent(), absMergeFile,
           newDatafile);
-    else
+    } else {
       log.debug("TABLET_HIST {} MinC [memory] -> {}", tablet.getExtent(), newDatafile);
+    }
     log.debug(String.format("MinC finish lock %.2f secs %s", (t2 - t1) / 1000.0,
         tablet.getExtent().toString()));
     long splitSize = tablet.getTableConfiguration().getAsBytes(Property.TABLE_SPLIT_THRESHOLD);
@@ -501,13 +520,15 @@ class DatafileManager {
   }
 
   public void reserveMajorCompactingFiles(Collection<FileRef> files) {
-    if (majorCompactingFiles.size() != 0)
+    if (majorCompactingFiles.size() != 0) {
       throw new IllegalStateException("Major compacting files not empty " + majorCompactingFiles);
+    }
 
-    if (mergingMinorCompactionFile != null && files.contains(mergingMinorCompactionFile))
+    if (mergingMinorCompactionFile != null && files.contains(mergingMinorCompactionFile)) {
       throw new IllegalStateException(
           "Major compaction tried to resrve file in use by minor compaction "
               + mergingMinorCompactionFile);
+    }
 
     majorCompactingFiles.addAll(files);
   }
@@ -599,8 +620,9 @@ class DatafileManager {
 
     if (!extent.isRootTablet()) {
       Set<FileRef> filesInUseByScans = waitForScansToFinish(oldDatafiles, false, 10000);
-      if (filesInUseByScans.size() > 0)
+      if (filesInUseByScans.size() > 0) {
         log.debug("Adding scan refs to metadata {} {}", extent, filesInUseByScans);
+      }
       MasterMetadataUtil.replaceDatafiles(tablet.getContext(), extent, oldDatafiles,
           filesInUseByScans, newDatafile, compactionId, dfv,
           tablet.getTabletServer().getClientAddressString(), lastLocation,

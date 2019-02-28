@@ -62,11 +62,10 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.tabletserver.thrift.NoSuchScanIDException;
 import org.apache.accumulo.core.tabletserver.thrift.TSampleNotPresentException;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.OpTimer;
-import org.apache.htrace.wrappers.TraceRunnable;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransport;
@@ -136,10 +135,11 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
       try {
         resultsQueue.put(entries);
       } catch (InterruptedException e) {
-        if (TabletServerBatchReaderIterator.this.queryThreadPool.isShutdown())
+        if (TabletServerBatchReaderIterator.this.queryThreadPool.isShutdown()) {
           log.debug("Failed to add Batch Scan result", e);
-        else
+        } else {
           log.warn("Failed to add Batch Scan result", e);
+        }
         fatalException = e;
         throw new RuntimeException(e);
 
@@ -158,23 +158,28 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
   @Override
   public boolean hasNext() {
     synchronized (nextLock) {
-      if (batch == LAST_BATCH)
+      if (batch == LAST_BATCH) {
         return false;
+      }
 
-      if (batch != null && batchIterator.hasNext())
+      if (batch != null && batchIterator.hasNext()) {
         return true;
+      }
 
       // don't have one cached, try to cache one and return success
       try {
         batch = null;
-        while (batch == null && fatalException == null && !queryThreadPool.isShutdown())
+        while (batch == null && fatalException == null && !queryThreadPool.isShutdown()) {
           batch = resultsQueue.poll(1, TimeUnit.SECONDS);
+        }
 
-        if (fatalException != null)
-          if (fatalException instanceof RuntimeException)
+        if (fatalException != null) {
+          if (fatalException instanceof RuntimeException) {
             throw (RuntimeException) fatalException;
-          else
+          } else {
             throw new RuntimeException(fatalException);
+          }
+        }
 
         if (queryThreadPool.isShutdown()) {
           String shortMsg =
@@ -198,10 +203,11 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
   public Entry<Key,Value> next() {
     // if there's one waiting, or hasNext() can get one, return it
     synchronized (nextLock) {
-      if (hasNext())
+      if (hasNext()) {
         return batchIterator.next();
-      else
+      } else {
         throw new NoSuchElementException();
+      }
     }
   }
 
@@ -241,17 +247,20 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
         // the table was deleted the tablet locator entries for the deleted table were not
         // cleared... so
         // need to always do the check when failures occur
-        if (failures.size() >= lastFailureSize)
-          if (!Tables.exists(context, tableId))
+        if (failures.size() >= lastFailureSize) {
+          if (!Tables.exists(context, tableId)) {
             throw new TableDeletedException(tableId.canonical());
-          else if (Tables.getTableState(context, tableId) == TableState.OFFLINE)
+          } else if (Tables.getTableState(context, tableId) == TableState.OFFLINE) {
             throw new TableOfflineException(Tables.getTableOfflineMsg(context, tableId));
+          }
+        }
 
         lastFailureSize = failures.size();
 
-        if (log.isTraceEnabled())
+        if (log.isTraceEnabled()) {
           log.trace("Failed to bin {} ranges, tablet locations were null, retrying in 100ms",
               failures.size());
+        }
 
         try {
           Thread.sleep(100);
@@ -274,8 +283,9 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
         Range tabletRange = tabletRanges.getKey().toDataRange();
         List<Range> clippedRanges = new ArrayList<>();
         tabletMap.put(tabletRanges.getKey(), clippedRanges);
-        for (Range range : tabletRanges.getValue())
+        for (Range range : tabletRanges.getValue()) {
           clippedRanges.add(tabletRange.clip(range));
+        }
       }
     }
 
@@ -286,8 +296,9 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
   private void processFailures(Map<KeyExtent,List<Range>> failures, ResultReceiver receiver,
       List<Column> columns)
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
-    if (log.isTraceEnabled())
+    if (log.isTraceEnabled()) {
       log.trace("Failed to execute multiscans against {} tablets, retrying...", failures.size());
+    }
 
     try {
       Thread.sleep(failSleepTime);
@@ -304,8 +315,9 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
     Map<String,Map<KeyExtent,List<Range>>> binnedRanges = new HashMap<>();
     List<Range> allRanges = new ArrayList<>();
 
-    for (List<Range> ranges : failures.values())
+    for (List<Range> ranges : failures.values()) {
       allRanges.addAll(ranges);
+    }
 
     // since the first call to binRanges clipped the ranges to within a tablet, we should not get
     // only
@@ -380,17 +392,19 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
         log.debug("AccumuloSecurityException thrown", e);
 
         Tables.clearCache(context);
-        if (!Tables.exists(context, tableId))
+        if (!Tables.exists(context, tableId)) {
           fatalException = new TableDeletedException(tableId.canonical());
-        else
+        } else {
           fatalException = e;
+        }
       } catch (SampleNotPresentException e) {
         fatalException = e;
       } catch (Throwable t) {
-        if (queryThreadPool.isShutdown())
+        if (queryThreadPool.isShutdown()) {
           log.debug("Caught exception, but queryThreadPool is shutdown", t);
-        else
+        } else {
           log.warn("Caught exception, but queryThreadPool is not shutdown", t);
+        }
         fatalException = t;
       } finally {
         semaphore.release();
@@ -523,7 +537,7 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
 
     for (QueryTask queryTask : queryTasks) {
       queryTask.setSemaphore(semaphore, queryTasks.size());
-      queryThreadPool.execute(new TraceRunnable(queryTask));
+      queryThreadPool.execute(context.getTracer().wrap(queryTask, null));
     }
   }
 
@@ -646,10 +660,11 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
     try {
       final HostAndPort parsedServer = HostAndPort.fromString(server);
       final TabletClientService.Client client;
-      if (timeoutTracker.getTimeOut() < context.getClientTimeoutInMillis())
+      if (timeoutTracker.getTimeOut() < context.getClientTimeoutInMillis()) {
         client = ThriftUtil.getTServerClient(parsedServer, context, timeoutTracker.getTimeOut());
-      else
+      } else {
         client = ThriftUtil.getTServerClient(parsedServer, context);
+      }
 
       try {
 
@@ -674,14 +689,15 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
         Map<String,String> execHints =
             options.executionHints.size() == 0 ? null : options.executionHints;
 
-        InitialMultiScan imsr = client.startMultiScan(TraceUtil.traceInfo(), context.rpcCreds(),
+        InitialMultiScan imsr = client.startMultiScan(Trace.traceInfo(), context.rpcCreds(),
             thriftTabletRanges, Translator.translate(columns, Translators.CT),
             options.serverSideIteratorList, options.serverSideIteratorOptions,
             ByteBufferUtil.toByteBuffers(authorizations.getAuthorizations()), waitForWrites,
             SamplerConfigurationImpl.toThrift(options.getSamplerConfiguration()),
             options.batchTimeOut, options.classLoaderContext, execHints);
-        if (waitForWrites)
+        if (waitForWrites) {
           ThriftScanner.serversWaitedForWrites.get(ttype).add(server.toString());
+        }
 
         MultiScanResult scanResult = imsr.result;
 
@@ -698,11 +714,13 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
           entries.add(new SimpleImmutableEntry<>(new Key(kv.key), new Value(kv.value)));
         }
 
-        if (entries.size() > 0)
+        if (entries.size() > 0) {
           receiver.receive(entries);
+        }
 
-        if (entries.size() > 0 || scanResult.fullScans.size() > 0)
+        if (entries.size() > 0 || scanResult.fullScans.size() > 0) {
           timeoutTracker.madeProgress();
+        }
 
         trackScanning(failures, unscanned, scanResult);
 
@@ -718,7 +736,7 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
             timer.reset().start();
           }
 
-          scanResult = client.continueMultiScan(TraceUtil.traceInfo(), imsr.scanID);
+          scanResult = client.continueMultiScan(Trace.traceInfo(), imsr.scanID);
 
           if (timer != null) {
             timer.stop();
@@ -733,16 +751,18 @@ public class TabletServerBatchReaderIterator implements Iterator<Entry<Key,Value
             entries.add(new SimpleImmutableEntry<>(new Key(kv.key), new Value(kv.value)));
           }
 
-          if (entries.size() > 0)
+          if (entries.size() > 0) {
             receiver.receive(entries);
+          }
 
-          if (entries.size() > 0 || scanResult.fullScans.size() > 0)
+          if (entries.size() > 0 || scanResult.fullScans.size() > 0) {
             timeoutTracker.madeProgress();
+          }
 
           trackScanning(failures, unscanned, scanResult);
         }
 
-        client.closeMultiScan(TraceUtil.traceInfo(), imsr.scanID);
+        client.closeMultiScan(Trace.traceInfo(), imsr.scanID);
 
       } finally {
         ThriftUtil.returnClient(client);

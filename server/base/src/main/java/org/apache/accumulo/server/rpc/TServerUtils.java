@@ -160,8 +160,9 @@ public class TServerUtils {
 
     HostAndPort[] addresses = getHostAndPorts(hostname, portHint);
     try {
-      return TServerUtils.startTServer(serverType, timedProcessor, serverName, threadName,
-          minThreads, simpleTimerThreadpoolSize, timeBetweenThreadChecks, maxMessageSize,
+      return TServerUtils.startTServer(serverType, timedProcessor,
+          ThriftUtil.protocolFactory(service), serverName, threadName, minThreads,
+          simpleTimerThreadpoolSize, timeBetweenThreadChecks, maxMessageSize,
           service.getServerSslParams(), service.getSaslParams(), service.getClientTimeoutInMillis(),
           addresses);
     } catch (TTransportException e) {
@@ -175,10 +176,12 @@ public class TServerUtils {
           }
           try {
             HostAndPort addr = HostAndPort.fromParts(hostname, port);
-            return TServerUtils.startTServer(serverType, timedProcessor, serverName, threadName,
-                minThreads, simpleTimerThreadpoolSize, timeBetweenThreadChecks, maxMessageSize,
+            HostAndPort[] addresses1 = {addr};
+            return TServerUtils.startTServer(serverType, timedProcessor,
+                ThriftUtil.protocolFactory(service), serverName, threadName, minThreads,
+                simpleTimerThreadpoolSize, timeBetweenThreadChecks, maxMessageSize,
                 service.getServerSslParams(), service.getSaslParams(),
-                service.getClientTimeoutInMillis(), addr);
+                service.getClientTimeoutInMillis(), addresses1);
           } catch (TTransportException tte) {
             log.info("Unable to use port {}, retrying. (Thread Name = {})", port, threadName);
           }
@@ -540,34 +543,22 @@ public class TServerUtils {
     return new ServerAddress(server, address);
   }
 
-  public static ServerAddress startTServer(MetricsSystem metricsSystem, AccumuloConfiguration conf,
-      ThriftServerType serverType, TProcessor processor, String serverName, String threadName,
-      int numThreads, int numSTThreads, long timeBetweenThreadChecks, long maxMessageSize,
-      SslConnectionParams sslParams, SaslServerConnectionParams saslParams,
-      long serverSocketTimeout, HostAndPort... addresses) throws TTransportException {
+  public static ServerAddress startTServer(MetricsSystem metricsSystem, ServerContext context,
+      TProcessor processor, String serverName, String threadName, int numThreads, int numSTThreads,
+      long timeBetweenThreadChecks, long maxMessageSize, SslConnectionParams sslParams,
+      SaslServerConnectionParams saslParams, long serverSocketTimeout, HostAndPort... addresses)
+        throws TTransportException {
 
+    ThriftServerType serverType = context.getThriftServerType();
     if (serverType == ThriftServerType.SASL) {
       processor = updateSaslProcessor(serverType, processor);
     }
 
     return startTServer(serverType,
-        new TimedProcessor(metricsSystem, conf, processor, serverName, threadName), serverName,
+        new TimedProcessor(metricsSystem, context, processor, serverName, threadName), serverName,
         threadName, numThreads, numSTThreads, timeBetweenThreadChecks, maxMessageSize, sslParams,
         saslParams, serverSocketTimeout, addresses);
-  }
 
-  /**
-   * @see #startTServer(ThriftServerType, TimedProcessor, TProtocolFactory, String, String, int,
-   *      int, long, long, SslConnectionParams, SaslServerConnectionParams, long, HostAndPort...)
-   */
-  public static ServerAddress startTServer(ThriftServerType serverType, TimedProcessor processor,
-      String serverName, String threadName, int numThreads, int numSTThreads,
-      long timeBetweenThreadChecks, long maxMessageSize, SslConnectionParams sslParams,
-      SaslServerConnectionParams saslParams, long serverSocketTimeout, HostAndPort... addresses)
-      throws TTransportException {
-    return startTServer(serverType, processor, ThriftUtil.protocolFactory(), serverName, threadName,
-        numThreads, numSTThreads, timeBetweenThreadChecks, maxMessageSize, sslParams, saslParams,
-        serverSocketTimeout, addresses);
   }
 
   /**

@@ -99,8 +99,9 @@ public class ServerClient {
         log.debug("ClientService request failed " + server + ", retrying ... ", tte);
         sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
       } finally {
-        if (client != null)
+        if (client != null) {
           ServerClient.close(client);
+        }
       }
     }
   }
@@ -122,8 +123,9 @@ public class ServerClient {
         log.debug("ClientService request failed " + server + ", retrying ... ", tte);
         sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
       } finally {
-        if (client != null)
+        if (client != null) {
           ServerClient.close(client);
+        }
       }
     }
   }
@@ -165,9 +167,10 @@ public class ServerClient {
       byte[] data = ZooUtil.getLockData(zc, path);
       if (data != null) {
         String strData = new String(data, UTF_8);
-        if (!strData.equals("master"))
+        if (!strData.equals("master")) {
           servers.add(new ThriftTransportKey(
               new ServerServices(strData).getAddress(Service.TSERV_CLIENT), rpcTimeout, context));
+        }
       }
     }
 
@@ -175,7 +178,7 @@ public class ServerClient {
     try {
       Pair<String,TTransport> pair =
           ThriftTransportPool.getInstance().getAnyTransport(servers, preferCachedConnections);
-      CT client = ThriftUtil.createClient(factory, pair.getSecond());
+      CT client = ThriftUtil.createClient(context, factory, pair.getSecond());
       opened = true;
       warnedAboutTServersBeingDown = false;
       return new Pair<>(pair.getFirst(), client);

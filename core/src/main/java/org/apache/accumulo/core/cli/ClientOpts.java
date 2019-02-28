@@ -18,7 +18,9 @@ package org.apache.accumulo.core.cli;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,10 +32,10 @@ import org.apache.accumulo.core.clientImpl.ClientInfoImpl;
 import org.apache.accumulo.core.conf.ClientProperty;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
-import org.apache.htrace.NullScope;
-import org.apache.htrace.Sampler;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.accumulo.core.trace.Trace;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.TraceScope;
+import org.apache.htrace.core.Tracer;
 
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
@@ -126,7 +128,15 @@ public class ClientOpts extends Help {
 
   public TraceScope parseArgsAndTrace(String programName, String[] args, Object... others) {
     parseArgs(programName, args, others);
-    return trace ? Trace.startSpan(programName, Sampler.ALWAYS) : NullScope.INSTANCE;
+    String hostname;
+    try {
+      hostname = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException("Unable to get client hostname for tracing", e);
+    }
+    Tracer tracer = Trace.createTracerForClient(hostname, programName, this.getClientProps());
+    tracer.addSampler(Sampler.ALWAYS);
+    return trace ? tracer.newScope(programName) : tracer.newNullScope();
   }
 
   @Override

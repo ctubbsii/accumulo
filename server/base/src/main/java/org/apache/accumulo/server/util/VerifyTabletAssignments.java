@@ -49,12 +49,12 @@ import org.apache.accumulo.core.rpc.ThriftUtil;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.tabletserver.thrift.NoSuchScanIDException;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.trace.thrift.TInfo;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.server.cli.ServerUtilOpts;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.apache.thrift.TException;
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
@@ -190,7 +190,7 @@ public class VerifyTabletAssignments {
       Range r = new Range(row, true, row2, false);
       batch.put(keyExtent.toThrift(), Collections.singletonList(r.toThrift()));
     }
-    TInfo tinfo = TraceUtil.traceInfo();
+    TInfo tinfo = Trace.traceInfo();
     Map<String,Map<String,String>> emptyMapSMapSS = Collections.emptyMap();
     List<IterInfo> emptyListIterInfo = Collections.emptyList();
     List<TColumn> emptyListColumn = Collections.emptyList();

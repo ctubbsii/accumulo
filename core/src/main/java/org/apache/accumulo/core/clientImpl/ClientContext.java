@@ -68,6 +68,7 @@ import org.apache.accumulo.fate.zookeeper.ZooCache;
 import org.apache.accumulo.fate.zookeeper.ZooCacheFactory;
 import org.apache.accumulo.fate.zookeeper.ZooUtil;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.htrace.core.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -423,8 +424,9 @@ public class ClientContext implements AccumuloClient {
 
   TableId getTableId(String tableName) throws TableNotFoundException {
     TableId tableId = Tables.getTableId(this, tableName);
-    if (Tables.getTableState(this, tableId) == TableState.OFFLINE)
+    if (Tables.getTableState(this, tableId) == TableState.OFFLINE) {
       throw new TableOfflineException(Tables.getTableOfflineMsg(this, tableId));
+    }
     return tableId;
   }
 
@@ -549,8 +551,9 @@ public class ClientContext implements AccumuloClient {
   @Override
   public synchronized SecurityOperations securityOperations() {
     ensureOpen();
-    if (secops == null)
+    if (secops == null) {
       secops = new SecurityOperationsImpl(this);
+    }
 
     return secops;
   }
@@ -558,8 +561,9 @@ public class ClientContext implements AccumuloClient {
   @Override
   public synchronized InstanceOperations instanceOperations() {
     ensureOpen();
-    if (instanceops == null)
+    if (instanceops == null) {
       instanceops = new InstanceOperationsImpl(this);
+    }
 
     return instanceops;
   }
@@ -787,5 +791,10 @@ public class ClientContext implements AccumuloClient {
     public void setProperty(ClientProperty property, Integer value) {
       setProperty(property, Integer.toString(value));
     }
+  }
+
+  public Tracer getTracer() {
+    // TODO
+    return null;
   }
 }

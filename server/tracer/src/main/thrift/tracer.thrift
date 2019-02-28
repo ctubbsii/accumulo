@@ -27,9 +27,9 @@ struct Annotation {
 struct RemoteSpan {
   1:string sender
   2:string svc
-  3:i64 traceId
-  4:i64 spanId
-  11:list<i64> parentIds
+  12:string tracerId
+  13:string spanId
+  14:list<string> parentIds
   6:i64 start
   7:i64 stop
   8:string description

@@ -26,15 +26,16 @@ import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.security.Authorizations;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.BadArgumentException;
 import org.apache.accumulo.shell.Shell;
 import org.apache.accumulo.shell.Shell.Command;
 import org.apache.accumulo.tracer.TraceDump;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Sampler;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.TraceScope;
+import org.apache.htrace.core.Tracer;
 
 public class TraceCommand extends Command {
 
@@ -51,7 +52,7 @@ public class TraceCommand extends Command {
         }
       } else if (cl.getArgs()[0].equalsIgnoreCase("off")) {
         if (traceScope != null) {
-          final long trace = traceScope.getSpan().getTraceId();
+          final String trace = traceScope.getSpan().getTracerId();
           traceScope.close();
           traceScope = null;
           StringBuilder sb = new StringBuilder();
@@ -66,7 +67,7 @@ public class TraceCommand extends Command {
               final Authorizations auths =
                   shellState.getAccumuloClient().securityOperations().getUserAuthorizations(user);
               final Scanner scanner = shellState.getAccumuloClient().createScanner(table, auths);
-              scanner.setRange(new Range(new Text(Long.toHexString(trace))));
+              scanner.setRange(new Range(new Text(trace)));
               final StringBuilder finalSB = sb;
               traceCount = TraceDump.printTrace(scanner, line -> {
                 try {
@@ -98,7 +99,7 @@ public class TraceCommand extends Command {
             fullCommand.indexOf(cl.getArgs()[0]));
       }
     } else if (cl.getArgs().length == 0) {
-      shellState.getReader().println(Trace.isTracing() ? "on" : "off");
+      shellState.getReader().println(Tracer.curThreadTracer() == null ? "off" : "on");
     } else {
       shellState.printException(new IllegalArgumentException(
           "Expected 0 or 1 argument. There were " + cl.getArgs().length + "."));

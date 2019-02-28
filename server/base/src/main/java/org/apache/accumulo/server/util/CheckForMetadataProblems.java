@@ -36,7 +36,7 @@ import org.apache.accumulo.core.metadata.schema.MetadataSchema.TabletsSection;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.server.cli.ServerUtilOpts;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 
 public class CheckForMetadataProblems {
   private static boolean sawProblems = false;

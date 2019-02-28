@@ -32,18 +32,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.tracer.thrift.Annotation;
 import org.apache.accumulo.tracer.thrift.RemoteSpan;
-import org.apache.htrace.HTraceConfiguration;
-import org.apache.htrace.Span;
-import org.apache.htrace.SpanReceiver;
-import org.apache.htrace.TimelineAnnotation;
+import org.apache.htrace.core.HTraceConfiguration;
+import org.apache.htrace.core.Span;
+import org.apache.htrace.core.SpanId;
+import org.apache.htrace.core.SpanReceiver;
+import org.apache.htrace.core.TimelineAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.primitives.Longs;
 
 /**
  * Deliver Span information periodically to a destination.
@@ -53,7 +54,7 @@ import com.google.common.primitives.Longs;
  * <li>Can be used to queue spans up for delivery over RPC, or for saving into a file.
  * </ul>
  */
-public abstract class AsyncSpanReceiver<SpanKey,Destination> implements SpanReceiver {
+public abstract class AsyncSpanReceiver<SpanKey,Destination> extends SpanReceiver {
 
   private static final Logger log = LoggerFactory.getLogger(AsyncSpanReceiver.class);
 
@@ -93,7 +94,7 @@ public abstract class AsyncSpanReceiver<SpanKey,Destination> implements SpanRece
       log.debug("Unable to read canonical filename /proc/self to get the PID");
     }
 
-    host = conf.get(TraceUtil.TRACE_HOST_PROPERTY, host);
+    host = conf.get(Trace.TRACE_HOST_PROPERTY, host);
     if (host == null) {
       try {
         host = InetAddress.getLocalHost().getCanonicalHostName().toString();
@@ -101,7 +102,7 @@ public abstract class AsyncSpanReceiver<SpanKey,Destination> implements SpanRece
         host = "unknown";
       }
     }
-    service = conf.get(TraceUtil.TRACE_SERVICE_PROPERTY, service);
+    service = conf.get(Trace.TRACE_SERVICE_PROPERTY, service);
     maxQueueSize = conf.getInt(QUEUE_SIZE, maxQueueSize);
     minSpanSize = conf.getInt(SPAN_MIN_MS, minSpanSize);
 
@@ -193,9 +194,10 @@ public abstract class AsyncSpanReceiver<SpanKey,Destination> implements SpanRece
         }
         return;
       }
-      sendQueue.add(new RemoteSpan(host, service == null ? processId : service, s.getTraceId(),
-          s.getSpanId(), Longs.asList(s.getParents()), s.getStartTimeMillis(),
-          s.getStopTimeMillis(), s.getDescription(), data, annotations));
+      sendQueue.add(new RemoteSpan(host, service == null ? processId : service, s.getTracerId(),
+          s.getSpanId().toString(),
+          Stream.of(s.getParents()).map(SpanId::toString).collect(Collectors.toList()),
+          s.getStartTimeMillis(), s.getStopTimeMillis(), s.getDescription(), data, annotations));
       sendQueueSize.incrementAndGet();
     }
   }

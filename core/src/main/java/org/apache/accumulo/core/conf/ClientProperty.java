@@ -113,7 +113,7 @@ public enum ClientProperty {
   TRACE_ZOOKEEPER_PATH("trace.zookeeper.path", Constants.ZTRACERS, PropertyType.PATH,
       "The zookeeper node where tracers are registered", "2.0.0", false);
 
-  public static final String TRACE_SPAN_RECEIVER_PREFIX = "trace.span.receiver";
+  public static final String TRACE_SPAN_RECEIVER_PREFIX = "trace.span.receiver.";
 
   private String key;
   private String defaultValue;

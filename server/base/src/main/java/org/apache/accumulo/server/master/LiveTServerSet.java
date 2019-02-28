@@ -35,7 +35,7 @@ import org.apache.accumulo.core.rpc.ThriftUtil;
 import org.apache.accumulo.core.tabletserver.thrift.NotServingTabletException;
 import org.apache.accumulo.core.tabletserver.thrift.TUnloadTabletGoal;
 import org.apache.accumulo.core.tabletserver.thrift.TabletClientService;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.AddressUtil;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.ServerServices;
@@ -82,8 +82,7 @@ public class LiveTServerSet implements Watcher {
 
     private void loadTablet(TabletClientService.Client client, ZooLock lock, KeyExtent extent)
         throws TException {
-      client.loadTablet(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock),
-          extent.toThrift());
+      client.loadTablet(Trace.traceInfo(), context.rpcCreds(), lockString(lock), extent.toThrift());
     }
 
     public void assignTablet(ZooLock lock, KeyExtent extent) throws TException {
@@ -91,7 +90,7 @@ public class LiveTServerSet implements Watcher {
         // see ACCUMULO-3597
         try (TTransport transport = ThriftUtil.createTransport(address, context)) {
           TabletClientService.Client client =
-              ThriftUtil.createClient(new TabletClientService.Client.Factory(), transport);
+              ThriftUtil.createClient(context, new TabletClientService.Client.Factory(), transport);
           loadTablet(client, lock, extent);
         }
       } else {
@@ -110,7 +109,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.unloadTablet(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock),
+        client.unloadTablet(Trace.traceInfo(), context.rpcCreds(), lockString(lock),
             extent.toThrift(), goal, requestTime);
       } finally {
         ThriftUtil.returnClient(client);
@@ -120,8 +119,9 @@ public class LiveTServerSet implements Watcher {
     public TabletServerStatus getTableMap(boolean usePooledConnection)
         throws TException, ThriftSecurityException {
 
-      if (usePooledConnection)
+      if (usePooledConnection) {
         throw new UnsupportedOperationException();
+      }
 
       long start = System.currentTimeMillis();
 
@@ -129,16 +129,17 @@ public class LiveTServerSet implements Watcher {
 
       try {
         TabletClientService.Client client =
-            ThriftUtil.createClient(new TabletClientService.Client.Factory(), transport);
+            ThriftUtil.createClient(context, new TabletClientService.Client.Factory(), transport);
         TabletServerStatus status =
-            client.getTabletServerStatus(TraceUtil.traceInfo(), context.rpcCreds());
+            client.getTabletServerStatus(Trace.traceInfo(), context.rpcCreds());
         if (status != null) {
           status.setResponseTime(System.currentTimeMillis() - start);
         }
         return status;
       } finally {
-        if (transport != null)
+        if (transport != null) {
           transport.close();
+        }
       }
     }
 
@@ -146,7 +147,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.halt(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock));
+        client.halt(Trace.traceInfo(), context.rpcCreds(), lockString(lock));
       } finally {
         ThriftUtil.returnClient(client);
       }
@@ -156,7 +157,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.fastHalt(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock));
+        client.fastHalt(Trace.traceInfo(), context.rpcCreds(), lockString(lock));
       } finally {
         ThriftUtil.returnClient(client);
       }
@@ -167,8 +168,8 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.flush(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock),
-            tableId.canonical(), startRow == null ? null : ByteBuffer.wrap(startRow),
+        client.flush(Trace.traceInfo(), context.rpcCreds(), lockString(lock), tableId.canonical(),
+            startRow == null ? null : ByteBuffer.wrap(startRow),
             endRow == null ? null : ByteBuffer.wrap(endRow));
       } finally {
         ThriftUtil.returnClient(client);
@@ -179,7 +180,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.chop(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock), extent.toThrift());
+        client.chop(Trace.traceInfo(), context.rpcCreds(), lockString(lock), extent.toThrift());
       } finally {
         ThriftUtil.returnClient(client);
       }
@@ -190,7 +191,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.splitTablet(TraceUtil.traceInfo(), context.rpcCreds(), extent.toThrift(),
+        client.splitTablet(Trace.traceInfo(), context.rpcCreds(), extent.toThrift(),
             ByteBuffer.wrap(splitPoint.getBytes(), 0, splitPoint.getLength()));
       } finally {
         ThriftUtil.returnClient(client);
@@ -202,7 +203,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        client.compact(TraceUtil.traceInfo(), context.rpcCreds(), lockString(lock), tableId,
+        client.compact(Trace.traceInfo(), context.rpcCreds(), lockString(lock), tableId,
             startRow == null ? null : ByteBuffer.wrap(startRow),
             endRow == null ? null : ByteBuffer.wrap(endRow));
       } finally {
@@ -214,7 +215,7 @@ public class LiveTServerSet implements Watcher {
       TabletClientService.Client client =
           ThriftUtil.getClient(new TabletClientService.Client.Factory(), address, context);
       try {
-        return client.isActive(TraceUtil.traceInfo(), tid);
+        return client.isActive(Trace.traceInfo(), tid);
       } finally {
         ThriftUtil.returnClient(client);
       }
@@ -246,19 +247,15 @@ public class LiveTServerSet implements Watcher {
   }
 
   public synchronized ZooCache getZooCache() {
-    if (zooCache == null)
+    if (zooCache == null) {
       zooCache = new ZooCache(context.getZooReaderWriter(), this);
+    }
     return zooCache;
   }
 
   public synchronized void startListeningForTabletServerChanges() {
     scanServers();
-    SimpleTimer.getInstance(context.getConfiguration()).schedule(new Runnable() {
-      @Override
-      public void run() {
-        scanServers();
-      }
-    }, 0, 5000);
+    SimpleTimer.getInstance(context.getConfiguration()).schedule(() -> scanServers(), 0, 5000);
   }
 
   public synchronized void scanServers() {
@@ -374,11 +371,13 @@ public class LiveTServerSet implements Watcher {
   }
 
   public synchronized TServerConnection getConnection(TServerInstance server) {
-    if (server == null)
+    if (server == null) {
       return null;
+    }
     TServerInfo tServerInfo = currentInstances.get(server);
-    if (tServerInfo == null)
+    if (tServerInfo == null) {
       return null;
+    }
     return tServerInfo.connection;
   }
 
@@ -411,8 +410,9 @@ public class LiveTServerSet implements Watcher {
     for (Entry<String,TServerInfo> entry : servers.entrySet()) {
       if (entry.getValue().instance.getLocation().equals(addr)) {
         // Return the instance if we have no desired session ID, or we match the desired session ID
-        if (sessionId == null || sessionId.equals(entry.getValue().instance.getSession()))
+        if (sessionId == null || sessionId.equals(entry.getValue().instance.getSession())) {
           return entry.getValue().instance;
+        }
       }
     }
     return null;
@@ -426,8 +426,9 @@ public class LiveTServerSet implements Watcher {
         break;
       }
     }
-    if (zPath == null)
+    if (zPath == null) {
       return;
+    }
     current.remove(zPath);
     currentInstances.remove(server);
 

@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.accumulo.core.cli.Help;
 import org.apache.accumulo.core.clientImpl.Tables;
+import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.conf.SiteConfiguration;
@@ -73,7 +74,6 @@ import org.apache.accumulo.server.master.state.TServerInstance;
 import org.apache.accumulo.server.master.state.TabletLocationState;
 import org.apache.accumulo.server.metrics.Metrics;
 import org.apache.accumulo.server.rpc.TServerUtils;
-import org.apache.accumulo.server.rpc.ThriftServerType;
 import org.apache.accumulo.server.zookeeper.TransactionWatcher;
 
 import com.beust.jcommander.Parameter;
@@ -293,13 +293,18 @@ public class NullTserver {
     int zkTimeOut =
         (int) DefaultConfiguration.getInstance().getTimeInMillis(Property.INSTANCE_ZK_TIMEOUT);
     SiteConfiguration siteConfig = new SiteConfiguration();
-    ServerContext context = new ServerContext(siteConfig, opts.iname, opts.keepers, zkTimeOut);
+    ServerContext context = new ServerContext(siteConfig, opts.iname, opts.keepers, zkTimeOut) {
+      @Override
+      public AccumuloConfiguration getConfiguration() {
+        // avoid contacting ZK for system configuration
+        return siteConfig;
+      }
+    };
     TransactionWatcher watcher = new TransactionWatcher(context);
     ThriftClientHandler tch = new ThriftClientHandler(context, watcher);
     Processor<Iface> processor = new Processor<>(tch);
-    TServerUtils.startTServer(Metrics.initSystem(NullTserver.class.getSimpleName()),
-        context.getConfiguration(), ThriftServerType.CUSTOM_HS_HA, processor, "NullTServer",
-        "null tserver", 2, 1, 1000, 10 * 1024 * 1024, null, null, -1,
+    TServerUtils.startTServer(Metrics.initSystem(NullTserver.class.getSimpleName()), context,
+        processor, "NullTServer", "null tserver", 2, 1, 1000, 10 * 1024 * 1024, null, null, -1,
         HostAndPort.fromParts("0.0.0.0", opts.port));
 
     HostAndPort addr = HostAndPort.fromParts(InetAddress.getLocalHost().getHostName(), opts.port);

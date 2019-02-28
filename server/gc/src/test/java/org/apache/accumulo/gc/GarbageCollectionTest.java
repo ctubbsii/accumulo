@@ -32,9 +32,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
+import org.apache.accumulo.core.conf.SiteConfiguration;
 import org.apache.accumulo.core.data.TableId;
+import org.apache.accumulo.server.ServerContext;
 import org.apache.accumulo.server.replication.StatusUtil;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.Tracer;
+import org.easymock.EasyMock;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class GarbageCollectionTest {
@@ -121,6 +127,21 @@ public class GarbageCollectionTest {
     assertEquals(0, gce.deletes.size());
   }
 
+  private static GarbageCollectionAlgorithm gca;
+
+  @BeforeClass
+  public static void setupGCA() {
+    Tracer tracer = new Tracer.Builder("mockTracer").build();
+    tracer.addSampler(Sampler.NEVER);
+    SiteConfiguration siteConfig = new SiteConfiguration();
+    ServerContext context = EasyMock.createMock(ServerContext.class);
+    EasyMock.expect(context.getConfiguration()).andReturn(siteConfig).anyTimes();
+    EasyMock.expect(context.getInstanceID()).andReturn("mockInstance").anyTimes();
+    EasyMock.expect(context.getTracer()).andReturn(tracer).anyTimes();
+    EasyMock.replay(context);
+    gca = new GarbageCollectionAlgorithm(context);
+  }
+
   @Test
   public void testBasic() throws Exception {
     TestGCE gce = new TestGCE();
@@ -133,8 +154,6 @@ public class GarbageCollectionTest {
     gce.addFileReference("4", null, "hdfs://foo:6000/accumulo/tables/4/t0/F001.rf");
     gce.addFileReference("4", null, "hdfs://foo.com:6000/accumulo/tables/4/t0//F002.rf");
     gce.addFileReference("5", null, "hdfs://foo.com:6000/accumulo/tables/5/t0/F005.rf");
-
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
 
     gca.collect(gce);
     assertRemoved(gce);
@@ -177,8 +196,6 @@ public class GarbageCollectionTest {
     gce.addFileReference("4", null, "/t0/F002.rf");
     gce.addFileReference("5", null, "../4/t0/F000.rf");
     gce.addFileReference("6", null, "hdfs://foo.com:6000/accumulo/tables/4/t0/F000.rf");
-
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
 
     // All candidates currently have references
     gca.collect(gce);
@@ -233,8 +250,6 @@ public class GarbageCollectionTest {
     gce.blips.add("/4/b-0");
     gce.blips.add("hdfs://foo.com:6000/accumulo/tables/5/b-0");
 
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     // Nothing should be removed because all candidates exist within a blip
     gca.collect(gce);
     assertRemoved(gce);
@@ -288,8 +303,6 @@ public class GarbageCollectionTest {
 
     gce.addFileReference("e", "m", "../c/t-0/F00.rf");
     gce.addFileReference("f", "m", "../d/t-0/F00.rf");
-
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
 
     // A directory reference does not preclude a candidate file beneath that directory from deletion
     gca.collect(gce);
@@ -353,8 +366,6 @@ public class GarbageCollectionTest {
     gce.addFileReference("e", "m", "../c/t-0/F00.rf");
     gce.addFileReference("f", "m", "../d/t-0/F00.rf");
 
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     // A directory reference does not preclude a candidate file beneath that directory from deletion
     gca.collect(gce);
     assertRemoved(gce, "/4/t-0/F002.rf");
@@ -394,7 +405,6 @@ public class GarbageCollectionTest {
 
     gce.addFileReference("4", "m", ref);
 
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
     try {
       gca.collect(gce);
     } catch (RuntimeException e) {
@@ -436,8 +446,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void testBadDeletes() throws Exception {
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     TestGCE gce = new TestGCE();
     gce.candidates.add("");
     gce.candidates.add("A");
@@ -459,8 +467,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void test() throws Exception {
-
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
 
     TestGCE gce = new TestGCE();
     gce.candidates.add("/1636/default_tablet");
@@ -508,8 +514,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void testDeleteTableDir() throws Exception {
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     TestGCE gce = new TestGCE();
 
     gce.tableIds.add(TableId.of("4"));
@@ -535,8 +539,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void finishedReplicationRecordsDontPreventDeletion() throws Exception {
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     TestGCE gce = new TestGCE();
 
     gce.candidates.add("hdfs://foo.com:6000/accumulo/tables/1/t-00001/A000001.rf");
@@ -554,8 +556,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void openReplicationRecordsPreventDeletion() throws Exception {
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     TestGCE gce = new TestGCE();
 
     gce.candidates.add("hdfs://foo.com:6000/accumulo/tables/1/t-00001/A000001.rf");
@@ -574,8 +574,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void newReplicationRecordsPreventDeletion() throws Exception {
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     TestGCE gce = new TestGCE();
 
     gce.candidates.add("hdfs://foo.com:6000/accumulo/tables/1/t-00001/A000001.rf");
@@ -594,8 +592,6 @@ public class GarbageCollectionTest {
 
   @Test
   public void bulkImportReplicationRecordsPreventDeletion() throws Exception {
-    GarbageCollectionAlgorithm gca = new GarbageCollectionAlgorithm();
-
     TestGCE gce = new TestGCE();
 
     gce.candidates.add("hdfs://foo.com:6000/accumulo/tables/1/t-00001/A000001.rf");

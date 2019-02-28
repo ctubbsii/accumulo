@@ -33,10 +33,10 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.TableId;
 import org.apache.accumulo.gc.GarbageCollectionEnvironment.Reference;
 import org.apache.accumulo.server.ServerConstants;
+import org.apache.accumulo.server.ServerContext;
 import org.apache.accumulo.server.replication.StatusUtil;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,18 +46,26 @@ import com.google.common.collect.PeekingIterator;
 public class GarbageCollectionAlgorithm {
 
   private static final Logger log = LoggerFactory.getLogger(GarbageCollectionAlgorithm.class);
+  private final ServerContext context;
+
+  public GarbageCollectionAlgorithm(ServerContext context) {
+    this.context = context;
+  }
 
   private String makeRelative(String path, int expectedLen) {
     String relPath = path;
 
-    if (relPath.startsWith("../"))
+    if (relPath.startsWith("../")) {
       relPath = relPath.substring(3);
+    }
 
-    while (relPath.endsWith("/"))
+    while (relPath.endsWith("/")) {
       relPath = relPath.substring(0, relPath.length() - 1);
+    }
 
-    while (relPath.startsWith("/"))
+    while (relPath.startsWith("/")) {
       relPath = relPath.substring(1);
+    }
 
     String[] tokens = relPath.split("/");
 
@@ -127,9 +135,10 @@ public class GarbageCollectionAlgorithm {
       SortedMap<String,String> candidateMap) throws TableNotFoundException {
     boolean checkForBulkProcessingFiles = false;
     Iterator<String> relativePaths = candidateMap.keySet().iterator();
-    while (!checkForBulkProcessingFiles && relativePaths.hasNext())
+    while (!checkForBulkProcessingFiles && relativePaths.hasNext()) {
       checkForBulkProcessingFiles |=
           relativePaths.next().toLowerCase(Locale.ENGLISH).contains(Constants.BULK_PREFIX);
+    }
 
     if (checkForBulkProcessingFiles) {
       Iterator<String> blipiter = gce.getBlipIterator();
@@ -155,8 +164,9 @@ public class GarbageCollectionAlgorithm {
           }
         }
 
-        if (count > 0)
+        if (count > 0) {
           log.debug("Folder has bulk processing flag: {}", blipPath);
+        }
       }
 
     }
@@ -178,26 +188,30 @@ public class GarbageCollectionAlgorithm {
 
         // WARNING: This line is EXTREMELY IMPORTANT.
         // You MUST REMOVE candidates that are still in use
-        if (candidateMap.remove(reference) != null)
+        if (candidateMap.remove(reference) != null) {
           log.debug("Candidate was still in use: {}", reference);
+        }
 
         String dir = reference.substring(0, reference.lastIndexOf('/'));
-        if (candidateMap.remove(dir) != null)
+        if (candidateMap.remove(dir) != null) {
           log.debug("Candidate was still in use: {}", reference);
+        }
 
       } else {
         String tableID = ref.id.toString();
         String dir = ref.ref;
         if (!dir.contains(":")) {
-          if (!dir.startsWith("/"))
+          if (!dir.startsWith("/")) {
             throw new RuntimeException("Bad directory " + dir);
+          }
           dir = "/" + tableID + dir;
         }
 
         dir = makeRelative(dir, 2);
 
-        if (candidateMap.remove(dir) != null)
+        if (candidateMap.remove(dir) != null) {
           log.debug("Candidate was still in use: {}", dir);
+        }
       }
     }
 
@@ -266,21 +280,21 @@ public class GarbageCollectionAlgorithm {
 
   private boolean getCandidates(GarbageCollectionEnvironment gce, String lastCandidate,
       List<String> candidates) throws TableNotFoundException {
-    try (TraceScope candidatesSpan = Trace.startSpan("getCandidates")) {
+    try (TraceScope candidatesSpan = context.getTracer().newScope("getCandidates")) {
       return gce.getCandidates(lastCandidate, candidates);
     }
   }
 
   private void confirmDeletesTrace(GarbageCollectionEnvironment gce,
       SortedMap<String,String> candidateMap) throws TableNotFoundException {
-    try (TraceScope confirmDeletesSpan = Trace.startSpan("confirmDeletes")) {
+    try (TraceScope confirmDeletesSpan = context.getTracer().newScope("confirmDeletes")) {
       confirmDeletes(gce, candidateMap);
     }
   }
 
   private void deleteConfirmed(GarbageCollectionEnvironment gce,
       SortedMap<String,String> candidateMap) throws IOException, TableNotFoundException {
-    try (TraceScope deleteSpan = Trace.startSpan("deleteFiles")) {
+    try (TraceScope deleteSpan = context.getTracer().newScope("deleteFiles")) {
       gce.delete(candidateMap);
     }
 
@@ -297,10 +311,11 @@ public class GarbageCollectionAlgorithm {
 
       outOfMemory = getCandidates(gce, lastCandidate, candidates);
 
-      if (candidates.size() == 0)
+      if (candidates.size() == 0) {
         break;
-      else
+      } else {
         lastCandidate = candidates.get(candidates.size() - 1);
+      }
 
       long origSize = candidates.size();
       gce.incrementCandidatesStat(origSize);

@@ -28,7 +28,7 @@ import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloClusterImpl;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloConfigImpl;
 import org.apache.accumulo.test.functional.ConfigurableMacBase;
@@ -36,9 +36,9 @@ import org.apache.accumulo.tracer.TraceDump;
 import org.apache.accumulo.tracer.TraceServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Sampler;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.SpanId;
+import org.apache.htrace.core.TraceScope;
 import org.junit.Test;
 
 public class TracerRecoversAfterOfflineTableIT extends ConfigurableMacBase {
@@ -74,10 +74,10 @@ public class TracerRecoversAfterOfflineTableIT extends ConfigurableMacBase {
 
       log.info("Start a distributed trace span");
 
-      TraceUtil.enableClientTraces("localhost", "testTrace", getClientProperties());
-      long rootTraceId;
+      Trace.createTracerForClient("localhost", "testTrace", getClientProperties());
+      SpanId rootTraceId;
       try (TraceScope root = Trace.startSpan("traceTest", Sampler.ALWAYS)) {
-        rootTraceId = root.getSpan().getTraceId();
+        rootTraceId = root.getSpan().getSpanId();
         try (BatchWriter bw = client.createBatchWriter(tableName)) {
           Mutation m = new Mutation("m");
           m.put("a", "b", "c");
@@ -91,7 +91,7 @@ public class TracerRecoversAfterOfflineTableIT extends ConfigurableMacBase {
       log.info("Trace table is online, should be able to find trace");
 
       try (Scanner scanner = client.createScanner("trace", Authorizations.EMPTY)) {
-        scanner.setRange(new Range(new Text(Long.toHexString(rootTraceId))));
+        scanner.setRange(new Range(new Text(rootTraceId.toString())));
         while (true) {
           final StringBuilder finalBuffer = new StringBuilder();
           int traceCount = TraceDump.printTrace(scanner, line -> {

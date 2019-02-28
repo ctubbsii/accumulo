@@ -65,7 +65,7 @@ import org.apache.accumulo.core.replication.ReplicationTable;
 import org.apache.accumulo.core.replication.ReplicationTableOfflineException;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.securityImpl.thrift.TCredentials;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.trace.thrift.TInfo;
 import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.NamingThreadFactory;
@@ -91,9 +91,8 @@ import org.apache.accumulo.server.util.Halt;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
-import org.apache.htrace.impl.ProbabilitySampler;
+import org.apache.htrace.core.ProbabilitySampler;
+import org.apache.htrace.core.TraceScope;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -490,19 +489,19 @@ public class SimpleGarbageCollector extends AbstractServer implements Iface {
     }
 
     ProbabilitySampler sampler =
-        TraceUtil.probabilitySampler(getConfiguration().getFraction(Property.GC_TRACE_PERCENT));
+        Trace.probabilitySampler(getConfiguration().getFraction(Property.GC_TRACE_PERCENT));
 
     while (true) {
       try (TraceScope gcOuterSpan = Trace.startSpan("gc", sampler)) {
-        try (TraceScope gcSpan = Trace.startSpan("loop")) {
+        try (TraceScope gcSpan = getContext().getTracer().newScope("loop")) {
           tStart = System.currentTimeMillis();
           try {
             System.gc(); // make room
 
             status.current.started = System.currentTimeMillis();
 
-            new GarbageCollectionAlgorithm().collect(new GCEnv(RootTable.NAME));
-            new GarbageCollectionAlgorithm().collect(new GCEnv(MetadataTable.NAME));
+            new GarbageCollectionAlgorithm(getContext()).collect(new GCEnv(RootTable.NAME));
+            new GarbageCollectionAlgorithm(getContext()).collect(new GCEnv(MetadataTable.NAME));
 
             log.info("Number of data file candidates for deletion: {}", status.current.candidates);
             log.info("Number of data file candidates still in use: {}", status.current.inUse);
@@ -525,7 +524,7 @@ public class SimpleGarbageCollector extends AbstractServer implements Iface {
            * are no longer referenced in the metadata table before running
            * GarbageCollectWriteAheadLogs to ensure we delete as many files as possible.
            */
-          try (TraceScope replSpan = Trace.startSpan("replicationClose")) {
+          try (TraceScope replSpan = getContext().getTracer().newScope("replicationClose")) {
             CloseWriteAheadLogReferences closeWals = new CloseWriteAheadLogReferences(getContext());
             closeWals.run();
           } catch (Exception e) {
@@ -533,7 +532,7 @@ public class SimpleGarbageCollector extends AbstractServer implements Iface {
           }
 
           // Clean up any unused write-ahead logs
-          try (TraceScope waLogs = Trace.startSpan("walogs")) {
+          try (TraceScope waLogs = getContext().getTracer().newScope("walogs")) {
             GarbageCollectWriteAheadLogs walogCollector =
                 new GarbageCollectWriteAheadLogs(getContext(), fs, isUsingTrash());
             log.info("Beginning garbage collection of write-ahead logs");
@@ -614,7 +613,7 @@ public class SimpleGarbageCollector extends AbstractServer implements Iface {
   }
 
   private HostAndPort startStatsService() {
-    Iface rpcProxy = TraceUtil.wrapService(this);
+    Iface rpcProxy = Trace.wrapService(getContext().getTracer(), this);
     final Processor<Iface> processor;
     if (getContext().getThriftServerType() == ThriftServerType.SASL) {
       Iface tcProxy = TCredentialsUpdatingWrapper.service(rpcProxy, getClass(), getConfiguration());
@@ -626,9 +625,8 @@ public class SimpleGarbageCollector extends AbstractServer implements Iface {
     HostAndPort[] addresses = TServerUtils.getHostAndPorts(this.opts.getAddress(), port);
     long maxMessageSize = getConfiguration().getAsBytes(Property.GENERAL_MAX_MESSAGE_SIZE);
     try {
-      ServerAddress server = TServerUtils.startTServer(getMetricsSystem(), getConfiguration(),
-          getContext().getThriftServerType(), processor, this.getClass().getSimpleName(),
-          "GC Monitor Service", 2,
+      ServerAddress server = TServerUtils.startTServer(getMetricsSystem(), getContext(), processor,
+          this.getClass().getSimpleName(), "GC Monitor Service", 2,
           getConfiguration().getCount(Property.GENERAL_SIMPLETIMER_THREADPOOL_SIZE), 1000,
           maxMessageSize, getContext().getServerSslParams(), getContext().getSaslParams(), 0,
           addresses);

@@ -86,7 +86,7 @@ public class TraceDump {
       out.println("Trace            Day/Time                 (ms)  Start");
       for (Entry<Key,Value> entry : scanner) {
         RemoteSpan span = TraceFormatter.getRemoteSpan(entry);
-        out.println(String.format("%016x %s %5d %s", span.traceId,
+        out.println(String.format("%016x %s %5d %s", span.tracerId,
             TraceFormatter.formatDate(new Date(span.getStart())), span.stop - span.start,
             span.description));
       }
@@ -131,13 +131,10 @@ public class TraceDump {
     out.print("Time  Start  Service@Location       Name");
 
     final long finalStart = start;
-    Set<Long> visited = tree.visit(new SpanTreeVisitor() {
-      @Override
-      public void visit(int level, RemoteSpan node) {
-        String fmt = "%5d+%-5d %" + (level * 2 + 1) + "s%s@%s %s";
-        out.print(String.format(fmt, node.stop - node.start, node.start - finalStart, "", node.svc,
-            node.sender, node.description));
-      }
+    Set<String> visited = tree.visit((int level, RemoteSpan node) -> {
+      String fmt = "%5d+%-5d %" + (level * 2 + 1) + "s%s@%s %s";
+      out.print(String.format(fmt, node.stop - node.start, node.start - finalStart, "", node.svc,
+          node.sender, node.description));
     });
     tree.nodes.keySet().removeAll(visited);
     if (!tree.nodes.isEmpty()) {

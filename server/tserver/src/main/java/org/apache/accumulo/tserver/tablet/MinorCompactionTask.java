@@ -19,13 +19,12 @@ package org.apache.accumulo.tserver.tablet;
 import java.io.IOException;
 
 import org.apache.accumulo.core.metadata.schema.DataFileValue;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.server.fs.FileRef;
 import org.apache.accumulo.tserver.MinorCompactionReason;
 import org.apache.accumulo.tserver.compaction.MajorCompactionReason;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
-import org.apache.htrace.impl.ProbabilitySampler;
+import org.apache.htrace.core.ProbabilitySampler;
+import org.apache.htrace.core.TraceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,17 +56,19 @@ class MinorCompactionTask implements Runnable {
   @Override
   public void run() {
     tablet.minorCompactionStarted();
-    ProbabilitySampler sampler = TraceUtil.probabilitySampler(tracePercent);
+    ProbabilitySampler sampler = Trace.probabilitySampler(tracePercent);
     try {
       try (TraceScope minorCompaction = Trace.startSpan("minorCompaction", sampler)) {
         FileRef newMapfileLocation = tablet.getNextMapFilename(mergeFile == null ? "F" : "M");
         FileRef tmpFileRef = new FileRef(newMapfileLocation.path() + "_tmp");
-        try (TraceScope span = Trace.startSpan("waitForCommits")) {
+        try (TraceScope span =
+            tablet.getTabletServer().getContext().getTracer().newScope("waitForCommits")) {
           synchronized (tablet) {
             commitSession.waitForCommitsToFinish();
           }
         }
-        try (TraceScope span = Trace.startSpan("start")) {
+        try (
+            TraceScope span = tablet.getTabletServer().getContext().getTracer().newScope("start")) {
           while (true) {
             try {
               /*
@@ -86,7 +87,8 @@ class MinorCompactionTask implements Runnable {
             }
           }
         }
-        try (TraceScope span = Trace.startSpan("compact")) {
+        try (TraceScope span =
+            tablet.getTabletServer().getContext().getTracer().newScope("compact")) {
           this.stats = tablet.minorCompact(tablet.getTabletMemory().getMinCMemTable(), tmpFileRef,
               newMapfileLocation, mergeFile, true, queued, commitSession, flushId, mincReason);
         }

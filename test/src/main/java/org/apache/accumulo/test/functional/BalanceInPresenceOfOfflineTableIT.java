@@ -40,7 +40,7 @@ import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.master.thrift.MasterClientService;
 import org.apache.accumulo.core.master.thrift.MasterMonitorInfo;
 import org.apache.accumulo.core.master.thrift.TableInfo;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.harness.AccumuloClusterHarness;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloConfigImpl;
 import org.apache.accumulo.test.TestIngest;
@@ -152,7 +152,7 @@ public class BalanceInPresenceOfOfflineTableIT extends AccumuloClusterHarness {
       while (true) {
         try {
           client = MasterClient.getConnectionWithRetry((ClientContext) accumuloClient);
-          stats = client.getMasterStats(TraceUtil.traceInfo(),
+          stats = client.getMasterStats(Trace.traceInfo(),
               creds.toThrift(accumuloClient.instanceOperations().getInstanceID()));
           break;
         } catch (ThriftSecurityException exception) {

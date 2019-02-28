@@ -38,7 +38,7 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.TraceScope;
 
 public class LocalityCheck {
 

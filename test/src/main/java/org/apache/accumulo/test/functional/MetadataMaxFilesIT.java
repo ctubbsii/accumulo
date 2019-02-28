@@ -36,7 +36,7 @@ import org.apache.accumulo.core.master.thrift.TableInfo;
 import org.apache.accumulo.core.master.thrift.TabletServerStatus;
 import org.apache.accumulo.core.metadata.MetadataTable;
 import org.apache.accumulo.core.metadata.RootTable;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloConfigImpl;
 import org.apache.accumulo.server.util.Admin;
 import org.apache.hadoop.conf.Configuration;
@@ -93,7 +93,7 @@ public class MetadataMaxFilesIT extends ConfigurableMacBase {
           ClientContext context = (ClientContext) c;
           client = MasterClient.getConnectionWithRetry(context);
           log.info("Fetching stats");
-          stats = client.getMasterStats(TraceUtil.traceInfo(), context.rpcCreds());
+          stats = client.getMasterStats(Trace.traceInfo(), context.rpcCreds());
         } catch (ThriftNotActiveServiceException e) {
           // Let it loop, fetching a new location
           sleepUninterruptibly(100, TimeUnit.MILLISECONDS);

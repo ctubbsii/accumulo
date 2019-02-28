@@ -23,9 +23,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.accumulo.tracer.thrift.RemoteSpan;
-import org.apache.htrace.HTraceConfiguration;
-import org.apache.htrace.Span;
-import org.apache.htrace.impl.MilliSpan;
+import org.apache.htrace.core.HTraceConfiguration;
+import org.apache.htrace.core.MilliSpan;
+import org.apache.htrace.core.Span;
+import org.apache.htrace.core.SpanId;
 import org.junit.Test;
 
 public class AsyncSpanReceiverTest {
@@ -67,7 +68,7 @@ public class AsyncSpanReceiverTest {
   Span createSpan(long length) {
     long time = System.currentTimeMillis();
     return new MilliSpan.Builder().begin(time).end(time + length).description("desc")
-        .parents(Collections.emptyList()).spanId(1).traceId(2).build();
+        .parents(Collections.emptyList()).spanId(new SpanId(2, 1)).tracerId("dummyTracer").build();
   }
 
   @Test

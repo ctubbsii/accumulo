@@ -84,7 +84,7 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
-import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.trace.Trace;
 import org.apache.accumulo.core.util.FastFormat;
 import org.apache.accumulo.harness.MiniClusterConfigurationCallback;
 import org.apache.accumulo.harness.SharedMiniClusterBase;
@@ -97,9 +97,9 @@ import org.apache.accumulo.tracer.TraceDump;
 import org.apache.accumulo.tracer.TraceServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
-import org.apache.htrace.Sampler;
-import org.apache.htrace.Trace;
-import org.apache.htrace.TraceScope;
+import org.apache.htrace.core.Sampler;
+import org.apache.htrace.core.TraceScope;
+import org.apache.htrace.core.Tracer;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -1552,12 +1552,14 @@ public class ConditionalWriterIT extends SharedMiniClusterBase {
       String tableName = getUniqueNames(1)[0];
       client.tableOperations().create(tableName);
 
-      TraceUtil.enableClientTraces("localhost", "testTrace", mac.getClientProperties());
+      Tracer clientTracer =
+          Trace.createTracerForClient("localhost", "testTrace", mac.getClientProperties());
+      clientTracer.addSampler(Sampler.ALWAYS);
       sleepUninterruptibly(1, TimeUnit.SECONDS);
-      long rootTraceId;
-      try (TraceScope root = Trace.startSpan("traceTest", Sampler.ALWAYS); ConditionalWriter cw =
+      String rootTracerId;
+      try (TraceScope root = clientTracer.newScope("traceTest"); ConditionalWriter cw =
           client.createConditionalWriter(tableName, new ConditionalWriterConfig())) {
-        rootTraceId = root.getSpan().getTraceId();
+        rootTracerId = root.getSpan().getTracerId();
 
         // mutation conditional on column tx:seq not exiting
         ConditionalMutation cm0 = new ConditionalMutation("99006", new Condition("tx", "seq"));
@@ -1568,7 +1570,7 @@ public class ConditionalWriterIT extends SharedMiniClusterBase {
       }
 
       try (Scanner scanner = client.createScanner("trace", Authorizations.EMPTY)) {
-        scanner.setRange(new Range(new Text(Long.toHexString(rootTraceId))));
+        scanner.setRange(new Range(new Text(rootTracerId)));
         loop: while (true) {
           final StringBuilder finalBuffer = new StringBuilder();
           int traceCount = TraceDump.printTrace(scanner, line -> {

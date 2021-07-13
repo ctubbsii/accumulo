@@ -40,10 +40,11 @@ import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.admin.DelegationTokenConfig;
 import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
-import org.apache.accumulo.core.clientImpl.ClientContext;
 import org.apache.accumulo.core.clientImpl.DelegationTokenConfigSerializer;
 import org.apache.accumulo.core.clientImpl.Tables;
 import org.apache.accumulo.core.clientImpl.thrift.SecurityErrorCode;
+import org.apache.accumulo.core.clientImpl.thrift.TNamespace;
+import org.apache.accumulo.core.clientImpl.thrift.TTable;
 import org.apache.accumulo.core.clientImpl.thrift.TableOperation;
 import org.apache.accumulo.core.clientImpl.thrift.TableOperationExceptionType;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException;
@@ -80,7 +81,6 @@ import org.apache.accumulo.core.util.ByteBufferUtil;
 import org.apache.accumulo.fate.zookeeper.ZooReaderWriter;
 import org.apache.accumulo.manager.tableOps.TraceRepo;
 import org.apache.accumulo.manager.tserverOps.ShutdownTServer;
-import org.apache.accumulo.server.client.ClientServiceHandler;
 import org.apache.accumulo.server.manager.LiveTServerSet.TServerConnection;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
 import org.apache.accumulo.server.security.delegation.AuthenticationTokenSecretManager;
@@ -109,9 +109,9 @@ public class ManagerClientServiceHandler extends FateServiceHandler
   }
 
   @Override
-  public long initiateFlush(TInfo tinfo, TCredentials c, String tableIdStr)
+  public long initiateFlush(TInfo tinfo, TCredentials c, TTable table)
       throws ThriftSecurityException, ThriftTableOperationException {
-    TableId tableId = TableId.of(tableIdStr);
+    TableId tableId = TableId.of(table.getTableId());
     NamespaceId namespaceId = getNamespaceIdFromTableId(TableOperation.FLUSH, tableId);
     if (!manager.security.canFlush(c, tableId, namespaceId))
       throw new ThriftSecurityException(c.getPrincipal(), SecurityErrorCode.PERMISSION_DENIED);
@@ -138,10 +138,10 @@ public class ManagerClientServiceHandler extends FateServiceHandler
   }
 
   @Override
-  public void waitForFlush(TInfo tinfo, TCredentials c, String tableIdStr, ByteBuffer startRowBB,
+  public void waitForFlush(TInfo tinfo, TCredentials c, TTable table, ByteBuffer startRowBB,
       ByteBuffer endRowBB, long flushID, long maxLoops)
       throws ThriftSecurityException, ThriftTableOperationException {
-    TableId tableId = TableId.of(tableIdStr);
+    TableId tableId = TableId.of(table.getTableId());
     NamespaceId namespaceId = getNamespaceIdFromTableId(TableOperation.FLUSH, tableId);
     if (!manager.security.canFlush(c, tableId, namespaceId))
       throw new ThriftSecurityException(c.getPrincipal(), SecurityErrorCode.PERMISSION_DENIED);
@@ -231,15 +231,15 @@ public class ManagerClientServiceHandler extends FateServiceHandler
   }
 
   @Override
-  public void removeTableProperty(TInfo info, TCredentials credentials, String tableName,
+  public void removeTableProperty(TInfo info, TCredentials credentials, TTable table,
       String property) throws ThriftSecurityException, ThriftTableOperationException {
-    alterTableProperty(credentials, tableName, property, null, TableOperation.REMOVE_PROPERTY);
+    alterTableProperty(credentials, table, property, null, TableOperation.REMOVE_PROPERTY);
   }
 
   @Override
-  public void setTableProperty(TInfo info, TCredentials credentials, String tableName,
-      String property, String value) throws ThriftSecurityException, ThriftTableOperationException {
-    alterTableProperty(credentials, tableName, property, value, TableOperation.SET_PROPERTY);
+  public void setTableProperty(TInfo info, TCredentials credentials, TTable table, String property,
+      String value) throws ThriftSecurityException, ThriftTableOperationException {
+    alterTableProperty(credentials, table, property, value, TableOperation.SET_PROPERTY);
   }
 
   @Override
@@ -375,23 +375,21 @@ public class ManagerClientServiceHandler extends FateServiceHandler
   }
 
   @Override
-  public void setNamespaceProperty(TInfo tinfo, TCredentials credentials, String ns,
+  public void setNamespaceProperty(TInfo tinfo, TCredentials credentials, TNamespace ns,
       String property, String value) throws ThriftSecurityException, ThriftTableOperationException {
     alterNamespaceProperty(credentials, ns, property, value, TableOperation.SET_PROPERTY);
   }
 
   @Override
-  public void removeNamespaceProperty(TInfo tinfo, TCredentials credentials, String ns,
+  public void removeNamespaceProperty(TInfo tinfo, TCredentials credentials, TNamespace ns,
       String property) throws ThriftSecurityException, ThriftTableOperationException {
     alterNamespaceProperty(credentials, ns, property, null, TableOperation.REMOVE_PROPERTY);
   }
 
-  private void alterNamespaceProperty(TCredentials c, String namespace, String property,
-      String value, TableOperation op)
-      throws ThriftSecurityException, ThriftTableOperationException {
+  private void alterNamespaceProperty(TCredentials c, TNamespace ns, String property, String value,
+      TableOperation op) throws ThriftSecurityException, ThriftTableOperationException {
 
-    NamespaceId namespaceId =
-        ClientServiceHandler.checkNamespaceId(manager.getContext(), namespace, op);
+    NamespaceId namespaceId = NamespaceId.of(ns.getNamespaceId());
 
     if (!manager.security.canAlterNamespace(c, namespaceId))
       throw new ThriftSecurityException(c.getPrincipal(), SecurityErrorCode.PERMISSION_DENIED);
@@ -405,20 +403,19 @@ public class ManagerClientServiceHandler extends FateServiceHandler
     } catch (KeeperException.NoNodeException e) {
       // race condition... namespace no longer exists? This call will throw an exception if the
       // namespace was deleted:
-      ClientServiceHandler.checkNamespaceId(manager.getContext(), namespace, op);
       log.info("Error altering namespace property", e);
-      throw new ThriftTableOperationException(namespaceId.canonical(), namespace, op,
-          TableOperationExceptionType.OTHER, "Problem altering namespaceproperty");
+      throw new ThriftTableOperationException(namespaceId.canonical(), null, op,
+          TableOperationExceptionType.NAMESPACE_NOTFOUND, "Problem altering namespaceproperty");
     } catch (Exception e) {
       log.error("Problem altering namespace property", e);
-      throw new ThriftTableOperationException(namespaceId.canonical(), namespace, op,
+      throw new ThriftTableOperationException(namespaceId.canonical(), null, op,
           TableOperationExceptionType.OTHER, "Problem altering namespace property");
     }
   }
 
-  private void alterTableProperty(TCredentials c, String tableName, String property, String value,
+  private void alterTableProperty(TCredentials c, TTable table, String property, String value,
       TableOperation op) throws ThriftSecurityException, ThriftTableOperationException {
-    final TableId tableId = ClientServiceHandler.checkTableId(manager.getContext(), tableName, op);
+    final TableId tableId = TableId.of(table.getTableId());
     NamespaceId namespaceId = getNamespaceIdFromTableId(op, tableId);
     if (!manager.security.canAlterTable(c, tableId, namespaceId))
       throw new ThriftSecurityException(c.getPrincipal(), SecurityErrorCode.PERMISSION_DENIED);
@@ -432,13 +429,12 @@ public class ManagerClientServiceHandler extends FateServiceHandler
     } catch (KeeperException.NoNodeException e) {
       // race condition... table no longer exists? This call will throw an exception if the table
       // was deleted:
-      ClientServiceHandler.checkTableId(manager.getContext(), tableName, op);
       log.info("Error altering table property", e);
-      throw new ThriftTableOperationException(tableId.canonical(), tableName, op,
-          TableOperationExceptionType.OTHER, "Problem altering table property");
+      throw new ThriftTableOperationException(tableId.canonical(), null, op,
+          TableOperationExceptionType.NOTFOUND, "Problem altering table property");
     } catch (Exception e) {
       log.error("Problem altering table property", e);
-      throw new ThriftTableOperationException(tableId.canonical(), tableName, op,
+      throw new ThriftTableOperationException(tableId.canonical(), null, op,
           TableOperationExceptionType.OTHER, "Problem altering table property");
     }
   }
@@ -497,11 +493,11 @@ public class ManagerClientServiceHandler extends FateServiceHandler
 
   @SuppressWarnings("deprecation")
   @Override
-  public boolean drainReplicationTable(TInfo tfino, TCredentials credentials, String tableName,
+  public boolean drainReplicationTable(TInfo tfino, TCredentials credentials, TTable table,
       Set<String> logsToWatch) throws TException {
     AccumuloClient client = manager.getContext();
 
-    final Text tableId = new Text(getTableId(manager.getContext(), tableName).canonical());
+    final var tableId = TableId.of(table.getTableId());
 
     drainLog.trace("Waiting for {} to be replicated for {}", logsToWatch, tableId);
 
@@ -540,23 +536,19 @@ public class ManagerClientServiceHandler extends FateServiceHandler
     }
   }
 
-  protected TableId getTableId(ClientContext context, String tableName)
-      throws ThriftTableOperationException {
-    return ClientServiceHandler.checkTableId(context, tableName, null);
-  }
-
   /**
    * @return return true records are only in place which are fully replicated
    */
   @Deprecated
-  protected boolean allReferencesReplicated(BatchScanner bs, Text tableId,
+  protected boolean allReferencesReplicated(BatchScanner bs, TableId tableId,
       Set<String> relevantLogs) {
+    Text textTableId = new Text(tableId.canonical());
     Text rowHolder = new Text(), colfHolder = new Text();
     for (Entry<Key,Value> entry : bs) {
       drainLog.trace("Got key {}", entry.getKey().toStringNoTruncate());
 
       entry.getKey().getColumnQualifier(rowHolder);
-      if (tableId.equals(rowHolder)) {
+      if (textTableId.equals(rowHolder)) {
         entry.getKey().getRow(rowHolder);
         entry.getKey().getColumnFamily(colfHolder);
 

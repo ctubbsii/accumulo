@@ -324,7 +324,7 @@ public class CompactorTest {
     EasyMock.expect(job.isSetExternalCompactionId()).andReturn(true).anyTimes();
     EasyMock.expect(job.getExternalCompactionId()).andReturn(eci.toString()).anyTimes();
     EasyMock.expect(job.getExtent()).andReturn(extent).anyTimes();
-    EasyMock.expect(extent.getTable()).andReturn("testTable".getBytes()).anyTimes();
+    EasyMock.expect(extent.getTableId()).andReturn("testTable".getBytes()).anyTimes();
 
     AccumuloConfiguration conf = PowerMock.createNiceMock(AccumuloConfiguration.class);
     EasyMock.expect(conf.getTimeInMillis(Property.INSTANCE_ZK_TIMEOUT)).andReturn(86400000L);
@@ -368,7 +368,7 @@ public class CompactorTest {
 
     TExternalCompactionJob job = PowerMock.createNiceMock(TExternalCompactionJob.class);
     TKeyExtent extent = PowerMock.createNiceMock(TKeyExtent.class);
-    EasyMock.expect(extent.getTable()).andReturn("testTable".getBytes()).anyTimes();
+    EasyMock.expect(extent.getTableId()).andReturn("testTable".getBytes()).anyTimes();
 
     EasyMock.expect(job.isSetExternalCompactionId()).andReturn(true).anyTimes();
     EasyMock.expect(job.getExternalCompactionId()).andReturn(eci.toString()).anyTimes();
@@ -420,7 +420,7 @@ public class CompactorTest {
     EasyMock.expect(job.isSetExternalCompactionId()).andReturn(true).anyTimes();
     EasyMock.expect(job.getExternalCompactionId()).andReturn(eci.toString()).anyTimes();
     EasyMock.expect(job.getExtent()).andReturn(extent).anyTimes();
-    EasyMock.expect(extent.getTable()).andReturn("testTable".getBytes()).anyTimes();
+    EasyMock.expect(extent.getTableId()).andReturn("testTable".getBytes()).anyTimes();
 
     AccumuloConfiguration conf = PowerMock.createNiceMock(AccumuloConfiguration.class);
     EasyMock.expect(conf.getTimeInMillis(Property.INSTANCE_ZK_TIMEOUT)).andReturn(86400000L);

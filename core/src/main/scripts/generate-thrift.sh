@@ -152,6 +152,8 @@ for d in "${PACKAGES_TO_GENERATE[@]}"; do
       java)
         SDIR="${BUILD_DIR}/gen-$lang/${BASE_OUTPUT_PACKAGE//.//}/${d//.//}/thrift"
         DDIR="${FINAL_DIR}/thrift-gen-$lang/${BASE_OUTPUT_PACKAGE//.//}/${d//.//}/thrift"
+        # delete any existing files
+        find "$DDIR" -type f -name '*.java' -delete
         FILE_SUFFIX=(.java)
         ;;
       rb)

@@ -29,17 +29,17 @@ public class ManagerClientService {
 
   public interface Iface extends FateService.Iface {
 
-    public long initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public long initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
-    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
-    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
-    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
-    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
-    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
     public void setManagerGoalState(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, ManagerGoalState state) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
@@ -63,23 +63,23 @@ public class ManagerClientService {
 
     public org.apache.accumulo.core.securityImpl.thrift.TDelegationToken getDelegationToken(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.securityImpl.thrift.TDelegationTokenConfig cfg) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
-    public boolean drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.util.Set<java.lang.String> logsToWatch) throws org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
+    public boolean drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.util.Set<java.lang.String> logsToWatch) throws org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface extends FateService .AsyncIface {
 
-    public void initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException;
+    public void initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException;
 
-    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
     public void setManagerGoalState(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, ManagerGoalState state, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
@@ -103,7 +103,7 @@ public class ManagerClientService {
 
     public void getDelegationToken(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.securityImpl.thrift.TDelegationTokenConfig cfg, org.apache.thrift.async.AsyncMethodCallback<org.apache.accumulo.core.securityImpl.thrift.TDelegationToken> resultHandler) throws org.apache.thrift.TException;
 
-    public void drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.util.Set<java.lang.String> logsToWatch, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException;
+    public void drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.util.Set<java.lang.String> logsToWatch, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -127,18 +127,18 @@ public class ManagerClientService {
       super(iprot, oprot);
     }
 
-    public long initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public long initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
-      send_initiateFlush(tinfo, credentials, tableName);
+      send_initiateFlush(tinfo, credentials, table);
       return recv_initiateFlush();
     }
 
-    public void send_initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName) throws org.apache.thrift.TException
+    public void send_initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table) throws org.apache.thrift.TException
     {
       initiateFlush_args args = new initiateFlush_args();
       args.setTinfo(tinfo);
       args.setCredentials(credentials);
-      args.setTableName(tableName);
+      args.setTable(table);
       sendBase("initiateFlush", args);
     }
 
@@ -161,18 +161,18 @@ public class ManagerClientService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "initiateFlush failed: unknown result");
     }
 
-    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
-      send_waitForFlush(tinfo, credentials, tableName, startRow, endRow, flushID, maxLoops);
+      send_waitForFlush(tinfo, credentials, table, startRow, endRow, flushID, maxLoops);
       recv_waitForFlush();
     }
 
-    public void send_waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops) throws org.apache.thrift.TException
+    public void send_waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops) throws org.apache.thrift.TException
     {
       waitForFlush_args args = new waitForFlush_args();
       args.setTinfo(tinfo);
       args.setCredentials(credentials);
-      args.setTableName(tableName);
+      args.setTable(table);
       args.setStartRow(startRow);
       args.setEndRow(endRow);
       args.setFlushID(flushID);
@@ -196,18 +196,18 @@ public class ManagerClientService {
       return;
     }
 
-    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
-      send_setTableProperty(tinfo, credentials, tableName, property, value);
+      send_setTableProperty(tinfo, credentials, table, property, value);
       recv_setTableProperty();
     }
 
-    public void send_setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, java.lang.String value) throws org.apache.thrift.TException
+    public void send_setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, java.lang.String value) throws org.apache.thrift.TException
     {
       setTableProperty_args args = new setTableProperty_args();
       args.setTinfo(tinfo);
       args.setCredentials(credentials);
-      args.setTableName(tableName);
+      args.setTable(table);
       args.setProperty(property);
       args.setValue(value);
       sendBase("setTableProperty", args);
@@ -229,18 +229,18 @@ public class ManagerClientService {
       return;
     }
 
-    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
-      send_removeTableProperty(tinfo, credentials, tableName, property);
+      send_removeTableProperty(tinfo, credentials, table, property);
       recv_removeTableProperty();
     }
 
-    public void send_removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property) throws org.apache.thrift.TException
+    public void send_removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property) throws org.apache.thrift.TException
     {
       removeTableProperty_args args = new removeTableProperty_args();
       args.setTinfo(tinfo);
       args.setCredentials(credentials);
-      args.setTableName(tableName);
+      args.setTable(table);
       args.setProperty(property);
       sendBase("removeTableProperty", args);
     }
@@ -261,13 +261,13 @@ public class ManagerClientService {
       return;
     }
 
-    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, java.lang.String value) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
       send_setNamespaceProperty(tinfo, credentials, ns, property, value);
       recv_setNamespaceProperty();
     }
 
-    public void send_setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, java.lang.String value) throws org.apache.thrift.TException
+    public void send_setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, java.lang.String value) throws org.apache.thrift.TException
     {
       setNamespaceProperty_args args = new setNamespaceProperty_args();
       args.setTinfo(tinfo);
@@ -294,13 +294,13 @@ public class ManagerClientService {
       return;
     }
 
-    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property) throws org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException, org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException, org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
       send_removeNamespaceProperty(tinfo, credentials, ns, property);
       recv_removeNamespaceProperty();
     }
 
-    public void send_removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property) throws org.apache.thrift.TException
+    public void send_removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property) throws org.apache.thrift.TException
     {
       removeNamespaceProperty_args args = new removeNamespaceProperty_args();
       args.setTinfo(tinfo);
@@ -613,18 +613,18 @@ public class ManagerClientService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getDelegationToken failed: unknown result");
     }
 
-    public boolean drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.util.Set<java.lang.String> logsToWatch) throws org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
+    public boolean drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.util.Set<java.lang.String> logsToWatch) throws org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException, org.apache.thrift.TException
     {
-      send_drainReplicationTable(tfino, credentials, tableName, logsToWatch);
+      send_drainReplicationTable(tfino, credentials, table, logsToWatch);
       return recv_drainReplicationTable();
     }
 
-    public void send_drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.util.Set<java.lang.String> logsToWatch) throws org.apache.thrift.TException
+    public void send_drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.util.Set<java.lang.String> logsToWatch) throws org.apache.thrift.TException
     {
       drainReplicationTable_args args = new drainReplicationTable_args();
       args.setTfino(tfino);
       args.setCredentials(credentials);
-      args.setTableName(tableName);
+      args.setTable(table);
       args.setLogsToWatch(logsToWatch);
       sendBase("drainReplicationTable", args);
     }
@@ -660,9 +660,9 @@ public class ManagerClientService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException {
+    public void initiateFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      initiateFlush_call method_call = new initiateFlush_call(tinfo, credentials, tableName, resultHandler, this, ___protocolFactory, ___transport);
+      initiateFlush_call method_call = new initiateFlush_call(tinfo, credentials, table, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -670,12 +670,12 @@ public class ManagerClientService {
     public static class initiateFlush_call extends org.apache.thrift.async.TAsyncMethodCall<java.lang.Long> {
       private org.apache.accumulo.core.trace.thrift.TInfo tinfo;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String tableName;
-      public initiateFlush_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private org.apache.accumulo.core.clientImpl.thrift.TTable table;
+      public initiateFlush_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tinfo = tinfo;
         this.credentials = credentials;
-        this.tableName = tableName;
+        this.table = table;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -683,7 +683,7 @@ public class ManagerClientService {
         initiateFlush_args args = new initiateFlush_args();
         args.setTinfo(tinfo);
         args.setCredentials(credentials);
-        args.setTableName(tableName);
+        args.setTable(table);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -698,9 +698,9 @@ public class ManagerClientService {
       }
     }
 
-    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void waitForFlush(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      waitForFlush_call method_call = new waitForFlush_call(tinfo, credentials, tableName, startRow, endRow, flushID, maxLoops, resultHandler, this, ___protocolFactory, ___transport);
+      waitForFlush_call method_call = new waitForFlush_call(tinfo, credentials, table, startRow, endRow, flushID, maxLoops, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -708,16 +708,16 @@ public class ManagerClientService {
     public static class waitForFlush_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
       private org.apache.accumulo.core.trace.thrift.TInfo tinfo;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String tableName;
+      private org.apache.accumulo.core.clientImpl.thrift.TTable table;
       private java.nio.ByteBuffer startRow;
       private java.nio.ByteBuffer endRow;
       private long flushID;
       private long maxLoops;
-      public waitForFlush_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public waitForFlush_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.nio.ByteBuffer startRow, java.nio.ByteBuffer endRow, long flushID, long maxLoops, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tinfo = tinfo;
         this.credentials = credentials;
-        this.tableName = tableName;
+        this.table = table;
         this.startRow = startRow;
         this.endRow = endRow;
         this.flushID = flushID;
@@ -729,7 +729,7 @@ public class ManagerClientService {
         waitForFlush_args args = new waitForFlush_args();
         args.setTinfo(tinfo);
         args.setCredentials(credentials);
-        args.setTableName(tableName);
+        args.setTable(table);
         args.setStartRow(startRow);
         args.setEndRow(endRow);
         args.setFlushID(flushID);
@@ -748,9 +748,9 @@ public class ManagerClientService {
       }
     }
 
-    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void setTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      setTableProperty_call method_call = new setTableProperty_call(tinfo, credentials, tableName, property, value, resultHandler, this, ___protocolFactory, ___transport);
+      setTableProperty_call method_call = new setTableProperty_call(tinfo, credentials, table, property, value, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -758,14 +758,14 @@ public class ManagerClientService {
     public static class setTableProperty_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
       private org.apache.accumulo.core.trace.thrift.TInfo tinfo;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String tableName;
+      private org.apache.accumulo.core.clientImpl.thrift.TTable table;
       private java.lang.String property;
       private java.lang.String value;
-      public setTableProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public setTableProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tinfo = tinfo;
         this.credentials = credentials;
-        this.tableName = tableName;
+        this.table = table;
         this.property = property;
         this.value = value;
       }
@@ -775,7 +775,7 @@ public class ManagerClientService {
         setTableProperty_args args = new setTableProperty_args();
         args.setTinfo(tinfo);
         args.setCredentials(credentials);
-        args.setTableName(tableName);
+        args.setTable(table);
         args.setProperty(property);
         args.setValue(value);
         args.write(prot);
@@ -792,9 +792,9 @@ public class ManagerClientService {
       }
     }
 
-    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void removeTableProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      removeTableProperty_call method_call = new removeTableProperty_call(tinfo, credentials, tableName, property, resultHandler, this, ___protocolFactory, ___transport);
+      removeTableProperty_call method_call = new removeTableProperty_call(tinfo, credentials, table, property, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -802,13 +802,13 @@ public class ManagerClientService {
     public static class removeTableProperty_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
       private org.apache.accumulo.core.trace.thrift.TInfo tinfo;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String tableName;
+      private org.apache.accumulo.core.clientImpl.thrift.TTable table;
       private java.lang.String property;
-      public removeTableProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public removeTableProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tinfo = tinfo;
         this.credentials = credentials;
-        this.tableName = tableName;
+        this.table = table;
         this.property = property;
       }
 
@@ -817,7 +817,7 @@ public class ManagerClientService {
         removeTableProperty_args args = new removeTableProperty_args();
         args.setTinfo(tinfo);
         args.setCredentials(credentials);
-        args.setTableName(tableName);
+        args.setTable(table);
         args.setProperty(property);
         args.write(prot);
         prot.writeMessageEnd();
@@ -833,7 +833,7 @@ public class ManagerClientService {
       }
     }
 
-    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void setNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       setNamespaceProperty_call method_call = new setNamespaceProperty_call(tinfo, credentials, ns, property, value, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -843,10 +843,10 @@ public class ManagerClientService {
     public static class setNamespaceProperty_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
       private org.apache.accumulo.core.trace.thrift.TInfo tinfo;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String ns;
+      private org.apache.accumulo.core.clientImpl.thrift.TNamespace ns;
       private java.lang.String property;
       private java.lang.String value;
-      public setNamespaceProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public setNamespaceProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, java.lang.String value, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tinfo = tinfo;
         this.credentials = credentials;
@@ -877,7 +877,7 @@ public class ManagerClientService {
       }
     }
 
-    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
+    public void removeNamespaceProperty(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       removeNamespaceProperty_call method_call = new removeNamespaceProperty_call(tinfo, credentials, ns, property, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -887,9 +887,9 @@ public class ManagerClientService {
     public static class removeNamespaceProperty_call extends org.apache.thrift.async.TAsyncMethodCall<Void> {
       private org.apache.accumulo.core.trace.thrift.TInfo tinfo;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String ns;
+      private org.apache.accumulo.core.clientImpl.thrift.TNamespace ns;
       private java.lang.String property;
-      public removeNamespaceProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String ns, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public removeNamespaceProperty_call(org.apache.accumulo.core.trace.thrift.TInfo tinfo, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TNamespace ns, java.lang.String property, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tinfo = tinfo;
         this.credentials = credentials;
@@ -1339,9 +1339,9 @@ public class ManagerClientService {
       }
     }
 
-    public void drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.util.Set<java.lang.String> logsToWatch, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException {
+    public void drainReplicationTable(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.util.Set<java.lang.String> logsToWatch, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      drainReplicationTable_call method_call = new drainReplicationTable_call(tfino, credentials, tableName, logsToWatch, resultHandler, this, ___protocolFactory, ___transport);
+      drainReplicationTable_call method_call = new drainReplicationTable_call(tfino, credentials, table, logsToWatch, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -1349,13 +1349,13 @@ public class ManagerClientService {
     public static class drainReplicationTable_call extends org.apache.thrift.async.TAsyncMethodCall<java.lang.Boolean> {
       private org.apache.accumulo.core.trace.thrift.TInfo tfino;
       private org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials;
-      private java.lang.String tableName;
+      private org.apache.accumulo.core.clientImpl.thrift.TTable table;
       private java.util.Set<java.lang.String> logsToWatch;
-      public drainReplicationTable_call(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, java.lang.String tableName, java.util.Set<java.lang.String> logsToWatch, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public drainReplicationTable_call(org.apache.accumulo.core.trace.thrift.TInfo tfino, org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials, org.apache.accumulo.core.clientImpl.thrift.TTable table, java.util.Set<java.lang.String> logsToWatch, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tfino = tfino;
         this.credentials = credentials;
-        this.tableName = tableName;
+        this.table = table;
         this.logsToWatch = logsToWatch;
       }
 
@@ -1364,7 +1364,7 @@ public class ManagerClientService {
         drainReplicationTable_args args = new drainReplicationTable_args();
         args.setTfino(tfino);
         args.setCredentials(credentials);
-        args.setTableName(tableName);
+        args.setTable(table);
         args.setLogsToWatch(logsToWatch);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1435,7 +1435,7 @@ public class ManagerClientService {
       public initiateFlush_result getResult(I iface, initiateFlush_args args) throws org.apache.thrift.TException {
         initiateFlush_result result = new initiateFlush_result();
         try {
-          result.success = iface.initiateFlush(args.tinfo, args.credentials, args.tableName);
+          result.success = iface.initiateFlush(args.tinfo, args.credentials, args.table);
           result.setSuccessIsSet(true);
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException sec) {
           result.sec = sec;
@@ -1469,7 +1469,7 @@ public class ManagerClientService {
       public waitForFlush_result getResult(I iface, waitForFlush_args args) throws org.apache.thrift.TException {
         waitForFlush_result result = new waitForFlush_result();
         try {
-          iface.waitForFlush(args.tinfo, args.credentials, args.tableName, args.startRow, args.endRow, args.flushID, args.maxLoops);
+          iface.waitForFlush(args.tinfo, args.credentials, args.table, args.startRow, args.endRow, args.flushID, args.maxLoops);
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException sec) {
           result.sec = sec;
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException tope) {
@@ -1502,7 +1502,7 @@ public class ManagerClientService {
       public setTableProperty_result getResult(I iface, setTableProperty_args args) throws org.apache.thrift.TException {
         setTableProperty_result result = new setTableProperty_result();
         try {
-          iface.setTableProperty(args.tinfo, args.credentials, args.tableName, args.property, args.value);
+          iface.setTableProperty(args.tinfo, args.credentials, args.table, args.property, args.value);
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException sec) {
           result.sec = sec;
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException tope) {
@@ -1535,7 +1535,7 @@ public class ManagerClientService {
       public removeTableProperty_result getResult(I iface, removeTableProperty_args args) throws org.apache.thrift.TException {
         removeTableProperty_result result = new removeTableProperty_result();
         try {
-          iface.removeTableProperty(args.tinfo, args.credentials, args.tableName, args.property);
+          iface.removeTableProperty(args.tinfo, args.credentials, args.table, args.property);
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException sec) {
           result.sec = sec;
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException tope) {
@@ -1959,7 +1959,7 @@ public class ManagerClientService {
       public drainReplicationTable_result getResult(I iface, drainReplicationTable_args args) throws org.apache.thrift.TException {
         drainReplicationTable_result result = new drainReplicationTable_result();
         try {
-          result.success = iface.drainReplicationTable(args.tfino, args.credentials, args.tableName, args.logsToWatch);
+          result.success = iface.drainReplicationTable(args.tfino, args.credentials, args.table, args.logsToWatch);
           result.setSuccessIsSet(true);
         } catch (org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException tnase) {
           result.tnase = tnase;
@@ -2072,7 +2072,7 @@ public class ManagerClientService {
       }
 
       public void start(I iface, initiateFlush_args args, org.apache.thrift.async.AsyncMethodCallback<java.lang.Long> resultHandler) throws org.apache.thrift.TException {
-        iface.initiateFlush(args.tinfo, args.credentials, args.tableName,resultHandler);
+        iface.initiateFlush(args.tinfo, args.credentials, args.table,resultHandler);
       }
     }
 
@@ -2144,7 +2144,7 @@ public class ManagerClientService {
       }
 
       public void start(I iface, waitForFlush_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
-        iface.waitForFlush(args.tinfo, args.credentials, args.tableName, args.startRow, args.endRow, args.flushID, args.maxLoops,resultHandler);
+        iface.waitForFlush(args.tinfo, args.credentials, args.table, args.startRow, args.endRow, args.flushID, args.maxLoops,resultHandler);
       }
     }
 
@@ -2216,7 +2216,7 @@ public class ManagerClientService {
       }
 
       public void start(I iface, setTableProperty_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
-        iface.setTableProperty(args.tinfo, args.credentials, args.tableName, args.property, args.value,resultHandler);
+        iface.setTableProperty(args.tinfo, args.credentials, args.table, args.property, args.value,resultHandler);
       }
     }
 
@@ -2288,7 +2288,7 @@ public class ManagerClientService {
       }
 
       public void start(I iface, removeTableProperty_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException {
-        iface.removeTableProperty(args.tinfo, args.credentials, args.tableName, args.property,resultHandler);
+        iface.removeTableProperty(args.tinfo, args.credentials, args.table, args.property,resultHandler);
       }
     }
 
@@ -3177,7 +3177,7 @@ public class ManagerClientService {
       }
 
       public void start(I iface, drainReplicationTable_args args, org.apache.thrift.async.AsyncMethodCallback<java.lang.Boolean> resultHandler) throws org.apache.thrift.TException {
-        iface.drainReplicationTable(args.tfino, args.credentials, args.tableName, args.logsToWatch,resultHandler);
+        iface.drainReplicationTable(args.tfino, args.credentials, args.table, args.logsToWatch,resultHandler);
       }
     }
 
@@ -3188,20 +3188,20 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TINFO_FIELD_DESC = new org.apache.thrift.protocol.TField("tinfo", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new initiateFlush_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new initiateFlush_argsTupleSchemeFactory();
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tinfo; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TINFO((short)1, "tinfo"),
       CREDENTIALS((short)2, "credentials"),
-      TABLE_NAME((short)3, "tableName");
+      TABLE((short)3, "table");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -3221,8 +3221,8 @@ public class ManagerClientService {
             return TINFO;
           case 2: // CREDENTIALS
             return CREDENTIALS;
-          case 3: // TABLE_NAME
-            return TABLE_NAME;
+          case 3: // TABLE
+            return TABLE;
           default:
             return null;
         }
@@ -3271,8 +3271,8 @@ public class ManagerClientService {
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.trace.thrift.TInfo.class)));
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TTable.class)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(initiateFlush_args.class, metaDataMap);
     }
@@ -3283,12 +3283,12 @@ public class ManagerClientService {
     public initiateFlush_args(
       org.apache.accumulo.core.trace.thrift.TInfo tinfo,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String tableName)
+      org.apache.accumulo.core.clientImpl.thrift.TTable table)
     {
       this();
       this.tinfo = tinfo;
       this.credentials = credentials;
-      this.tableName = tableName;
+      this.table = table;
     }
 
     /**
@@ -3301,8 +3301,8 @@ public class ManagerClientService {
       if (other.isSetCredentials()) {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
-      if (other.isSetTableName()) {
-        this.tableName = other.tableName;
+      if (other.isSetTable()) {
+        this.table = new org.apache.accumulo.core.clientImpl.thrift.TTable(other.table);
       }
     }
 
@@ -3314,7 +3314,7 @@ public class ManagerClientService {
     public void clear() {
       this.tinfo = null;
       this.credentials = null;
-      this.tableName = null;
+      this.table = null;
     }
 
     @org.apache.thrift.annotation.Nullable
@@ -3368,27 +3368,27 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getTableName() {
-      return this.tableName;
+    public org.apache.accumulo.core.clientImpl.thrift.TTable getTable() {
+      return this.table;
     }
 
-    public initiateFlush_args setTableName(@org.apache.thrift.annotation.Nullable java.lang.String tableName) {
-      this.tableName = tableName;
+    public initiateFlush_args setTable(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table) {
+      this.table = table;
       return this;
     }
 
-    public void unsetTableName() {
-      this.tableName = null;
+    public void unsetTable() {
+      this.table = null;
     }
 
-    /** Returns true if field tableName is set (has been assigned a value) and false otherwise */
-    public boolean isSetTableName() {
-      return this.tableName != null;
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
     }
 
-    public void setTableNameIsSet(boolean value) {
+    public void setTableIsSet(boolean value) {
       if (!value) {
-        this.tableName = null;
+        this.table = null;
       }
     }
 
@@ -3410,11 +3410,11 @@ public class ManagerClientService {
         }
         break;
 
-      case TABLE_NAME:
+      case TABLE:
         if (value == null) {
-          unsetTableName();
+          unsetTable();
         } else {
-          setTableName((java.lang.String)value);
+          setTable((org.apache.accumulo.core.clientImpl.thrift.TTable)value);
         }
         break;
 
@@ -3430,8 +3430,8 @@ public class ManagerClientService {
       case CREDENTIALS:
         return getCredentials();
 
-      case TABLE_NAME:
-        return getTableName();
+      case TABLE:
+        return getTable();
 
       }
       throw new java.lang.IllegalStateException();
@@ -3448,8 +3448,8 @@ public class ManagerClientService {
         return isSetTinfo();
       case CREDENTIALS:
         return isSetCredentials();
-      case TABLE_NAME:
-        return isSetTableName();
+      case TABLE:
+        return isSetTable();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -3487,12 +3487,12 @@ public class ManagerClientService {
           return false;
       }
 
-      boolean this_present_tableName = true && this.isSetTableName();
-      boolean that_present_tableName = true && that.isSetTableName();
-      if (this_present_tableName || that_present_tableName) {
-        if (!(this_present_tableName && that_present_tableName))
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
           return false;
-        if (!this.tableName.equals(that.tableName))
+        if (!this.table.equals(that.table))
           return false;
       }
 
@@ -3511,9 +3511,9 @@ public class ManagerClientService {
       if (isSetCredentials())
         hashCode = hashCode * 8191 + credentials.hashCode();
 
-      hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
-      if (isSetTableName())
-        hashCode = hashCode * 8191 + tableName.hashCode();
+      hashCode = hashCode * 8191 + ((isSetTable()) ? 131071 : 524287);
+      if (isSetTable())
+        hashCode = hashCode * 8191 + table.hashCode();
 
       return hashCode;
     }
@@ -3546,12 +3546,12 @@ public class ManagerClientService {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.valueOf(isSetTableName()).compareTo(other.isSetTableName());
+      lastComparison = java.lang.Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTableName()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableName, other.tableName);
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3593,11 +3593,11 @@ public class ManagerClientService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("tableName:");
-      if (this.tableName == null) {
+      sb.append("table:");
+      if (this.table == null) {
         sb.append("null");
       } else {
-        sb.append(this.tableName);
+        sb.append(this.table);
       }
       first = false;
       sb.append(")");
@@ -3612,6 +3612,9 @@ public class ManagerClientService {
       }
       if (credentials != null) {
         credentials.validate();
+      }
+      if (table != null) {
+        table.validate();
       }
     }
 
@@ -3667,10 +3670,11 @@ public class ManagerClientService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // TABLE_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.tableName = iprot.readString();
-                struct.setTableNameIsSet(true);
+            case 3: // TABLE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+                struct.table.read(iprot);
+                struct.setTableIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -3700,9 +3704,9 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.tableName != null) {
-          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-          oprot.writeString(struct.tableName);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          struct.table.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -3729,7 +3733,7 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           optionals.set(1);
         }
-        if (struct.isSetTableName()) {
+        if (struct.isSetTable()) {
           optionals.set(2);
         }
         oprot.writeBitSet(optionals, 3);
@@ -3739,8 +3743,8 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           struct.credentials.write(oprot);
         }
-        if (struct.isSetTableName()) {
-          oprot.writeString(struct.tableName);
+        if (struct.isSetTable()) {
+          struct.table.write(oprot);
         }
       }
 
@@ -3759,8 +3763,9 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.tableName = iprot.readString();
-          struct.setTableNameIsSet(true);
+          struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+          struct.table.read(iprot);
+          struct.setTableIsSet(true);
         }
       }
     }
@@ -4460,7 +4465,7 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TINFO_FIELD_DESC = new org.apache.thrift.protocol.TField("tinfo", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRUCT, (short)3);
     private static final org.apache.thrift.protocol.TField START_ROW_FIELD_DESC = new org.apache.thrift.protocol.TField("startRow", org.apache.thrift.protocol.TType.STRING, (short)4);
     private static final org.apache.thrift.protocol.TField END_ROW_FIELD_DESC = new org.apache.thrift.protocol.TField("endRow", org.apache.thrift.protocol.TType.STRING, (short)5);
     private static final org.apache.thrift.protocol.TField FLUSH_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("flushID", org.apache.thrift.protocol.TType.I64, (short)6);
@@ -4471,7 +4476,7 @@ public class ManagerClientService {
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tinfo; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table; // required
     public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer startRow; // required
     public @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer endRow; // required
     public long flushID; // required
@@ -4481,7 +4486,7 @@ public class ManagerClientService {
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TINFO((short)1, "tinfo"),
       CREDENTIALS((short)2, "credentials"),
-      TABLE_NAME((short)3, "tableName"),
+      TABLE((short)3, "table"),
       START_ROW((short)4, "startRow"),
       END_ROW((short)5, "endRow"),
       FLUSH_ID((short)6, "flushID"),
@@ -4505,8 +4510,8 @@ public class ManagerClientService {
             return TINFO;
           case 2: // CREDENTIALS
             return CREDENTIALS;
-          case 3: // TABLE_NAME
-            return TABLE_NAME;
+          case 3: // TABLE
+            return TABLE;
           case 4: // START_ROW
             return START_ROW;
           case 5: // END_ROW
@@ -4566,8 +4571,8 @@ public class ManagerClientService {
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.trace.thrift.TInfo.class)));
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TTable.class)));
       tmpMap.put(_Fields.START_ROW, new org.apache.thrift.meta_data.FieldMetaData("startRow", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING          , true)));
       tmpMap.put(_Fields.END_ROW, new org.apache.thrift.meta_data.FieldMetaData("endRow", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -4586,7 +4591,7 @@ public class ManagerClientService {
     public waitForFlush_args(
       org.apache.accumulo.core.trace.thrift.TInfo tinfo,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String tableName,
+      org.apache.accumulo.core.clientImpl.thrift.TTable table,
       java.nio.ByteBuffer startRow,
       java.nio.ByteBuffer endRow,
       long flushID,
@@ -4595,7 +4600,7 @@ public class ManagerClientService {
       this();
       this.tinfo = tinfo;
       this.credentials = credentials;
-      this.tableName = tableName;
+      this.table = table;
       this.startRow = org.apache.thrift.TBaseHelper.copyBinary(startRow);
       this.endRow = org.apache.thrift.TBaseHelper.copyBinary(endRow);
       this.flushID = flushID;
@@ -4615,8 +4620,8 @@ public class ManagerClientService {
       if (other.isSetCredentials()) {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
-      if (other.isSetTableName()) {
-        this.tableName = other.tableName;
+      if (other.isSetTable()) {
+        this.table = new org.apache.accumulo.core.clientImpl.thrift.TTable(other.table);
       }
       if (other.isSetStartRow()) {
         this.startRow = org.apache.thrift.TBaseHelper.copyBinary(other.startRow);
@@ -4636,7 +4641,7 @@ public class ManagerClientService {
     public void clear() {
       this.tinfo = null;
       this.credentials = null;
-      this.tableName = null;
+      this.table = null;
       this.startRow = null;
       this.endRow = null;
       setFlushIDIsSet(false);
@@ -4696,27 +4701,27 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getTableName() {
-      return this.tableName;
+    public org.apache.accumulo.core.clientImpl.thrift.TTable getTable() {
+      return this.table;
     }
 
-    public waitForFlush_args setTableName(@org.apache.thrift.annotation.Nullable java.lang.String tableName) {
-      this.tableName = tableName;
+    public waitForFlush_args setTable(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table) {
+      this.table = table;
       return this;
     }
 
-    public void unsetTableName() {
-      this.tableName = null;
+    public void unsetTable() {
+      this.table = null;
     }
 
-    /** Returns true if field tableName is set (has been assigned a value) and false otherwise */
-    public boolean isSetTableName() {
-      return this.tableName != null;
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
     }
 
-    public void setTableNameIsSet(boolean value) {
+    public void setTableIsSet(boolean value) {
       if (!value) {
-        this.tableName = null;
+        this.table = null;
       }
     }
 
@@ -4852,11 +4857,11 @@ public class ManagerClientService {
         }
         break;
 
-      case TABLE_NAME:
+      case TABLE:
         if (value == null) {
-          unsetTableName();
+          unsetTable();
         } else {
-          setTableName((java.lang.String)value);
+          setTable((org.apache.accumulo.core.clientImpl.thrift.TTable)value);
         }
         break;
 
@@ -4912,8 +4917,8 @@ public class ManagerClientService {
       case CREDENTIALS:
         return getCredentials();
 
-      case TABLE_NAME:
-        return getTableName();
+      case TABLE:
+        return getTable();
 
       case START_ROW:
         return getStartRow();
@@ -4942,8 +4947,8 @@ public class ManagerClientService {
         return isSetTinfo();
       case CREDENTIALS:
         return isSetCredentials();
-      case TABLE_NAME:
-        return isSetTableName();
+      case TABLE:
+        return isSetTable();
       case START_ROW:
         return isSetStartRow();
       case END_ROW:
@@ -4989,12 +4994,12 @@ public class ManagerClientService {
           return false;
       }
 
-      boolean this_present_tableName = true && this.isSetTableName();
-      boolean that_present_tableName = true && that.isSetTableName();
-      if (this_present_tableName || that_present_tableName) {
-        if (!(this_present_tableName && that_present_tableName))
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
           return false;
-        if (!this.tableName.equals(that.tableName))
+        if (!this.table.equals(that.table))
           return false;
       }
 
@@ -5049,9 +5054,9 @@ public class ManagerClientService {
       if (isSetCredentials())
         hashCode = hashCode * 8191 + credentials.hashCode();
 
-      hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
-      if (isSetTableName())
-        hashCode = hashCode * 8191 + tableName.hashCode();
+      hashCode = hashCode * 8191 + ((isSetTable()) ? 131071 : 524287);
+      if (isSetTable())
+        hashCode = hashCode * 8191 + table.hashCode();
 
       hashCode = hashCode * 8191 + ((isSetStartRow()) ? 131071 : 524287);
       if (isSetStartRow())
@@ -5096,12 +5101,12 @@ public class ManagerClientService {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.valueOf(isSetTableName()).compareTo(other.isSetTableName());
+      lastComparison = java.lang.Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTableName()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableName, other.tableName);
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5183,11 +5188,11 @@ public class ManagerClientService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("tableName:");
-      if (this.tableName == null) {
+      sb.append("table:");
+      if (this.table == null) {
         sb.append("null");
       } else {
-        sb.append(this.tableName);
+        sb.append(this.table);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -5226,6 +5231,9 @@ public class ManagerClientService {
       }
       if (credentials != null) {
         credentials.validate();
+      }
+      if (table != null) {
+        table.validate();
       }
     }
 
@@ -5283,10 +5291,11 @@ public class ManagerClientService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // TABLE_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.tableName = iprot.readString();
-                struct.setTableNameIsSet(true);
+            case 3: // TABLE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+                struct.table.read(iprot);
+                struct.setTableIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -5348,9 +5357,9 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.tableName != null) {
-          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-          oprot.writeString(struct.tableName);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          struct.table.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.startRow != null) {
@@ -5393,7 +5402,7 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           optionals.set(1);
         }
-        if (struct.isSetTableName()) {
+        if (struct.isSetTable()) {
           optionals.set(2);
         }
         if (struct.isSetStartRow()) {
@@ -5415,8 +5424,8 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           struct.credentials.write(oprot);
         }
-        if (struct.isSetTableName()) {
-          oprot.writeString(struct.tableName);
+        if (struct.isSetTable()) {
+          struct.table.write(oprot);
         }
         if (struct.isSetStartRow()) {
           oprot.writeBinary(struct.startRow);
@@ -5447,8 +5456,9 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.tableName = iprot.readString();
-          struct.setTableNameIsSet(true);
+          struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+          struct.table.read(iprot);
+          struct.setTableIsSet(true);
         }
         if (incoming.get(3)) {
           struct.startRow = iprot.readBinary();
@@ -6062,7 +6072,7 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TINFO_FIELD_DESC = new org.apache.thrift.protocol.TField("tinfo", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRUCT, (short)3);
     private static final org.apache.thrift.protocol.TField PROPERTY_FIELD_DESC = new org.apache.thrift.protocol.TField("property", org.apache.thrift.protocol.TType.STRING, (short)4);
     private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)5);
 
@@ -6071,7 +6081,7 @@ public class ManagerClientService {
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tinfo; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table; // required
     public @org.apache.thrift.annotation.Nullable java.lang.String property; // required
     public @org.apache.thrift.annotation.Nullable java.lang.String value; // required
 
@@ -6079,7 +6089,7 @@ public class ManagerClientService {
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TINFO((short)1, "tinfo"),
       CREDENTIALS((short)2, "credentials"),
-      TABLE_NAME((short)3, "tableName"),
+      TABLE((short)3, "table"),
       PROPERTY((short)4, "property"),
       VALUE((short)5, "value");
 
@@ -6101,8 +6111,8 @@ public class ManagerClientService {
             return TINFO;
           case 2: // CREDENTIALS
             return CREDENTIALS;
-          case 3: // TABLE_NAME
-            return TABLE_NAME;
+          case 3: // TABLE
+            return TABLE;
           case 4: // PROPERTY
             return PROPERTY;
           case 5: // VALUE
@@ -6155,8 +6165,8 @@ public class ManagerClientService {
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.trace.thrift.TInfo.class)));
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TTable.class)));
       tmpMap.put(_Fields.PROPERTY, new org.apache.thrift.meta_data.FieldMetaData("property", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -6171,14 +6181,14 @@ public class ManagerClientService {
     public setTableProperty_args(
       org.apache.accumulo.core.trace.thrift.TInfo tinfo,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String tableName,
+      org.apache.accumulo.core.clientImpl.thrift.TTable table,
       java.lang.String property,
       java.lang.String value)
     {
       this();
       this.tinfo = tinfo;
       this.credentials = credentials;
-      this.tableName = tableName;
+      this.table = table;
       this.property = property;
       this.value = value;
     }
@@ -6193,8 +6203,8 @@ public class ManagerClientService {
       if (other.isSetCredentials()) {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
-      if (other.isSetTableName()) {
-        this.tableName = other.tableName;
+      if (other.isSetTable()) {
+        this.table = new org.apache.accumulo.core.clientImpl.thrift.TTable(other.table);
       }
       if (other.isSetProperty()) {
         this.property = other.property;
@@ -6212,7 +6222,7 @@ public class ManagerClientService {
     public void clear() {
       this.tinfo = null;
       this.credentials = null;
-      this.tableName = null;
+      this.table = null;
       this.property = null;
       this.value = null;
     }
@@ -6268,27 +6278,27 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getTableName() {
-      return this.tableName;
+    public org.apache.accumulo.core.clientImpl.thrift.TTable getTable() {
+      return this.table;
     }
 
-    public setTableProperty_args setTableName(@org.apache.thrift.annotation.Nullable java.lang.String tableName) {
-      this.tableName = tableName;
+    public setTableProperty_args setTable(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table) {
+      this.table = table;
       return this;
     }
 
-    public void unsetTableName() {
-      this.tableName = null;
+    public void unsetTable() {
+      this.table = null;
     }
 
-    /** Returns true if field tableName is set (has been assigned a value) and false otherwise */
-    public boolean isSetTableName() {
-      return this.tableName != null;
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
     }
 
-    public void setTableNameIsSet(boolean value) {
+    public void setTableIsSet(boolean value) {
       if (!value) {
-        this.tableName = null;
+        this.table = null;
       }
     }
 
@@ -6360,11 +6370,11 @@ public class ManagerClientService {
         }
         break;
 
-      case TABLE_NAME:
+      case TABLE:
         if (value == null) {
-          unsetTableName();
+          unsetTable();
         } else {
-          setTableName((java.lang.String)value);
+          setTable((org.apache.accumulo.core.clientImpl.thrift.TTable)value);
         }
         break;
 
@@ -6396,8 +6406,8 @@ public class ManagerClientService {
       case CREDENTIALS:
         return getCredentials();
 
-      case TABLE_NAME:
-        return getTableName();
+      case TABLE:
+        return getTable();
 
       case PROPERTY:
         return getProperty();
@@ -6420,8 +6430,8 @@ public class ManagerClientService {
         return isSetTinfo();
       case CREDENTIALS:
         return isSetCredentials();
-      case TABLE_NAME:
-        return isSetTableName();
+      case TABLE:
+        return isSetTable();
       case PROPERTY:
         return isSetProperty();
       case VALUE:
@@ -6463,12 +6473,12 @@ public class ManagerClientService {
           return false;
       }
 
-      boolean this_present_tableName = true && this.isSetTableName();
-      boolean that_present_tableName = true && that.isSetTableName();
-      if (this_present_tableName || that_present_tableName) {
-        if (!(this_present_tableName && that_present_tableName))
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
           return false;
-        if (!this.tableName.equals(that.tableName))
+        if (!this.table.equals(that.table))
           return false;
       }
 
@@ -6505,9 +6515,9 @@ public class ManagerClientService {
       if (isSetCredentials())
         hashCode = hashCode * 8191 + credentials.hashCode();
 
-      hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
-      if (isSetTableName())
-        hashCode = hashCode * 8191 + tableName.hashCode();
+      hashCode = hashCode * 8191 + ((isSetTable()) ? 131071 : 524287);
+      if (isSetTable())
+        hashCode = hashCode * 8191 + table.hashCode();
 
       hashCode = hashCode * 8191 + ((isSetProperty()) ? 131071 : 524287);
       if (isSetProperty())
@@ -6548,12 +6558,12 @@ public class ManagerClientService {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.valueOf(isSetTableName()).compareTo(other.isSetTableName());
+      lastComparison = java.lang.Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTableName()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableName, other.tableName);
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -6615,11 +6625,11 @@ public class ManagerClientService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("tableName:");
-      if (this.tableName == null) {
+      sb.append("table:");
+      if (this.table == null) {
         sb.append("null");
       } else {
-        sb.append(this.tableName);
+        sb.append(this.table);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -6650,6 +6660,9 @@ public class ManagerClientService {
       }
       if (credentials != null) {
         credentials.validate();
+      }
+      if (table != null) {
+        table.validate();
       }
     }
 
@@ -6705,10 +6718,11 @@ public class ManagerClientService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // TABLE_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.tableName = iprot.readString();
-                struct.setTableNameIsSet(true);
+            case 3: // TABLE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+                struct.table.read(iprot);
+                struct.setTableIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -6754,9 +6768,9 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.tableName != null) {
-          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-          oprot.writeString(struct.tableName);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          struct.table.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.property != null) {
@@ -6793,7 +6807,7 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           optionals.set(1);
         }
-        if (struct.isSetTableName()) {
+        if (struct.isSetTable()) {
           optionals.set(2);
         }
         if (struct.isSetProperty()) {
@@ -6809,8 +6823,8 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           struct.credentials.write(oprot);
         }
-        if (struct.isSetTableName()) {
-          oprot.writeString(struct.tableName);
+        if (struct.isSetTable()) {
+          struct.table.write(oprot);
         }
         if (struct.isSetProperty()) {
           oprot.writeString(struct.property);
@@ -6835,8 +6849,9 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.tableName = iprot.readString();
-          struct.setTableNameIsSet(true);
+          struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+          struct.table.read(iprot);
+          struct.setTableIsSet(true);
         }
         if (incoming.get(3)) {
           struct.property = iprot.readString();
@@ -7442,7 +7457,7 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TINFO_FIELD_DESC = new org.apache.thrift.protocol.TField("tinfo", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRUCT, (short)3);
     private static final org.apache.thrift.protocol.TField PROPERTY_FIELD_DESC = new org.apache.thrift.protocol.TField("property", org.apache.thrift.protocol.TType.STRING, (short)4);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new removeTableProperty_argsStandardSchemeFactory();
@@ -7450,14 +7465,14 @@ public class ManagerClientService {
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tinfo; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table; // required
     public @org.apache.thrift.annotation.Nullable java.lang.String property; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TINFO((short)1, "tinfo"),
       CREDENTIALS((short)2, "credentials"),
-      TABLE_NAME((short)3, "tableName"),
+      TABLE((short)3, "table"),
       PROPERTY((short)4, "property");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -7478,8 +7493,8 @@ public class ManagerClientService {
             return TINFO;
           case 2: // CREDENTIALS
             return CREDENTIALS;
-          case 3: // TABLE_NAME
-            return TABLE_NAME;
+          case 3: // TABLE
+            return TABLE;
           case 4: // PROPERTY
             return PROPERTY;
           default:
@@ -7530,8 +7545,8 @@ public class ManagerClientService {
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.trace.thrift.TInfo.class)));
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TTable.class)));
       tmpMap.put(_Fields.PROPERTY, new org.apache.thrift.meta_data.FieldMetaData("property", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -7544,13 +7559,13 @@ public class ManagerClientService {
     public removeTableProperty_args(
       org.apache.accumulo.core.trace.thrift.TInfo tinfo,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String tableName,
+      org.apache.accumulo.core.clientImpl.thrift.TTable table,
       java.lang.String property)
     {
       this();
       this.tinfo = tinfo;
       this.credentials = credentials;
-      this.tableName = tableName;
+      this.table = table;
       this.property = property;
     }
 
@@ -7564,8 +7579,8 @@ public class ManagerClientService {
       if (other.isSetCredentials()) {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
-      if (other.isSetTableName()) {
-        this.tableName = other.tableName;
+      if (other.isSetTable()) {
+        this.table = new org.apache.accumulo.core.clientImpl.thrift.TTable(other.table);
       }
       if (other.isSetProperty()) {
         this.property = other.property;
@@ -7580,7 +7595,7 @@ public class ManagerClientService {
     public void clear() {
       this.tinfo = null;
       this.credentials = null;
-      this.tableName = null;
+      this.table = null;
       this.property = null;
     }
 
@@ -7635,27 +7650,27 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getTableName() {
-      return this.tableName;
+    public org.apache.accumulo.core.clientImpl.thrift.TTable getTable() {
+      return this.table;
     }
 
-    public removeTableProperty_args setTableName(@org.apache.thrift.annotation.Nullable java.lang.String tableName) {
-      this.tableName = tableName;
+    public removeTableProperty_args setTable(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table) {
+      this.table = table;
       return this;
     }
 
-    public void unsetTableName() {
-      this.tableName = null;
+    public void unsetTable() {
+      this.table = null;
     }
 
-    /** Returns true if field tableName is set (has been assigned a value) and false otherwise */
-    public boolean isSetTableName() {
-      return this.tableName != null;
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
     }
 
-    public void setTableNameIsSet(boolean value) {
+    public void setTableIsSet(boolean value) {
       if (!value) {
-        this.tableName = null;
+        this.table = null;
       }
     }
 
@@ -7702,11 +7717,11 @@ public class ManagerClientService {
         }
         break;
 
-      case TABLE_NAME:
+      case TABLE:
         if (value == null) {
-          unsetTableName();
+          unsetTable();
         } else {
-          setTableName((java.lang.String)value);
+          setTable((org.apache.accumulo.core.clientImpl.thrift.TTable)value);
         }
         break;
 
@@ -7730,8 +7745,8 @@ public class ManagerClientService {
       case CREDENTIALS:
         return getCredentials();
 
-      case TABLE_NAME:
-        return getTableName();
+      case TABLE:
+        return getTable();
 
       case PROPERTY:
         return getProperty();
@@ -7751,8 +7766,8 @@ public class ManagerClientService {
         return isSetTinfo();
       case CREDENTIALS:
         return isSetCredentials();
-      case TABLE_NAME:
-        return isSetTableName();
+      case TABLE:
+        return isSetTable();
       case PROPERTY:
         return isSetProperty();
       }
@@ -7792,12 +7807,12 @@ public class ManagerClientService {
           return false;
       }
 
-      boolean this_present_tableName = true && this.isSetTableName();
-      boolean that_present_tableName = true && that.isSetTableName();
-      if (this_present_tableName || that_present_tableName) {
-        if (!(this_present_tableName && that_present_tableName))
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
           return false;
-        if (!this.tableName.equals(that.tableName))
+        if (!this.table.equals(that.table))
           return false;
       }
 
@@ -7825,9 +7840,9 @@ public class ManagerClientService {
       if (isSetCredentials())
         hashCode = hashCode * 8191 + credentials.hashCode();
 
-      hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
-      if (isSetTableName())
-        hashCode = hashCode * 8191 + tableName.hashCode();
+      hashCode = hashCode * 8191 + ((isSetTable()) ? 131071 : 524287);
+      if (isSetTable())
+        hashCode = hashCode * 8191 + table.hashCode();
 
       hashCode = hashCode * 8191 + ((isSetProperty()) ? 131071 : 524287);
       if (isSetProperty())
@@ -7864,12 +7879,12 @@ public class ManagerClientService {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.valueOf(isSetTableName()).compareTo(other.isSetTableName());
+      lastComparison = java.lang.Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTableName()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableName, other.tableName);
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -7921,11 +7936,11 @@ public class ManagerClientService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("tableName:");
-      if (this.tableName == null) {
+      sb.append("table:");
+      if (this.table == null) {
         sb.append("null");
       } else {
-        sb.append(this.tableName);
+        sb.append(this.table);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -7948,6 +7963,9 @@ public class ManagerClientService {
       }
       if (credentials != null) {
         credentials.validate();
+      }
+      if (table != null) {
+        table.validate();
       }
     }
 
@@ -8003,10 +8021,11 @@ public class ManagerClientService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // TABLE_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.tableName = iprot.readString();
-                struct.setTableNameIsSet(true);
+            case 3: // TABLE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+                struct.table.read(iprot);
+                struct.setTableIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -8044,9 +8063,9 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.tableName != null) {
-          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-          oprot.writeString(struct.tableName);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          struct.table.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.property != null) {
@@ -8078,7 +8097,7 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           optionals.set(1);
         }
-        if (struct.isSetTableName()) {
+        if (struct.isSetTable()) {
           optionals.set(2);
         }
         if (struct.isSetProperty()) {
@@ -8091,8 +8110,8 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           struct.credentials.write(oprot);
         }
-        if (struct.isSetTableName()) {
-          oprot.writeString(struct.tableName);
+        if (struct.isSetTable()) {
+          struct.table.write(oprot);
         }
         if (struct.isSetProperty()) {
           oprot.writeString(struct.property);
@@ -8114,8 +8133,9 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.tableName = iprot.readString();
-          struct.setTableNameIsSet(true);
+          struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+          struct.table.read(iprot);
+          struct.setTableIsSet(true);
         }
         if (incoming.get(3)) {
           struct.property = iprot.readString();
@@ -8717,7 +8737,7 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TINFO_FIELD_DESC = new org.apache.thrift.protocol.TField("tinfo", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRUCT, (short)3);
     private static final org.apache.thrift.protocol.TField PROPERTY_FIELD_DESC = new org.apache.thrift.protocol.TField("property", org.apache.thrift.protocol.TType.STRING, (short)4);
     private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)5);
 
@@ -8726,7 +8746,7 @@ public class ManagerClientService {
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tinfo; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String ns; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TNamespace ns; // required
     public @org.apache.thrift.annotation.Nullable java.lang.String property; // required
     public @org.apache.thrift.annotation.Nullable java.lang.String value; // required
 
@@ -8811,7 +8831,7 @@ public class ManagerClientService {
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
       tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TNamespace.class)));
       tmpMap.put(_Fields.PROPERTY, new org.apache.thrift.meta_data.FieldMetaData("property", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -8826,7 +8846,7 @@ public class ManagerClientService {
     public setNamespaceProperty_args(
       org.apache.accumulo.core.trace.thrift.TInfo tinfo,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String ns,
+      org.apache.accumulo.core.clientImpl.thrift.TNamespace ns,
       java.lang.String property,
       java.lang.String value)
     {
@@ -8849,7 +8869,7 @@ public class ManagerClientService {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
       if (other.isSetNs()) {
-        this.ns = other.ns;
+        this.ns = new org.apache.accumulo.core.clientImpl.thrift.TNamespace(other.ns);
       }
       if (other.isSetProperty()) {
         this.property = other.property;
@@ -8923,11 +8943,11 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getNs() {
+    public org.apache.accumulo.core.clientImpl.thrift.TNamespace getNs() {
       return this.ns;
     }
 
-    public setNamespaceProperty_args setNs(@org.apache.thrift.annotation.Nullable java.lang.String ns) {
+    public setNamespaceProperty_args setNs(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TNamespace ns) {
       this.ns = ns;
       return this;
     }
@@ -9019,7 +9039,7 @@ public class ManagerClientService {
         if (value == null) {
           unsetNs();
         } else {
-          setNs((java.lang.String)value);
+          setNs((org.apache.accumulo.core.clientImpl.thrift.TNamespace)value);
         }
         break;
 
@@ -9306,6 +9326,9 @@ public class ManagerClientService {
       if (credentials != null) {
         credentials.validate();
       }
+      if (ns != null) {
+        ns.validate();
+      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -9361,8 +9384,9 @@ public class ManagerClientService {
               }
               break;
             case 3: // NS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.ns = iprot.readString();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.ns = new org.apache.accumulo.core.clientImpl.thrift.TNamespace();
+                struct.ns.read(iprot);
                 struct.setNsIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -9411,7 +9435,7 @@ public class ManagerClientService {
         }
         if (struct.ns != null) {
           oprot.writeFieldBegin(NS_FIELD_DESC);
-          oprot.writeString(struct.ns);
+          struct.ns.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.property != null) {
@@ -9465,7 +9489,7 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
         }
         if (struct.isSetNs()) {
-          oprot.writeString(struct.ns);
+          struct.ns.write(oprot);
         }
         if (struct.isSetProperty()) {
           oprot.writeString(struct.property);
@@ -9490,7 +9514,8 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.ns = iprot.readString();
+          struct.ns = new org.apache.accumulo.core.clientImpl.thrift.TNamespace();
+          struct.ns.read(iprot);
           struct.setNsIsSet(true);
         }
         if (incoming.get(3)) {
@@ -10097,7 +10122,7 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TINFO_FIELD_DESC = new org.apache.thrift.protocol.TField("tinfo", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRUCT, (short)3);
     private static final org.apache.thrift.protocol.TField PROPERTY_FIELD_DESC = new org.apache.thrift.protocol.TField("property", org.apache.thrift.protocol.TType.STRING, (short)4);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new removeNamespaceProperty_argsStandardSchemeFactory();
@@ -10105,7 +10130,7 @@ public class ManagerClientService {
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tinfo; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String ns; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TNamespace ns; // required
     public @org.apache.thrift.annotation.Nullable java.lang.String property; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -10186,7 +10211,7 @@ public class ManagerClientService {
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
       tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TNamespace.class)));
       tmpMap.put(_Fields.PROPERTY, new org.apache.thrift.meta_data.FieldMetaData("property", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -10199,7 +10224,7 @@ public class ManagerClientService {
     public removeNamespaceProperty_args(
       org.apache.accumulo.core.trace.thrift.TInfo tinfo,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String ns,
+      org.apache.accumulo.core.clientImpl.thrift.TNamespace ns,
       java.lang.String property)
     {
       this();
@@ -10220,7 +10245,7 @@ public class ManagerClientService {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
       if (other.isSetNs()) {
-        this.ns = other.ns;
+        this.ns = new org.apache.accumulo.core.clientImpl.thrift.TNamespace(other.ns);
       }
       if (other.isSetProperty()) {
         this.property = other.property;
@@ -10290,11 +10315,11 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getNs() {
+    public org.apache.accumulo.core.clientImpl.thrift.TNamespace getNs() {
       return this.ns;
     }
 
-    public removeNamespaceProperty_args setNs(@org.apache.thrift.annotation.Nullable java.lang.String ns) {
+    public removeNamespaceProperty_args setNs(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TNamespace ns) {
       this.ns = ns;
       return this;
     }
@@ -10361,7 +10386,7 @@ public class ManagerClientService {
         if (value == null) {
           unsetNs();
         } else {
-          setNs((java.lang.String)value);
+          setNs((org.apache.accumulo.core.clientImpl.thrift.TNamespace)value);
         }
         break;
 
@@ -10604,6 +10629,9 @@ public class ManagerClientService {
       if (credentials != null) {
         credentials.validate();
       }
+      if (ns != null) {
+        ns.validate();
+      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -10659,8 +10687,9 @@ public class ManagerClientService {
               }
               break;
             case 3: // NS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.ns = iprot.readString();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.ns = new org.apache.accumulo.core.clientImpl.thrift.TNamespace();
+                struct.ns.read(iprot);
                 struct.setNsIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -10701,7 +10730,7 @@ public class ManagerClientService {
         }
         if (struct.ns != null) {
           oprot.writeFieldBegin(NS_FIELD_DESC);
-          oprot.writeString(struct.ns);
+          struct.ns.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.property != null) {
@@ -10747,7 +10776,7 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
         }
         if (struct.isSetNs()) {
-          oprot.writeString(struct.ns);
+          struct.ns.write(oprot);
         }
         if (struct.isSetProperty()) {
           oprot.writeString(struct.property);
@@ -10769,7 +10798,8 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.ns = iprot.readString();
+          struct.ns = new org.apache.accumulo.core.clientImpl.thrift.TNamespace();
+          struct.ns.read(iprot);
           struct.setNsIsSet(true);
         }
         if (incoming.get(3)) {
@@ -22518,7 +22548,7 @@ public class ManagerClientService {
 
     private static final org.apache.thrift.protocol.TField TFINO_FIELD_DESC = new org.apache.thrift.protocol.TField("tfino", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField CREDENTIALS_FIELD_DESC = new org.apache.thrift.protocol.TField("credentials", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-    private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRUCT, (short)3);
     private static final org.apache.thrift.protocol.TField LOGS_TO_WATCH_FIELD_DESC = new org.apache.thrift.protocol.TField("logsToWatch", org.apache.thrift.protocol.TType.SET, (short)4);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new drainReplicationTable_argsStandardSchemeFactory();
@@ -22526,14 +22556,14 @@ public class ManagerClientService {
 
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.trace.thrift.TInfo tfino; // required
     public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials; // required
-    public @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
+    public @org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table; // required
     public @org.apache.thrift.annotation.Nullable java.util.Set<java.lang.String> logsToWatch; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TFINO((short)1, "tfino"),
       CREDENTIALS((short)2, "credentials"),
-      TABLE_NAME((short)3, "tableName"),
+      TABLE((short)3, "table"),
       LOGS_TO_WATCH((short)4, "logsToWatch");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -22554,8 +22584,8 @@ public class ManagerClientService {
             return TFINO;
           case 2: // CREDENTIALS
             return CREDENTIALS;
-          case 3: // TABLE_NAME
-            return TABLE_NAME;
+          case 3: // TABLE
+            return TABLE;
           case 4: // LOGS_TO_WATCH
             return LOGS_TO_WATCH;
           default:
@@ -22606,8 +22636,8 @@ public class ManagerClientService {
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.trace.thrift.TInfo.class)));
       tmpMap.put(_Fields.CREDENTIALS, new org.apache.thrift.meta_data.FieldMetaData("credentials", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.securityImpl.thrift.TCredentials.class)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, org.apache.accumulo.core.clientImpl.thrift.TTable.class)));
       tmpMap.put(_Fields.LOGS_TO_WATCH, new org.apache.thrift.meta_data.FieldMetaData("logsToWatch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -22621,13 +22651,13 @@ public class ManagerClientService {
     public drainReplicationTable_args(
       org.apache.accumulo.core.trace.thrift.TInfo tfino,
       org.apache.accumulo.core.securityImpl.thrift.TCredentials credentials,
-      java.lang.String tableName,
+      org.apache.accumulo.core.clientImpl.thrift.TTable table,
       java.util.Set<java.lang.String> logsToWatch)
     {
       this();
       this.tfino = tfino;
       this.credentials = credentials;
-      this.tableName = tableName;
+      this.table = table;
       this.logsToWatch = logsToWatch;
     }
 
@@ -22641,8 +22671,8 @@ public class ManagerClientService {
       if (other.isSetCredentials()) {
         this.credentials = new org.apache.accumulo.core.securityImpl.thrift.TCredentials(other.credentials);
       }
-      if (other.isSetTableName()) {
-        this.tableName = other.tableName;
+      if (other.isSetTable()) {
+        this.table = new org.apache.accumulo.core.clientImpl.thrift.TTable(other.table);
       }
       if (other.isSetLogsToWatch()) {
         java.util.Set<java.lang.String> __this__logsToWatch = new java.util.HashSet<java.lang.String>(other.logsToWatch);
@@ -22658,7 +22688,7 @@ public class ManagerClientService {
     public void clear() {
       this.tfino = null;
       this.credentials = null;
-      this.tableName = null;
+      this.table = null;
       this.logsToWatch = null;
     }
 
@@ -22713,27 +22743,27 @@ public class ManagerClientService {
     }
 
     @org.apache.thrift.annotation.Nullable
-    public java.lang.String getTableName() {
-      return this.tableName;
+    public org.apache.accumulo.core.clientImpl.thrift.TTable getTable() {
+      return this.table;
     }
 
-    public drainReplicationTable_args setTableName(@org.apache.thrift.annotation.Nullable java.lang.String tableName) {
-      this.tableName = tableName;
+    public drainReplicationTable_args setTable(@org.apache.thrift.annotation.Nullable org.apache.accumulo.core.clientImpl.thrift.TTable table) {
+      this.table = table;
       return this;
     }
 
-    public void unsetTableName() {
-      this.tableName = null;
+    public void unsetTable() {
+      this.table = null;
     }
 
-    /** Returns true if field tableName is set (has been assigned a value) and false otherwise */
-    public boolean isSetTableName() {
-      return this.tableName != null;
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
     }
 
-    public void setTableNameIsSet(boolean value) {
+    public void setTableIsSet(boolean value) {
       if (!value) {
-        this.tableName = null;
+        this.table = null;
       }
     }
 
@@ -22796,11 +22826,11 @@ public class ManagerClientService {
         }
         break;
 
-      case TABLE_NAME:
+      case TABLE:
         if (value == null) {
-          unsetTableName();
+          unsetTable();
         } else {
-          setTableName((java.lang.String)value);
+          setTable((org.apache.accumulo.core.clientImpl.thrift.TTable)value);
         }
         break;
 
@@ -22824,8 +22854,8 @@ public class ManagerClientService {
       case CREDENTIALS:
         return getCredentials();
 
-      case TABLE_NAME:
-        return getTableName();
+      case TABLE:
+        return getTable();
 
       case LOGS_TO_WATCH:
         return getLogsToWatch();
@@ -22845,8 +22875,8 @@ public class ManagerClientService {
         return isSetTfino();
       case CREDENTIALS:
         return isSetCredentials();
-      case TABLE_NAME:
-        return isSetTableName();
+      case TABLE:
+        return isSetTable();
       case LOGS_TO_WATCH:
         return isSetLogsToWatch();
       }
@@ -22886,12 +22916,12 @@ public class ManagerClientService {
           return false;
       }
 
-      boolean this_present_tableName = true && this.isSetTableName();
-      boolean that_present_tableName = true && that.isSetTableName();
-      if (this_present_tableName || that_present_tableName) {
-        if (!(this_present_tableName && that_present_tableName))
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
           return false;
-        if (!this.tableName.equals(that.tableName))
+        if (!this.table.equals(that.table))
           return false;
       }
 
@@ -22919,9 +22949,9 @@ public class ManagerClientService {
       if (isSetCredentials())
         hashCode = hashCode * 8191 + credentials.hashCode();
 
-      hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
-      if (isSetTableName())
-        hashCode = hashCode * 8191 + tableName.hashCode();
+      hashCode = hashCode * 8191 + ((isSetTable()) ? 131071 : 524287);
+      if (isSetTable())
+        hashCode = hashCode * 8191 + table.hashCode();
 
       hashCode = hashCode * 8191 + ((isSetLogsToWatch()) ? 131071 : 524287);
       if (isSetLogsToWatch())
@@ -22958,12 +22988,12 @@ public class ManagerClientService {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.valueOf(isSetTableName()).compareTo(other.isSetTableName());
+      lastComparison = java.lang.Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTableName()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableName, other.tableName);
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -23015,11 +23045,11 @@ public class ManagerClientService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("tableName:");
-      if (this.tableName == null) {
+      sb.append("table:");
+      if (this.table == null) {
         sb.append("null");
       } else {
-        sb.append(this.tableName);
+        sb.append(this.table);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -23042,6 +23072,9 @@ public class ManagerClientService {
       }
       if (credentials != null) {
         credentials.validate();
+      }
+      if (table != null) {
+        table.validate();
       }
     }
 
@@ -23097,10 +23130,11 @@ public class ManagerClientService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // TABLE_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.tableName = iprot.readString();
-                struct.setTableNameIsSet(true);
+            case 3: // TABLE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+                struct.table.read(iprot);
+                struct.setTableIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -23148,9 +23182,9 @@ public class ManagerClientService {
           struct.credentials.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.tableName != null) {
-          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-          oprot.writeString(struct.tableName);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          struct.table.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.logsToWatch != null) {
@@ -23189,7 +23223,7 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           optionals.set(1);
         }
-        if (struct.isSetTableName()) {
+        if (struct.isSetTable()) {
           optionals.set(2);
         }
         if (struct.isSetLogsToWatch()) {
@@ -23202,8 +23236,8 @@ public class ManagerClientService {
         if (struct.isSetCredentials()) {
           struct.credentials.write(oprot);
         }
-        if (struct.isSetTableName()) {
-          oprot.writeString(struct.tableName);
+        if (struct.isSetTable()) {
+          struct.table.write(oprot);
         }
         if (struct.isSetLogsToWatch()) {
           {
@@ -23231,8 +23265,9 @@ public class ManagerClientService {
           struct.setCredentialsIsSet(true);
         }
         if (incoming.get(2)) {
-          struct.tableName = iprot.readString();
-          struct.setTableNameIsSet(true);
+          struct.table = new org.apache.accumulo.core.clientImpl.thrift.TTable();
+          struct.table.read(iprot);
+          struct.setTableIsSet(true);
         }
         if (incoming.get(3)) {
           {

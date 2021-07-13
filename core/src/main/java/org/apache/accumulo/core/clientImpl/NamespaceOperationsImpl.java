@@ -46,6 +46,7 @@ import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.clientImpl.thrift.SecurityErrorCode;
+import org.apache.accumulo.core.clientImpl.thrift.TNamespace;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException;
 import org.apache.accumulo.core.data.NamespaceId;
@@ -176,12 +177,11 @@ public class NamespaceOperationsImpl extends NamespaceOperationsHelper {
   @Override
   public void setProperty(final String namespace, final String property, final String value)
       throws AccumuloException, AccumuloSecurityException, NamespaceNotFoundException {
-    EXISTING_NAMESPACE_NAME.validate(namespace);
     checkArgument(property != null, "property is null");
     checkArgument(value != null, "value is null");
-
+    final TNamespace tNamespace = context.rpcNamespace(namespace);
     ManagerClient.executeNamespace(context,
-        client -> client.setNamespaceProperty(TraceUtil.traceInfo(), context.rpcCreds(), namespace,
+        client -> client.setNamespaceProperty(TraceUtil.traceInfo(), context.rpcCreds(), tNamespace,
             property, value));
     checkLocalityGroups(namespace, property);
   }
@@ -189,11 +189,10 @@ public class NamespaceOperationsImpl extends NamespaceOperationsHelper {
   @Override
   public void removeProperty(final String namespace, final String property)
       throws AccumuloException, AccumuloSecurityException, NamespaceNotFoundException {
-    EXISTING_NAMESPACE_NAME.validate(namespace);
     checkArgument(property != null, "property is null");
-
+    final TNamespace tNamespace = context.rpcNamespace(namespace);
     ManagerClient.executeNamespace(context, client -> client
-        .removeNamespaceProperty(TraceUtil.traceInfo(), context.rpcCreds(), namespace, property));
+        .removeNamespaceProperty(TraceUtil.traceInfo(), context.rpcCreds(), tNamespace, property));
     checkLocalityGroups(namespace, property);
   }
 

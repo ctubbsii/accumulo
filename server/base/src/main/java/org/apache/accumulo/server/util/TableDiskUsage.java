@@ -37,6 +37,7 @@ import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.clientImpl.ClientContext;
+import org.apache.accumulo.core.clientImpl.TableRef;
 import org.apache.accumulo.core.clientImpl.Tables;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.TableId;
@@ -229,7 +230,7 @@ public class TableDiskUsage {
       }
     }
 
-    Map<TableId,String> reverseTableIdMap = Tables.getIdToNameMap((ClientContext) client);
+    Map<TableId,TableRef> reverseTableIdMap = ((ClientContext) client).allTables().byId();
 
     TreeMap<TreeSet<String>,Long> usage = new TreeMap<>((o1, o2) -> {
       int len1 = o1.size();
@@ -261,7 +262,7 @@ public class TableDiskUsage {
       TreeSet<String> tableNames = new TreeSet<>();
       // Convert size shared by each table id into size shared by each table name
       for (TableId tableId : entry.getKey())
-        tableNames.add(reverseTableIdMap.get(tableId));
+        tableNames.add(reverseTableIdMap.getOrDefault(tableId, TableRef.NONE).name());
 
       // Make table names to shared file size
       usage.put(tableNames, entry.getValue());
@@ -270,7 +271,7 @@ public class TableDiskUsage {
     if (!emptyTableIds.isEmpty()) {
       TreeSet<String> emptyTables = new TreeSet<>();
       for (TableId tableId : emptyTableIds) {
-        emptyTables.add(reverseTableIdMap.get(tableId));
+        emptyTables.add(reverseTableIdMap.getOrDefault(tableId, TableRef.NONE).name());
       }
       usage.put(emptyTables, 0L);
     }

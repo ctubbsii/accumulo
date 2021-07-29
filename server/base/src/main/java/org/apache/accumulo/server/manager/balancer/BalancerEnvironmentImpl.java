@@ -24,6 +24,8 @@ import static org.apache.accumulo.core.metadata.schema.TabletMetadata.ColumnType
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.accumulo.core.classloader.ClassLoaderUtil;
@@ -61,7 +63,10 @@ public class BalancerEnvironmentImpl extends ServiceEnvironmentImpl implements B
 
   @Override
   public Map<String,TableId> getTableIdMap() {
-    return Tables.getNameToIdMap(getContext());
+    return getContext().allTables().byName().entrySet().stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().id(), (a, b) -> {
+          throw new AssertionError("Duplicate table names for IDs " + a + " and " + b);
+        }, TreeMap::new));
   }
 
   @Override

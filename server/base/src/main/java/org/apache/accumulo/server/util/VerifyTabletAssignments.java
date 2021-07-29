@@ -34,7 +34,7 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.clientImpl.ClientContext;
-import org.apache.accumulo.core.clientImpl.Tables;
+import org.apache.accumulo.core.clientImpl.TableRef;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.TableId;
@@ -100,7 +100,7 @@ public class VerifyTabletAssignments {
 
     TreeMap<KeyExtent,String> tabletLocations = new TreeMap<>();
 
-    TableId tableId = Tables.getNameToIdMap(context).get(tableName);
+    TableId tableId = context.allTables().byName().getOrDefault(tableName, TableRef.NONE).id();
     MetadataServicer.forTableId(context, tableId).getTabletLocations(tabletLocations);
 
     final HashSet<KeyExtent> failures = new HashSet<>();

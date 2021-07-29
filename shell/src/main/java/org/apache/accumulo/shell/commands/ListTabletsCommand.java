@@ -184,8 +184,8 @@ public class ListTabletsCommand extends Command {
    */
   static class TableInfo implements Comparable<TableInfo> {
 
-    public final String name;
-    public final TableId id;
+    private final String name;
+    private final TableId id;
 
     public TableInfo(final String name, final TableId id) {
       this.name = name;

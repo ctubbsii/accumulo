@@ -19,11 +19,11 @@
 package org.apache.accumulo.core.clientImpl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
@@ -31,7 +31,6 @@ import java.util.function.BiConsumer;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.NamespaceNotFoundException;
 import org.apache.accumulo.core.data.NamespaceId;
-import org.apache.accumulo.core.data.TableId;
 import org.apache.accumulo.fate.zookeeper.ZooCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,21 +44,18 @@ public class Namespaces {
     return namespaceIds.contains(namespaceId.canonical());
   }
 
-  public static List<TableId> getTableIds(ClientContext context, NamespaceId namespaceId)
+  public static List<TableRef> getTableIds(ClientContext context, NamespaceId namespaceId)
       throws NamespaceNotFoundException {
     String namespace = getNamespaceName(context, namespaceId);
-    List<TableId> tableIds = new LinkedList<>();
-    for (Entry<String,TableId> nameToId : Tables.getNameToIdMap(context).entrySet())
-      if (namespace.equals(Tables.qualify(nameToId.getKey()).getFirst()))
-        tableIds.add(nameToId.getValue());
-    return tableIds;
+    return context.allTables().stream()
+        .filter(ref -> namespace.equals(Tables.qualify(ref.name()).getFirst())).collect(toList());
   }
 
   public static List<String> getTableNames(ClientContext context, NamespaceId namespaceId)
       throws NamespaceNotFoundException {
     String namespace = getNamespaceName(context, namespaceId);
     List<String> names = new LinkedList<>();
-    for (String name : Tables.getNameToIdMap(context).keySet())
+    for (String name : context.allTables().byName().keySet())
       if (namespace.equals(Tables.qualify(name).getFirst()))
         names.add(name);
     return names;

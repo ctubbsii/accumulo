@@ -32,7 +32,7 @@ import java.util.function.Function;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.clientImpl.AcceptableThriftTableOperationException;
 import org.apache.accumulo.core.clientImpl.Namespaces;
-import org.apache.accumulo.core.clientImpl.Tables;
+import org.apache.accumulo.core.clientImpl.TableRef;
 import org.apache.accumulo.core.clientImpl.thrift.TableOperation;
 import org.apache.accumulo.core.clientImpl.thrift.TableOperationExceptionType;
 import org.apache.accumulo.core.data.AbstractId;
@@ -58,7 +58,7 @@ public class Utils {
   public static void checkTableDoesNotExist(ServerContext context, String tableName,
       TableId tableId, TableOperation operation) throws AcceptableThriftTableOperationException {
 
-    TableId id = Tables.getNameToIdMap(context).get(tableName);
+    TableId id = context.allTables().byName().getOrDefault(tableName, TableRef.NONE).id();
 
     if (id != null && !id.equals(tableId))
       throw new AcceptableThriftTableOperationException(null, tableName, operation,

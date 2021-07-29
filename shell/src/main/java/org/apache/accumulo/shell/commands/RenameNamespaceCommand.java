@@ -29,6 +29,7 @@ import org.apache.accumulo.core.client.NamespaceNotFoundException;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.clientImpl.Namespaces;
+import org.apache.accumulo.core.clientImpl.TableRef;
 import org.apache.accumulo.core.clientImpl.Tables;
 import org.apache.accumulo.core.data.NamespaceId;
 import org.apache.accumulo.core.data.TableId;
@@ -45,12 +46,14 @@ public class RenameNamespaceCommand extends Command {
     String old = cl.getArgs()[0];
     String newer = cl.getArgs()[1];
     boolean resetContext = false;
-    TableId currentTableId = null;
+    final TableId currentTableId;
     if (shellState.getTableName() != null && !shellState.getTableName().isEmpty()) {
       NamespaceId namespaceId = Namespaces.getNamespaceId(shellState.getContext(), old);
-      List<TableId> tableIds = Namespaces.getTableIds(shellState.getContext(), namespaceId);
+      List<TableRef> nsTables = Namespaces.getTableIds(shellState.getContext(), namespaceId);
       currentTableId = Tables.getTableId(shellState.getContext(), shellState.getTableName());
-      resetContext = tableIds.contains(currentTableId);
+      resetContext = nsTables.stream().anyMatch(ref -> currentTableId.equals(ref.id()));
+    } else {
+      currentTableId = null;
     }
 
     shellState.getAccumuloClient().namespaceOperations().rename(old, newer);

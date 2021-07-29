@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.clientImpl.Tables;
+import org.apache.accumulo.core.clientImpl.TableRef;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
@@ -112,18 +112,19 @@ public class ReplicationUtil {
   public Set<ReplicationTarget> getReplicationTargets() {
     // The total set of configured targets
     final Set<ReplicationTarget> allConfiguredTargets = new HashSet<>();
-    final Map<String,TableId> tableNameToId = Tables.getNameToIdMap(context);
+    final Map<String,TableRef> tableNameToId = context.allTables().byName();
 
     for (String table : tableNameToId.keySet()) {
       if (MetadataTable.NAME.equals(table) || RootTable.NAME.equals(table)) {
         continue;
       }
 
-      TableId localId = tableNameToId.get(table);
-      if (localId == null) {
+      TableRef localTable = tableNameToId.get(table);
+      if (localTable == null) {
         log.trace("Could not determine ID for {}", table);
         continue;
       }
+      TableId localId = localTable.id();
 
       TableConfiguration tableConf = context.getTableConfiguration(localId);
       if (tableConf == null) {

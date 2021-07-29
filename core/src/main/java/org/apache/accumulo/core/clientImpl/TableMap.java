@@ -21,8 +21,10 @@ package org.apache.accumulo.core.clientImpl;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.NamespaceNotFoundException;
@@ -32,16 +34,16 @@ import org.apache.accumulo.fate.zookeeper.ZooCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 
 /**
  * Used for thread safe caching of immutable table ID maps. See ACCUMULO-4778.
  */
-public class TableMap {
+public class TableMap implements Iterable<TableRef> {
   private static final Logger log = LoggerFactory.getLogger(TableMap.class);
 
-  private final Map<String,TableId> tableNameToIdMap;
-  private final Map<TableId,String> tableIdToNameMap;
+  private final ImmutableSortedMap<String,TableRef> byNameMap;
+  private final ImmutableSortedMap<TableId,TableRef> byIdMap;
 
   private final ZooCache zooCache;
   private final long updateCount;
@@ -54,8 +56,8 @@ public class TableMap {
 
     List<String> tableIds = zooCache.getChildren(context.getZooKeeperRoot() + Constants.ZTABLES);
     Map<NamespaceId,String> namespaceIdToNameMap = new HashMap<>();
-    final var tableNameToIdBuilder = ImmutableMap.<String,TableId>builder();
-    final var tableIdToNameBuilder = ImmutableMap.<TableId,String>builder();
+    final var byNameBuilder = ImmutableSortedMap.<String,TableRef>naturalOrder();
+    final var byIdBuilder = ImmutableSortedMap.<TableId,TableRef>naturalOrder();
 
     // use StringBuilder to construct zPath string efficiently across many tables
     StringBuilder zPathBuilder = new StringBuilder();
@@ -94,23 +96,33 @@ public class TableMap {
       if (tableName != null && namespaceName != null) {
         String tableNameStr = Tables.qualified(new String(tableName, UTF_8), namespaceName);
         TableId tableId = TableId.of(tableIdStr);
-        tableNameToIdBuilder.put(tableNameStr, tableId);
-        tableIdToNameBuilder.put(tableId, tableNameStr);
+        TableRef ref = new TableRef(tableId, tableNameStr);
+        byNameBuilder.put(tableNameStr, ref);
+        byIdBuilder.put(tableId, ref);
       }
     }
-    tableNameToIdMap = tableNameToIdBuilder.build();
-    tableIdToNameMap = tableIdToNameBuilder.build();
+    byNameMap = byNameBuilder.build();
+    byIdMap = byIdBuilder.build();
   }
 
-  public Map<String,TableId> getNameToIdMap() {
-    return tableNameToIdMap;
+  public ImmutableSortedMap<String,TableRef> byName() {
+    return byNameMap;
   }
 
-  public Map<TableId,String> getIdtoNameMap() {
-    return tableIdToNameMap;
+  public ImmutableSortedMap<TableId,TableRef> byId() {
+    return byIdMap;
   }
 
   public boolean isCurrent(ZooCache zc) {
     return this.zooCache == zc && this.updateCount == zc.getUpdateCount();
+  }
+
+  public Stream<TableRef> stream() {
+    return byName().values().stream();
+  }
+
+  @Override
+  public Iterator<TableRef> iterator() {
+    return byName().values().iterator();
   }
 }

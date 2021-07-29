@@ -24,7 +24,6 @@ import static org.apache.accumulo.core.util.Validators.EXISTING_TABLE_NAME;
 
 import java.security.SecurityPermission;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -113,14 +112,14 @@ public class Tables {
    */
   public static TableId _getTableId(ClientContext context, String tableName)
       throws NamespaceNotFoundException, TableNotFoundException {
-    TableId tableId = getNameToIdMap(context).get(tableName);
+    TableRef table = context.allTables().byName().get(tableName);
 
-    if (tableId == null) {
+    if (table == null) {
       // maybe the table exist, but the cache was not updated yet...
       // so try to clear the cache and check again
       clearCache(context);
-      tableId = getNameToIdMap(context).get(tableName);
-      if (tableId == null) {
+      table = context.allTables().byName().get(tableName);
+      if (table == null) {
         String namespace = qualify(tableName).getFirst();
         if (Namespaces.getNameToIdMap(context).containsKey(namespace))
           throw new TableNotFoundException(null, tableName, null);
@@ -128,31 +127,22 @@ public class Tables {
           throw new NamespaceNotFoundException(null, namespace, null);
       }
     }
-    return tableId;
+    return table.id();
   }
 
   public static String getTableName(ClientContext context, TableId tableId)
       throws TableNotFoundException {
-    String tableName = getIdToNameMap(context).get(tableId);
-
-    if (tableName == null)
+    TableRef table = context.allTables().byId().get(tableId);
+    if (table == null)
       throw new TableNotFoundException(tableId.canonical(), null, null);
-    return tableName;
-  }
-
-  public static Map<String,TableId> getNameToIdMap(ClientContext context) {
-    return getTableMap(context).getNameToIdMap();
-  }
-
-  public static Map<TableId,String> getIdToNameMap(ClientContext context) {
-    return getTableMap(context).getIdtoNameMap();
+    return table.name();
   }
 
   /**
    * Get the TableMap from the cache. A new one will be populated when needed. Cache is cleared
    * manually by calling {@link #clearCache(ClientContext)}
    */
-  private static TableMap getTableMap(final ClientContext context) {
+  static TableMap tableMap(final ClientContext context) {
     TableMap map;
     final ZooCache zc = getZooCache(context);
     map = getTableMap(context, zc);

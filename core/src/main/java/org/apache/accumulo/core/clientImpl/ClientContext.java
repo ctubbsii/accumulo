@@ -364,6 +364,10 @@ public class ClientContext implements AccumuloClient {
     return rpcCreds;
   }
 
+  public TableMap allTables() {
+    return Tables.tableMap(this);
+  }
+
   /**
    * Retrieve the RPC serialized reference to an existing table, after retrieving its ID, given its
    * name

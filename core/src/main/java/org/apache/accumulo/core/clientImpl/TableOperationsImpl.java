@@ -178,7 +178,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
       timer = new OpTimer().start();
     }
 
-    TreeSet<String> tableNames = new TreeSet<>(Tables.getNameToIdMap(context).keySet());
+    TreeSet<String> tableNames = new TreeSet<>(context.allTables().byName().keySet());
 
     if (timer != null) {
       timer.stop();
@@ -203,7 +203,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
       timer = new OpTimer().start();
     }
 
-    boolean exists = Tables.getNameToIdMap(context).containsKey(tableName);
+    boolean exists = context.allTables().byName().containsKey(tableName);
 
     if (timer != null) {
       timer.stop();
@@ -891,9 +891,8 @@ public class TableOperationsImpl extends TableOperationsHelper {
     if (config.getFlush())
       _flush(table, start, end, true);
 
-    List<ByteBuffer> args =
-        Arrays.asList(ByteBuffer.wrap(table.id().canonical().getBytes(UTF_8)),
-            ByteBuffer.wrap(UserCompactionUtils.encode(config)));
+    List<ByteBuffer> args = Arrays.asList(ByteBuffer.wrap(table.id().canonical().getBytes(UTF_8)),
+        ByteBuffer.wrap(UserCompactionUtils.encode(config)));
     Map<String,String> opts = new HashMap<>();
 
     try {
@@ -988,8 +987,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
     } catch (ThriftSecurityException e) {
       switch (e.getCode()) {
         case TABLE_DOESNT_EXIST:
-          throw new TableNotFoundException(table.id().canonical(), table.name(),
-              e.getMessage(), e);
+          throw new TableNotFoundException(table.id().canonical(), table.name(), e.getMessage(), e);
         default:
           log.debug("flush security exception on table id {}", table.id());
           throw new AccumuloSecurityException(e.user, e.code, e);
@@ -1436,8 +1434,8 @@ public class TableOperationsImpl extends TableOperationsHelper {
 
   @Override
   public Map<String,String> tableIdMap() {
-    return Tables.getNameToIdMap(context).entrySet().stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().canonical(), (v1, v2) -> {
+    return context.allTables().byName().entrySet().stream()
+        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().id().canonical(), (v1, v2) -> {
           throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));
         }, TreeMap::new));
   }

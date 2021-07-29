@@ -681,7 +681,7 @@ public class Manager extends AbstractServer
     private void cleanupOfflineMigrations() {
       ServerContext context = getContext();
       TableManager manager = context.getTableManager();
-      for (TableId tableId : Tables.getIdToNameMap(context).keySet()) {
+      for (TableId tableId : context.allTables().byId().keySet()) {
         TableState state = manager.getTableState(tableId);
         if (state == TableState.OFFLINE) {
           clearMigrations(tableId);
@@ -1597,7 +1597,7 @@ public class Manager extends AbstractServer
     ServerContext context = getContext();
     TableManager manager = context.getTableManager();
 
-    for (TableId tableId : Tables.getIdToNameMap(context).keySet()) {
+    for (TableId tableId : context.allTables().byId().keySet()) {
       TableState state = manager.getTableState(tableId);
       if ((state != null) && (state == TableState.ONLINE)) {
         result.add(tableId);
@@ -1614,7 +1614,7 @@ public class Manager extends AbstractServer
   @Override
   public Collection<MergeInfo> merges() {
     List<MergeInfo> result = new ArrayList<>();
-    for (TableId tableId : Tables.getIdToNameMap(getContext()).keySet()) {
+    for (TableId tableId : getContext().allTables().byId().keySet()) {
       result.add(getMergeInfo(tableId));
     }
     return result;

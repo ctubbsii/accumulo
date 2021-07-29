@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static org.apache.accumulo.core.metadata.schema.TabletMetadata.ColumnType.LOCATION;
-import static org.apache.accumulo.core.util.Validators.EXISTING_NAMESPACE_NAME;
 import static org.apache.accumulo.core.util.Validators.EXISTING_TABLE_NAME;
 
 import java.net.URL;
@@ -47,7 +46,6 @@ import org.apache.accumulo.core.client.ConditionalWriter;
 import org.apache.accumulo.core.client.ConditionalWriterConfig;
 import org.apache.accumulo.core.client.Durability;
 import org.apache.accumulo.core.client.MultiTableBatchWriter;
-import org.apache.accumulo.core.client.NamespaceNotFoundException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableDeletedException;
 import org.apache.accumulo.core.client.TableNotFoundException;
@@ -57,13 +55,10 @@ import org.apache.accumulo.core.client.admin.NamespaceOperations;
 import org.apache.accumulo.core.client.admin.SecurityOperations;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
-import org.apache.accumulo.core.clientImpl.thrift.TNamespace;
-import org.apache.accumulo.core.clientImpl.thrift.TTable;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ClientProperty;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.data.InstanceId;
-import org.apache.accumulo.core.data.NamespaceId;
 import org.apache.accumulo.core.data.TableId;
 import org.apache.accumulo.core.manager.state.tables.TableState;
 import org.apache.accumulo.core.metadata.RootTable;
@@ -345,7 +340,7 @@ public class ClientContext implements AccumuloClient {
     return conditionalWriterConfig;
   }
 
-  public synchronized ConditionalWriterConfig getConditionalWriterConfig() {
+  private synchronized ConditionalWriterConfig getConditionalWriterConfig() {
     ensureOpen();
     if (conditionalWriterConfig == null) {
       conditionalWriterConfig = getConditionalWriterConfig(info.getProperties());
@@ -373,16 +368,8 @@ public class ClientContext implements AccumuloClient {
    * Retrieve the RPC serialized reference to an existing table, after retrieving its ID, given its
    * name
    */
-  public TTable rpcTable(String tableName) throws TableNotFoundException {
-    return new TTable(getTableId(tableName).canonical(), tableName);
-  }
-
-  /**
-   * Retrieve the RPC serialized reference to an existing namespace, after retrieving its ID, given
-   * its name
-   */
-  public TNamespace rpcNamespace(String namespaceName) throws NamespaceNotFoundException {
-    return new TNamespace(getNamespaceId(namespaceName).canonical(), namespaceName);
+  public TableRef resolveTable(String tableName) throws TableNotFoundException {
+    return TableRef.resolve(this, tableName);
   }
 
   /**
@@ -558,11 +545,6 @@ public class ClientContext implements AccumuloClient {
     if (Tables.getTableState(this, tableId) == TableState.OFFLINE)
       throw new TableOfflineException(tableId, tableName);
     return tableId;
-  }
-
-  // this validates the namespace name for all callers
-  NamespaceId getNamespaceId(String namespaceName) throws NamespaceNotFoundException {
-    return Namespaces.getNamespaceId(this, EXISTING_NAMESPACE_NAME.validate(namespaceName));
   }
 
   @Override

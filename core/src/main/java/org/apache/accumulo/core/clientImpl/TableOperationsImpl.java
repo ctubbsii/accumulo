@@ -92,7 +92,6 @@ import org.apache.accumulo.core.clientImpl.bulk.BulkImport;
 import org.apache.accumulo.core.clientImpl.thrift.ClientService;
 import org.apache.accumulo.core.clientImpl.thrift.ClientService.Client;
 import org.apache.accumulo.core.clientImpl.thrift.TDiskUsage;
-import org.apache.accumulo.core.clientImpl.thrift.TTable;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftNotActiveServiceException;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftSecurityException;
 import org.apache.accumulo.core.clientImpl.thrift.ThriftTableOperationException;
@@ -776,8 +775,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
       throws AccumuloSecurityException, TableNotFoundException, AccumuloException,
       TableExistsException {
     NEW_TABLE_NAME.validate(newTableName);
-
-    TTable srcTable = context.rpcTable(srcTableName);
+    TableRef srcTable = context.resolveTable(srcTableName);
 
     if (config.isFlush())
       _flush(srcTable, null, null, true);
@@ -790,9 +788,10 @@ public class TableOperationsImpl extends TableOperationsHelper {
     if (propertiesToSet == null)
       propertiesToSet = Collections.emptyMap();
 
-    List<ByteBuffer> args = Arrays.asList(ByteBuffer.wrap(srcTable.getTableId().getBytes(UTF_8)),
-        ByteBuffer.wrap(newTableName.getBytes(UTF_8)),
-        ByteBuffer.wrap(Boolean.toString(config.isKeepOffline()).getBytes(UTF_8)));
+    List<ByteBuffer> args =
+        Arrays.asList(ByteBuffer.wrap(srcTable.id().canonical().getBytes(UTF_8)),
+            ByteBuffer.wrap(newTableName.getBytes(UTF_8)),
+            ByteBuffer.wrap(Boolean.toString(config.isKeepOffline()).getBytes(UTF_8)));
     Map<String,String> opts = new HashMap<>();
     for (Entry<String,String> entry : propertiesToSet.entrySet()) {
       if (entry.getKey().startsWith(CLONE_EXCLUDE_PREFIX))
@@ -834,7 +833,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
   @Override
   public void flush(String tableName, Text start, Text end, boolean wait)
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
-    _flush(context.rpcTable(tableName), start, end, wait);
+    _flush(context.resolveTable(tableName), start, end, wait);
   }
 
   @Override
@@ -885,15 +884,16 @@ public class TableOperationsImpl extends TableOperationsHelper {
       }
     }
 
-    TTable table = context.rpcTable(tableName);
+    TableRef table = context.resolveTable(tableName);
     Text start = config.getStartRow();
     Text end = config.getEndRow();
 
     if (config.getFlush())
       _flush(table, start, end, true);
 
-    List<ByteBuffer> args = Arrays.asList(ByteBuffer.wrap(table.getTableId().getBytes(UTF_8)),
-        ByteBuffer.wrap(UserCompactionUtils.encode(config)));
+    List<ByteBuffer> args =
+        Arrays.asList(ByteBuffer.wrap(table.id().canonical().getBytes(UTF_8)),
+            ByteBuffer.wrap(UserCompactionUtils.encode(config)));
     Map<String,String> opts = new HashMap<>();
 
     try {
@@ -938,7 +938,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
 
   }
 
-  private void _flush(TTable table, Text start, Text end, boolean wait)
+  private void _flush(TableRef table, Text start, Text end, boolean wait)
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
     try {
       long flushID;
@@ -951,7 +951,8 @@ public class TableOperationsImpl extends TableOperationsHelper {
         ManagerClientService.Iface client = null;
         try {
           client = ManagerClient.getConnectionWithRetry(context);
-          flushID = client.initiateFlush(TraceUtil.traceInfo(), context.rpcCreds(), table);
+          flushID =
+              client.initiateFlush(TraceUtil.traceInfo(), context.rpcCreds(), table.toThrift());
           break;
         } catch (TTransportException tte) {
           log.debug("Failed to call initiateFlush, retrying ... ", tte);
@@ -969,7 +970,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
         ManagerClientService.Iface client = null;
         try {
           client = ManagerClient.getConnectionWithRetry(context);
-          client.waitForFlush(TraceUtil.traceInfo(), context.rpcCreds(), table,
+          client.waitForFlush(TraceUtil.traceInfo(), context.rpcCreds(), table.toThrift(),
               TextUtil.getByteBuffer(start), TextUtil.getByteBuffer(end), flushID,
               wait ? Long.MAX_VALUE : 1);
           break;
@@ -987,10 +988,10 @@ public class TableOperationsImpl extends TableOperationsHelper {
     } catch (ThriftSecurityException e) {
       switch (e.getCode()) {
         case TABLE_DOESNT_EXIST:
-          throw new TableNotFoundException(table.getTableId(), table.getTableName(), e.getMessage(),
-              e);
+          throw new TableNotFoundException(table.id().canonical(), table.name(),
+              e.getMessage(), e);
         default:
-          log.debug("flush security exception on table id {}", table.getTableId());
+          log.debug("flush security exception on table id {}", table.id());
           throw new AccumuloSecurityException(e.user, e.code, e);
       }
     } catch (ThriftTableOperationException e) {
@@ -1011,17 +1012,17 @@ public class TableOperationsImpl extends TableOperationsHelper {
     checkArgument(property != null, "property is null");
     checkArgument(value != null, "value is null");
     try {
-      setPropertyNoChecks(context.rpcTable(tableName), property, value);
+      setPropertyNoChecks(context.resolveTable(tableName), property, value);
       checkLocalityGroups(tableName, property);
     } catch (TableNotFoundException e) {
       throw new AccumuloException(e);
     }
   }
 
-  private void setPropertyNoChecks(final TTable table, final String property, final String value)
+  private void setPropertyNoChecks(final TableRef table, final String property, final String value)
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
     ManagerClient.executeTable(context, client -> client.setTableProperty(TraceUtil.traceInfo(),
-        context.rpcCreds(), table, property, value));
+        context.rpcCreds(), table.toThrift(), property, value));
   }
 
   @Override
@@ -1029,17 +1030,17 @@ public class TableOperationsImpl extends TableOperationsHelper {
       throws AccumuloException, AccumuloSecurityException {
     checkArgument(property != null, "property is null");
     try {
-      removePropertyNoChecks(context.rpcTable(tableName), property);
+      removePropertyNoChecks(context.resolveTable(tableName), property);
       checkLocalityGroups(tableName, property);
     } catch (TableNotFoundException e) {
       throw new AccumuloException(e);
     }
   }
 
-  private void removePropertyNoChecks(final TTable table, final String property)
+  private void removePropertyNoChecks(final TableRef table, final String property)
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
     ManagerClient.executeTable(context, client -> client.removeTableProperty(TraceUtil.traceInfo(),
-        context.rpcCreds(), table, property));
+        context.rpcCreds(), table.toThrift(), property));
   }
 
   void checkLocalityGroups(String tableName, String propChanged)
@@ -1088,7 +1089,7 @@ public class TableOperationsImpl extends TableOperationsHelper {
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
     // ensure locality groups do not overlap
     LocalityGroupUtil.ensureNonOverlappingGroups(groups);
-    final TTable table = context.rpcTable(tableName);
+    final TableRef table = context.resolveTable(tableName);
 
     for (Entry<String,Set<Text>> entry : groups.entrySet()) {
       Set<Text> colFams = entry.getValue();
@@ -1888,14 +1889,13 @@ public class TableOperationsImpl extends TableOperationsHelper {
       @Override
       public List<Summary> retrieve()
           throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
-        TableId tableId = context.getTableId(tableName);
-        context.requireNotOffline(tableId, tableName);
-        final TTable table = new TTable(tableId.canonical(), tableName);
+        TableRef table = context.resolveTable(tableName);
+        context.requireNotOffline(table.id(), tableName);
 
         TRowRange range =
             new TRowRange(TextUtil.getByteBuffer(startRow), TextUtil.getByteBuffer(endRow));
-        TSummaryRequest request =
-            new TSummaryRequest(tableId.canonical(), range, summariesToFetch, summarizerClassRegex);
+        TSummaryRequest request = new TSummaryRequest(table.id().canonical(), range,
+            summariesToFetch, summarizerClassRegex);
         if (flush) {
           _flush(table, startRow, endRow, true);
         }

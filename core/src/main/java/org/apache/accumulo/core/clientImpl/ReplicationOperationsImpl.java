@@ -81,15 +81,16 @@ public class ReplicationOperationsImpl implements ReplicationOperations {
   @Override
   public void drain(final String tableName, final Set<String> wals)
       throws AccumuloException, AccumuloSecurityException, TableNotFoundException {
-    final TTable table = context.rpcTable(tableName);
+    final TableRef table = context.resolveTable(tableName);
     final TInfo tinfo = TraceUtil.traceInfo();
     final TCredentials rpcCreds = context.rpcCreds();
 
     // Ask the manager if the table is fully replicated given these WALs, but don't poll inside the
     // manager
     boolean drained = false;
+    TTable rpcTable = table.toThrift();
     while (!drained) {
-      drained = getManagerDrain(tinfo, rpcCreds, table, wals);
+      drained = getManagerDrain(tinfo, rpcCreds, rpcTable, wals);
 
       if (!drained) {
         try {

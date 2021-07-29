@@ -179,7 +179,7 @@ public class NamespaceOperationsImpl extends NamespaceOperationsHelper {
       throws AccumuloException, AccumuloSecurityException, NamespaceNotFoundException {
     checkArgument(property != null, "property is null");
     checkArgument(value != null, "value is null");
-    final TNamespace tNamespace = context.rpcNamespace(namespace);
+    final TNamespace tNamespace = rpcNamespace(namespace);
     ManagerClient.executeNamespace(context,
         client -> client.setNamespaceProperty(TraceUtil.traceInfo(), context.rpcCreds(), tNamespace,
             property, value));
@@ -190,7 +190,7 @@ public class NamespaceOperationsImpl extends NamespaceOperationsHelper {
   public void removeProperty(final String namespace, final String property)
       throws AccumuloException, AccumuloSecurityException, NamespaceNotFoundException {
     checkArgument(property != null, "property is null");
-    final TNamespace tNamespace = context.rpcNamespace(namespace);
+    final TNamespace tNamespace = rpcNamespace(namespace);
     ManagerClient.executeNamespace(context, client -> client
         .removeNamespaceProperty(TraceUtil.traceInfo(), context.rpcCreds(), tNamespace, property));
     checkLocalityGroups(namespace, property);
@@ -302,4 +302,15 @@ public class NamespaceOperationsImpl extends NamespaceOperationsHelper {
       }
     }
   }
+
+  // retrieve RPC form
+  private TNamespace rpcNamespace(String namespaceName) throws NamespaceNotFoundException {
+    return new TNamespace(getNamespaceId(namespaceName).canonical(), namespaceName);
+  }
+
+  // this validates the namespace name for all callers
+  private NamespaceId getNamespaceId(String namespaceName) throws NamespaceNotFoundException {
+    return Namespaces.getNamespaceId(context, EXISTING_NAMESPACE_NAME.validate(namespaceName));
+  }
+
 }

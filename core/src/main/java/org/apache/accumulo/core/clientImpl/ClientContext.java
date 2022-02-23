@@ -37,6 +37,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -88,10 +89,11 @@ import org.apache.accumulo.core.util.threads.ThreadPools;
 import org.apache.accumulo.core.util.threads.Threads;
 import org.apache.accumulo.fate.zookeeper.ServiceLock;
 import org.apache.accumulo.fate.zookeeper.ZooCache;
-import org.apache.accumulo.fate.zookeeper.ZooCacheFactory;
 import org.apache.accumulo.fate.zookeeper.ZooReader;
+import org.apache.accumulo.fate.zookeeper.ZooSession;
 import org.apache.accumulo.fate.zookeeper.ZooUtil;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,9 +165,6 @@ public class ClientContext implements AccumuloClient {
       AccumuloConfiguration serverConf, UncaughtExceptionHandler ueh) {
     this.info = info;
     this.hadoopConf = info.getHadoopConf();
-    zooReader = new ZooReader(info.getZooKeepers(), info.getZooKeepersSessionTimeOut());
-    zooCache =
-        new ZooCacheFactory().getZooCache(info.getZooKeepers(), info.getZooKeepersSessionTimeOut());
     this.serverConf = serverConf;
     timeoutSupplier = memoizeWithExpiration(
         () -> getConfiguration().getTimeInMillis(Property.GENERAL_RPC_TIMEOUT));
@@ -518,8 +517,11 @@ public class ClientContext implements AccumuloClient {
     return info.getZooKeepersSessionTimeOut();
   }
 
-  public ZooCache getZooCache() {
+  public synchronized ZooCache getZooCache() {
     ensureOpen();
+    if (zooCache == null) {
+      zooCache = new ZooCache(getZooReader(), null);
+    }
     return zooCache;
   }
 
@@ -777,6 +779,8 @@ public class ClientContext implements AccumuloClient {
     return getAuthenticationToken();
   }
 
+  private final AtomicReference<ZooKeeper> zkSession = new AtomicReference<>(null);
+
   @Override
   public synchronized void close() {
     closed = true;
@@ -791,6 +795,14 @@ public class ClientContext implements AccumuloClient {
     }
     if (cleanupThreadPool != null) {
       cleanupThreadPool.shutdown(); // wait for shutdown tasks to execute
+    ZooKeeper zk = zkSession.get();
+    if (zk != null) {
+      try {
+        zk.close();
+      } catch (InterruptedException e) {
+        log.error("Interruption closing ZooKeeper", e);
+        Thread.currentThread().interrupt();
+      }
     }
     singletonReservation.close();
   }
@@ -1009,8 +1021,40 @@ public class ClientContext implements AccumuloClient {
 
   }
 
-  public ZooReader getZooReader() {
+  private Supplier<ZooKeeper> zkSupplier = () -> {
+    synchronized (zkSession) {
+      ZooKeeper zk = zkSession.get();
+      if (zk != null) {
+        // return the alive one
+        if (zk.getState().isAlive()) {
+          return zk;
+        }
+        try {
+          // close the old dead one
+          zk.close();
+        } catch (InterruptedException e) {
+          log.error("Interruption closing dead ZooKeeper", e);
+          Thread.currentThread().interrupt();
+        }
+      }
+      // create a new one
+      zkSession.set(zk = createZooKeeper());
+      return zk;
+    }
+  };
+
+  /**
+   * Mechanism for creating a new ZooKeeper session when a new one is needed
+   */
+  protected ZooKeeper createZooKeeper() {
+    return ZooSession.getSession(getZooKeepers(), getZooKeepersSessionTimeOut(), null, null);
+  }
+
+  public synchronized ZooReader getZooReader() {
     ensureOpen();
+    if (zooReader == null) {
+      zooReader = new ZooReader(zkSupplier);
+    }
     return zooReader;
   }
 

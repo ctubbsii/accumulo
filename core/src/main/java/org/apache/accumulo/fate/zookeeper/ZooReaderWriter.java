@@ -22,6 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.accumulo.core.clientImpl.AcceptableThriftTableOperationException;
 import org.apache.accumulo.core.conf.Property;
@@ -47,12 +48,15 @@ public class ZooReaderWriter extends ZooReader {
   }
 
   private final String secret;
-  private final byte[] auth;
 
-  ZooReaderWriter(String keepers, int timeoutInMillis, String secret) {
-    super(keepers, timeoutInMillis);
-    this.secret = requireNonNull(secret);
-    this.auth = ("accumulo:" + secret).getBytes(UTF_8);
+  public ZooReaderWriter(String hosts, int timeout, String secret) {
+    this(() -> ZooSession.getSession(hosts, timeout, "digest",
+        ("accumulo:" + secret).getBytes(UTF_8)));
+    this.secret = secret;
+  }
+
+  public ZooReaderWriter(Supplier<ZooKeeper> zkSupplier) {
+    super(zkSupplier);
   }
 
   @Override
@@ -61,11 +65,6 @@ public class ZooReaderWriter extends ZooReader {
       return this;
     }
     return super.asWriter(secret);
-  }
-
-  @Override
-  public ZooKeeper getZooKeeper() {
-    return ZooSession.getAuthenticatedSession(keepers, timeout, "digest", auth);
   }
 
   /**

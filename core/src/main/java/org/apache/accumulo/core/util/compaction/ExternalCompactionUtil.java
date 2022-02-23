@@ -43,7 +43,6 @@ import org.apache.accumulo.core.util.HostAndPort;
 import org.apache.accumulo.core.util.threads.ThreadPools;
 import org.apache.accumulo.fate.zookeeper.ServiceLock;
 import org.apache.accumulo.fate.zookeeper.ZooReader;
-import org.apache.accumulo.fate.zookeeper.ZooSession;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
@@ -100,13 +99,9 @@ public class ExternalCompactionUtil {
   public static Optional<HostAndPort> findCompactionCoordinator(ClientContext context) {
     final String lockPath = context.getZooKeeperRoot() + Constants.ZCOORDINATOR_LOCK;
     try {
-      var zk = ZooSession.getAnonymousSession(context.getZooKeepers(),
-          context.getZooKeepersSessionTimeOut());
+      var zk = context.getZooReader().getZooKeeper();
       byte[] address = ServiceLock.getLockData(zk, ServiceLock.path(lockPath));
-      if (null == address) {
-        return Optional.empty();
-      }
-      return Optional.of(HostAndPort.fromString(new String(address)));
+      return Optional.ofNullable(address).map(String::new).map(HostAndPort::fromString);
     } catch (KeeperException | InterruptedException e) {
       throw new RuntimeException(e);
     }

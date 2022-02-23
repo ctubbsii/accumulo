@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.accumulo.core.clientImpl.AcceptableThriftTableOperationException;
 import org.apache.accumulo.fate.util.Retry;
@@ -46,20 +47,22 @@ public class ZooReader {
       Retry.builder().maxRetries(10).retryAfter(250, MILLISECONDS).incrementBy(250, MILLISECONDS)
           .maxWait(5, SECONDS).backOffFactor(1.5).logInterval(3, MINUTES).createFactory();
 
-  protected final String keepers;
-  protected final int timeout;
+  private final Supplier<ZooKeeper> zkSupplier;
 
-  public ZooReader(String keepers, int timeout) {
-    this.keepers = requireNonNull(keepers);
-    this.timeout = timeout;
+  public ZooReader(String hosts, int timeout) {
+    this(() -> ZooSession.getSession(hosts, timeout, null, null));
   }
 
   public ZooReaderWriter asWriter(String secret) {
     return new ZooReaderWriter(keepers, timeout, secret);
   }
 
-  protected ZooKeeper getZooKeeper() {
-    return ZooSession.getAnonymousSession(keepers, timeout);
+  public ZooReader(Supplier<ZooKeeper> zkSupplier) {
+    this.zkSupplier = zkSupplier;
+  }
+
+  public ZooKeeper getZooKeeper() {
+    return zkSupplier.get();
   }
 
   protected RetryFactory getRetryFactory() {

@@ -21,7 +21,6 @@ package org.apache.accumulo.fate.zookeeper;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.apache.zookeeper.ZooKeeper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -34,9 +33,8 @@ public class ZooSessionTest {
   @Timeout(TIMEOUT_SECONDS * 4)
   public void testUnknownHost() {
     assertThrows(RuntimeException.class, () -> {
-      ZooKeeper session = ZooSession.connect(UNKNOWN_HOST, (int) SECONDS.toMillis(TIMEOUT_SECONDS),
-          null, null, null);
-      session.close();
+      try (var session = ZooSession.getSession(UNKNOWN_HOST,
+          (int) SECONDS.toMillis(TIMEOUT_SECONDS), null, null)) {}
     });
   }
 

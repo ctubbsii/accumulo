@@ -61,6 +61,7 @@ import org.apache.accumulo.core.util.threads.ThreadPools;
 import org.apache.accumulo.core.util.threads.Threads;
 import org.apache.accumulo.fate.zookeeper.ZooReader;
 import org.apache.accumulo.fate.zookeeper.ZooReaderWriter;
+import org.apache.accumulo.fate.zookeeper.ZooSession;
 import org.apache.accumulo.server.conf.NamespaceConfiguration;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 import org.apache.accumulo.server.conf.SystemConfiguration;
@@ -83,6 +84,7 @@ import org.apache.accumulo.server.util.TablePropUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -461,6 +463,12 @@ public class ServerContext extends ClientContext {
 
   public NamespacePropUtil namespacePropUtil() {
     return namespacePropUtilSupplier.get();
+  }
+
+  @Override
+  protected ZooKeeper createZooKeeper() {
+    return ZooSession.getSession(getZooKeepers(), getZooKeepersSessionTimeOut(), "digest",
+        ("accumulo" + ":" + getSiteConfiguration().get(Property.INSTANCE_SECRET)).getBytes(UTF_8));
   }
 
 }

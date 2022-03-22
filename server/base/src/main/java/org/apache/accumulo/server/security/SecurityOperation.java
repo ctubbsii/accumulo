@@ -49,7 +49,6 @@ import org.apache.accumulo.core.security.NamespacePermission;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
 import org.apache.accumulo.core.securityImpl.thrift.TCredentials;
-import org.apache.accumulo.fate.zookeeper.ZooCache;
 import org.apache.accumulo.server.ServerContext;
 import org.apache.accumulo.server.security.handler.Authenticator;
 import org.apache.accumulo.server.security.handler.Authorizor;
@@ -73,7 +72,6 @@ public class SecurityOperation {
   protected PermissionHandler permHandle;
   protected boolean isKerberos;
   private static String rootUserName = null;
-  private final ZooCache zooCache;
   private final String ZKUserPath;
 
   protected final ServerContext context;
@@ -113,7 +111,6 @@ public class SecurityOperation {
   protected SecurityOperation(ServerContext context) {
     this.context = context;
     ZKUserPath = Constants.ZROOT + "/" + context.getInstanceID() + "/users";
-    zooCache = new ZooCache(context.getZooReader(), null);
   }
 
   public SecurityOperation(ServerContext context, Authorizor author, Authenticator authent,
@@ -153,7 +150,7 @@ public class SecurityOperation {
 
   public synchronized String getRootUsername() {
     if (rootUserName == null)
-      rootUserName = new String(zooCache.get(ZKUserPath), UTF_8);
+      rootUserName = new String(context.getZooCache().get(ZKUserPath), UTF_8);
     return rootUserName;
   }
 

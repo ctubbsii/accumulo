@@ -166,14 +166,15 @@ public class CryptoTest {
     byte[] cipherText = out.toByteArray();
 
     // decrypt
-    ByteArrayInputStream in = new ByteArrayInputStream(cipherText);
-    FileDecrypter decrypter = getFileDecrypter(cs, Scope.RFILE, new DataInputStream(in));
-    DataInputStream decrypted = new DataInputStream(decrypter.decryptStream(in));
-    String plainText = decrypted.readUTF();
-    decrypted.close();
-    in.close();
+    String plainText;
+    try (var in = new ByteArrayInputStream(cipherText); var din = new DataInputStream(in)) {
+      FileDecrypter decrypter = getFileDecrypter(cs, Scope.RFILE, din);
+      try (var decrypted = new DataInputStream(decrypter.decryptStream(in))) {
+        plainText = decrypted.readUTF();
+      }
+    }
 
-    assertEquals(MARKER_STRING, new String(plainText));
+    assertEquals(MARKER_STRING, plainText);
   }
 
   @Test

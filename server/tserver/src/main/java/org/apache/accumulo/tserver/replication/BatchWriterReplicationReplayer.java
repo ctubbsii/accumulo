@@ -18,6 +18,7 @@
  */
 package org.apache.accumulo.tserver.replication;
 
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -65,7 +66,7 @@ public class BatchWriterReplicationReplayer implements AccumuloReplicationReplay
     long mutationsApplied = 0L;
     try {
       for (ByteBuffer edit : data.getEdits()) {
-        DataInputStream dis = new DataInputStream(ByteBufferUtil.toByteArrayInputStream(edit));
+        DataInput dis = new DataInputStream(ByteBufferUtil.toByteArrayInputStream(edit));
         try {
           key.readFields(dis);
           // TODO this is brittle because AccumuloReplicaSystem isn't actually calling

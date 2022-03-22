@@ -79,15 +79,14 @@ public class VersionedPropEncryptCodecTest {
 
     cipher.init(Cipher.DECRYPT_MODE, cipherProps.getSecretKey(), cipherProps.getParameterSpec());
 
-    try (var bis = new ByteArrayInputStream(payload)) {
-      // write the property map keys, values.
-      try (var cis = new CipherInputStream(bis, cipher);
-          var cdatastream = new DataInputStream(cis)) {
+    // write the property map keys, values.
+    try (ByteArrayInputStream bis = new ByteArrayInputStream(payload);
+        CipherInputStream cis = new CipherInputStream(bis, cipher);
+        DataInputStream cdatastream = new DataInputStream(cis)) {
 
-        assertEquals("A", cdatastream.readUTF());
-        assertEquals("B", cdatastream.readUTF());
-        assertEquals("C", cdatastream.readUTF());
-      }
+      assertEquals("A", cdatastream.readUTF());
+      assertEquals("B", cdatastream.readUTF());
+      assertEquals("C", cdatastream.readUTF());
     }
   }
 

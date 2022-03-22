@@ -20,9 +20,7 @@ package org.apache.accumulo.core.spi.crypto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +52,7 @@ import org.apache.accumulo.core.crypto.streams.BlockedInputStream;
 import org.apache.accumulo.core.crypto.streams.BlockedOutputStream;
 import org.apache.accumulo.core.crypto.streams.DiscardCloseOutputStream;
 import org.apache.accumulo.core.crypto.streams.RFileCipherOutputStream;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.commons.io.IOUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -225,17 +224,15 @@ public class AESCryptoService implements CryptoService {
 
   private static ParsedCryptoParameters parseCryptoParameters(byte[] parameters) {
     ParsedCryptoParameters parsed = new ParsedCryptoParameters();
-    try (ByteArrayInputStream bais = new ByteArrayInputStream(parameters);
-        DataInputStream params = new DataInputStream(bais)) {
+    var params = BytesReader.wrap(parameters);
+    try {
       parsed.setCryptoServiceName(params.readUTF());
       parsed.setCryptoServiceVersion(params.readUTF());
       parsed.setKeyManagerVersion(params.readUTF());
       parsed.setKekId(params.readUTF());
       int encFekLen = params.readInt();
       byte[] encFek = new byte[encFekLen];
-      int bytesRead = params.read(encFek);
-      if (bytesRead != encFekLen)
-        throw new CryptoException("Incorrect number of bytes read for encrypted FEK");
+      params.readFully(encFek);
       parsed.setEncFek(encFek);
     } catch (IOException e) {
       throw new CryptoException("Error creating crypto params", e);

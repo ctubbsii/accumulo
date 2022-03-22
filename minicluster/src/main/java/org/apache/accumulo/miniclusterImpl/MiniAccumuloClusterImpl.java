@@ -215,7 +215,7 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
     String className = clazz.getName();
 
     ArrayList<String> argList = new ArrayList<>();
-    argList.addAll(Arrays.asList(javaBin, "-Dproc=" + clazz.getSimpleName(), "-cp", classpath));
+    argList.addAll(Arrays.asList(javaBin, "-Dproc=" + clazz.getSimpleName()));
     argList.addAll(extraJvmOpts);
     for (Entry<String,String> sysProp : config.getSystemProperties().entrySet()) {
       argList.add(String.format("-D%s=%s", sysProp.getKey(), sysProp.getValue()));
@@ -232,6 +232,7 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
 
     ProcessBuilder builder = new ProcessBuilder(argList);
 
+    builder.environment().put("CLASSPATH", classpath);
     builder.environment().put("ACCUMULO_HOME", config.getDir().getAbsolutePath());
     builder.environment().put("ACCUMULO_LOG_DIR", config.getLogDir().getAbsolutePath());
     builder.environment().put("ACCUMULO_CLIENT_CONF_PATH",
@@ -487,7 +488,7 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
       try (var fs = getServerContext().getVolumeManager()) {
         instanceIdPath = serverDirs.getInstanceIdLocation(fs.getFirst());
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
 
       InstanceId instanceIdFromFile =

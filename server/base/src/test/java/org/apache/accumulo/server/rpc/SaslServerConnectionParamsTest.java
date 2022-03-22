@@ -21,9 +21,7 @@ package org.apache.accumulo.server.rpc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
@@ -39,6 +37,7 @@ import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.rpc.SaslConnectionParams;
 import org.apache.accumulo.core.rpc.SaslConnectionParams.QualityOfProtection;
 import org.apache.accumulo.core.rpc.SaslConnectionParams.SaslMechanism;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.server.security.SystemCredentials.SystemToken;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -78,7 +77,7 @@ public class SaslServerConnectionParamsTest {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       pw.write(new DataOutputStream(baos));
       SystemToken token = new SystemToken();
-      token.readFields(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
+      token.readFields(BytesReader.wrap(baos.toByteArray()));
 
       final SaslConnectionParams saslParams = new SaslServerConnectionParams(rpcConf, token);
       assertEquals(primary, saslParams.getKerberosServerPrimary());

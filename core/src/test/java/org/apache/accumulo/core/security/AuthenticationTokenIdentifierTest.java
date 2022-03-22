@@ -23,15 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
 import org.apache.accumulo.core.data.InstanceId;
 import org.apache.accumulo.core.securityImpl.thrift.TAuthenticationTokenIdentifier;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.jupiter.api.Test;
 
@@ -88,9 +87,8 @@ public class AuthenticationTokenIdentifierTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     token.write(out);
-    DataInputStream in = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
     AuthenticationTokenIdentifier deserializedToken = new AuthenticationTokenIdentifier();
-    deserializedToken.readFields(in);
+    deserializedToken.readFields(BytesReader.wrap(baos.toByteArray()));
     assertEquals(token, deserializedToken);
     assertEquals(token.hashCode(), deserializedToken.hashCode());
     assertEquals(token.toString(), deserializedToken.toString());
@@ -109,9 +107,8 @@ public class AuthenticationTokenIdentifierTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     token.write(out);
-    DataInputStream in = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
     AuthenticationTokenIdentifier deserializedToken = new AuthenticationTokenIdentifier();
-    deserializedToken.readFields(in);
+    deserializedToken.readFields(BytesReader.wrap(baos.toByteArray()));
     assertEquals(token, deserializedToken);
     assertEquals(token.hashCode(), deserializedToken.hashCode());
     assertEquals(token.toString(), deserializedToken.toString());

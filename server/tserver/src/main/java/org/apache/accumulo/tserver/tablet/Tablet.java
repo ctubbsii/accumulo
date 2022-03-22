@@ -23,8 +23,6 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.accumulo.fate.util.UtilWaitThread.sleepUninterruptibly;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -91,6 +89,7 @@ import org.apache.accumulo.core.spi.scan.ScanDispatch;
 import org.apache.accumulo.core.tabletserver.log.LogEntry;
 import org.apache.accumulo.core.tabletserver.thrift.TabletStats;
 import org.apache.accumulo.core.trace.TraceUtil;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.LocalityGroupUtil;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.accumulo.core.util.ShutdownUtil;
@@ -1046,9 +1045,7 @@ public class Tablet {
 
       if (tokens.length > 1) {
         Hex hex = new Hex();
-        ByteArrayInputStream bais =
-            new ByteArrayInputStream(hex.decode(tokens[1].split("=")[1].getBytes(UTF_8)));
-        DataInputStream dis = new DataInputStream(bais);
+        var dis = BytesReader.wrap(hex.decode(tokens[1].split("=")[1].getBytes(UTF_8)));
 
         var compactionConfig = UserCompactionUtils.decodeCompactionConfig(dis);
 

@@ -22,9 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +35,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.iterators.user.SummingCombiner;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Level;
@@ -56,8 +55,7 @@ public class RangeInputSplitTest {
 
     RangeInputSplit newSplit = new RangeInputSplit();
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
+    var dis = BytesReader.wrap(baos.toByteArray());
     newSplit.readFields(dis);
 
     assertEquals(split.getTableName(), newSplit.getTableName());
@@ -100,8 +98,7 @@ public class RangeInputSplitTest {
 
     RangeInputSplit newSplit = new RangeInputSplit();
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
+    var dis = BytesReader.wrap(baos.toByteArray());
     newSplit.readFields(dis);
 
     assertEquals(split.getRange(), newSplit.getRange());

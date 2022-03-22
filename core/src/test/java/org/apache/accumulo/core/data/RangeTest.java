@@ -24,9 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InvalidObjectException;
 import java.util.Arrays;
@@ -35,6 +33,7 @@ import java.util.List;
 
 import org.apache.accumulo.core.dataImpl.KeyExtent;
 import org.apache.accumulo.core.dataImpl.thrift.TRange;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.Test;
 
@@ -857,12 +856,8 @@ public class RangeTest {
     DataOutputStream dos = new DataOutputStream(baos);
     r.write(dos);
     dos.close();
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
     Range r2 = new Range();
-    r2.readFields(dis);
-    dis.close();
-
+    r2.readFields(BytesReader.wrap(baos.toByteArray()));
     assertEquals(r, r2);
   }
 
@@ -874,12 +869,10 @@ public class RangeTest {
     DataOutputStream dos = new DataOutputStream(baos);
     r.write(dos);
     dos.close();
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    var dis = BytesReader.wrap(baos.toByteArray());
     Range r2 = new Range();
-    try (DataInputStream dis = new DataInputStream(bais)) {
-      assertThrows(InvalidObjectException.class, () -> r2.readFields(dis),
-          "readFields allowed invalid range");
-    }
+    assertThrows(InvalidObjectException.class, () -> r2.readFields(dis),
+        "readFields allowed invalid range");
   }
 
   @Test

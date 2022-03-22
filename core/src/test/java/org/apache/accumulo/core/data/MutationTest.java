@@ -26,9 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,6 +35,7 @@ import java.util.List;
 
 import org.apache.accumulo.core.dataImpl.thrift.TMutation;
 import org.apache.accumulo.core.security.ColumnVisibility;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.Test;
 
@@ -140,11 +139,8 @@ public class MutationTest {
     m.write(dos);
     dos.close();
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
-
     m = new Mutation();
-    m.readFields(dis);
+    m.readFields(BytesReader.wrap(baos.toByteArray()));
     return m;
   }
 
@@ -570,8 +566,7 @@ public class MutationTest {
 
     // Now read the mutations back in from the byte array, making sure to
     // reuse the same mutation object, and make sure everything is correct.
-    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-    DataInputStream dis = new DataInputStream(bis);
+    var dis = BytesReader.wrap(bos.toByteArray());
 
     Mutation m = new Mutation();
     m.readFields(dis);
@@ -627,12 +622,9 @@ public class MutationTest {
     m2.put(nt("cf3"), nt("cq3"), nv("v3"));
     m2.put(nt("cf4"), nt("cq4"), new ColumnVisibility("cv2"), nv("v4"));
 
-    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-    DataInputStream dis = new DataInputStream(bis);
-
     // used to be a bug where puts done before readFields would be seen
     // after readFields
-    m2.readFields(dis);
+    m2.readFields(BytesReader.wrap(bos.toByteArray()));
 
     assertEquals("r1", new String(m2.getRow()));
     assertEquals(2, m2.getUpdates().size());
@@ -646,11 +638,8 @@ public class MutationTest {
     DataOutputStream dos = new DataOutputStream(bos);
     old.write(dos);
     dos.close();
-    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-    DataInputStream dis = new DataInputStream(bis);
     Mutation m = new Mutation();
-    m.readFields(dis);
-    dis.close();
+    m.readFields(BytesReader.wrap(bos.toByteArray()));
     return m;
   }
 
@@ -666,10 +655,8 @@ public class MutationTest {
     m2.write(dos);
     dos.close();
     long oldSize = dos.size();
-    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-    DataInputStream dis = new DataInputStream(bis);
+    var dis = BytesReader.wrap(bos.toByteArray());
     m2.readFields(dis);
-    dis.close();
 
     // check it
     assertEquals("r1", new String(m2.getRow()));
@@ -740,8 +727,7 @@ public class MutationTest {
 
     Mutation m2 = new Mutation();
 
-    ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-    DataInputStream dis = new DataInputStream(bis);
+    var dis = BytesReader.wrap(bos.toByteArray());
     m2.readFields(dis);
 
     assertEquals("r1", new String(m1.getRow()));

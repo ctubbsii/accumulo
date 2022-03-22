@@ -213,20 +213,20 @@ public class CompactionCoordinatorTest {
 
     PowerMock.replayAll();
 
-    TestCoordinator coordinator =
-        new TestCoordinator(conf, finalizer, tservers, client, tsc, context, security);
-    coordinator.resetInternals();
-    assertEquals(0, coordinator.getQueues().size());
-    assertEquals(0, coordinator.getIndex().size());
-    assertEquals(0, coordinator.getRunning().size());
-    coordinator.run();
-    assertEquals(0, coordinator.getQueues().size());
-    assertEquals(0, coordinator.getIndex().size());
-    assertEquals(0, coordinator.getRunning().size());
+    try (var coordinator =
+        new TestCoordinator(conf, finalizer, tservers, client, tsc, context, security)) {
+      coordinator.resetInternals();
+      assertEquals(0, coordinator.getQueues().size());
+      assertEquals(0, coordinator.getIndex().size());
+      assertEquals(0, coordinator.getRunning().size());
+      coordinator.run();
+      assertEquals(0, coordinator.getQueues().size());
+      assertEquals(0, coordinator.getIndex().size());
+      assertEquals(0, coordinator.getRunning().size());
 
-    PowerMock.verifyAll();
-    coordinator.resetInternals();
-    coordinator.close();
+      PowerMock.verifyAll();
+      coordinator.resetInternals();
+    }
   }
 
   @Test
@@ -270,34 +270,34 @@ public class CompactionCoordinatorTest {
 
     PowerMock.replayAll();
 
-    TestCoordinator coordinator =
-        new TestCoordinator(conf, finalizer, tservers, client, tsc, context, security);
-    coordinator.resetInternals();
-    assertEquals(0, coordinator.getQueues().size());
-    assertEquals(0, coordinator.getIndex().size());
-    assertEquals(0, coordinator.getRunning().size());
-    coordinator.run();
-    assertEquals(1, coordinator.getQueues().size());
-    QueueAndPriority qp = QueueAndPriority.get("R2DQ".intern(), (short) 1);
-    Map<Short,TreeSet<TServerInstance>> m = coordinator.getQueues().get("R2DQ".intern());
-    assertNotNull(m);
-    assertEquals(1, m.size());
-    assertTrue(m.containsKey((short) 1));
-    Set<TServerInstance> t = m.get((short) 1);
-    assertNotNull(t);
-    assertEquals(1, t.size());
-    TServerInstance queuedTsi = t.iterator().next();
-    assertEquals(tsi.getHostPortSession(), queuedTsi.getHostPortSession());
-    assertEquals(1, coordinator.getIndex().size());
-    assertTrue(coordinator.getIndex().containsKey(queuedTsi));
-    Set<QueueAndPriority> i = coordinator.getIndex().get(queuedTsi);
-    assertEquals(1, i.size());
-    assertEquals(qp, i.iterator().next());
-    assertEquals(0, coordinator.getRunning().size());
+    try (var coordinator =
+        new TestCoordinator(conf, finalizer, tservers, client, tsc, context, security)) {
+      coordinator.resetInternals();
+      assertEquals(0, coordinator.getQueues().size());
+      assertEquals(0, coordinator.getIndex().size());
+      assertEquals(0, coordinator.getRunning().size());
+      coordinator.run();
+      assertEquals(1, coordinator.getQueues().size());
+      QueueAndPriority qp = QueueAndPriority.get("R2DQ".intern(), (short) 1);
+      Map<Short,TreeSet<TServerInstance>> m = coordinator.getQueues().get("R2DQ".intern());
+      assertNotNull(m);
+      assertEquals(1, m.size());
+      assertTrue(m.containsKey((short) 1));
+      Set<TServerInstance> t = m.get((short) 1);
+      assertNotNull(t);
+      assertEquals(1, t.size());
+      TServerInstance queuedTsi = t.iterator().next();
+      assertEquals(tsi.getHostPortSession(), queuedTsi.getHostPortSession());
+      assertEquals(1, coordinator.getIndex().size());
+      assertTrue(coordinator.getIndex().containsKey(queuedTsi));
+      Set<QueueAndPriority> i = coordinator.getIndex().get(queuedTsi);
+      assertEquals(1, i.size());
+      assertEquals(qp, i.iterator().next());
+      assertEquals(0, coordinator.getRunning().size());
 
-    PowerMock.verifyAll();
-    coordinator.resetInternals();
-    coordinator.close();
+      PowerMock.verifyAll();
+      coordinator.resetInternals();
+    }
   }
 
   @Test

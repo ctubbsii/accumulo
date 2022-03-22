@@ -46,6 +46,7 @@ import org.apache.accumulo.core.iterators.IteratorUtil.IteratorScope;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.harness.AccumuloClusterHarness;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloClusterImpl;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -74,16 +75,9 @@ public class ClassLoaderIT extends AccumuloClusterHarness {
 
   private static void copyStreamToFileSystem(FileSystem fs, String jarName, Path path)
       throws IOException {
-    byte[] buffer = new byte[10 * 1024];
     try (FSDataOutputStream dest = fs.create(path);
         InputStream stream = ClassLoaderIT.class.getResourceAsStream(jarName)) {
-      while (true) {
-        int n = stream.read(buffer, 0, buffer.length);
-        if (n <= 0) {
-          break;
-        }
-        dest.write(buffer, 0, n);
-      }
+      IOUtils.copy(stream, dest);
     }
   }
 

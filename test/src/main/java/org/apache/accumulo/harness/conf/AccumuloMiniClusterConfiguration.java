@@ -19,6 +19,7 @@
 package org.apache.accumulo.harness.conf;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Map;
 
 import org.apache.accumulo.cluster.ClusterUser;
@@ -89,7 +90,7 @@ public class AccumuloMiniClusterConfiguration extends AccumuloClusterPropertyCon
             rootUser.getKeytab().getAbsolutePath());
         return new KerberosToken();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     } else {
       String password = conf.get(ACCUMULO_MINI_PASSWORD_KEY);

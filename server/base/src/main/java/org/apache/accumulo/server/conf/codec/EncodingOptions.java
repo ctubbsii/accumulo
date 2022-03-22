@@ -18,8 +18,8 @@
  */
 package org.apache.accumulo.server.conf.codec;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.StringJoiner;
 
@@ -56,28 +56,28 @@ public class EncodingOptions {
   }
 
   /**
-   * Instantiate an instance of EncodingOptions reading the values from an input stream. Typically,
-   * the stream will be obtained from reading a byte array from a data store and then creating a
-   * stream that reads from that array,
+   * Instantiate an instance of EncodingOptions reading the values from an input. Typically, the
+   * input will be obtained from reading a byte array from a data store and then creating an input
+   * that reads from that array,
    *
    * @param dis
-   *          a data input stream
+   *          a data input
    * @throws IOException
-   *           if an exception occurs reading from the input stream.
+   *           if an exception occurs reading from the input.
    */
-  public static EncodingOptions fromDataStream(final DataInputStream dis) throws IOException {
+  public static EncodingOptions fromDataInput(final DataInput dis) throws IOException {
     return new EncodingOptions(dis.readInt(), dis.readBoolean());
   }
 
   /**
-   * Write the values to a data stream.
+   * Write the values to a data output.
    *
    * @param dos
-   *          a data output stream
+   *          a data output
    * @throws IOException
-   *           if an exception occurs writing the data stream.
+   *           if an exception occurs writing the data.
    */
-  public void encode(final DataOutputStream dos) throws IOException {
+  public void encode(final DataOutput dos) throws IOException {
     dos.writeInt(encodingVersion);
     dos.writeBoolean(compress);
   }

@@ -19,6 +19,7 @@
 package org.apache.accumulo.tserver.scan;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,7 +126,7 @@ public class LookupTask extends ScanTask<MultiScanResult> {
 
         } catch (IOException e) {
           log.warn("lookup failed for tablet " + entry.getKey(), e);
-          throw new RuntimeException(e);
+          throw new UncheckedIOException(e);
         }
 
         bytesAdded += lookupResult.bytesAdded;

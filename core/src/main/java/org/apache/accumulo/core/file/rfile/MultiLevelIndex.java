@@ -20,7 +20,6 @@ package org.apache.accumulo.core.file.rfile;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -28,6 +27,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +42,7 @@ import org.apache.accumulo.core.file.blockfile.impl.CachableBlockFile;
 import org.apache.accumulo.core.file.blockfile.impl.SeekableByteArrayInputStream;
 import org.apache.accumulo.core.file.rfile.bcfile.BCFile;
 import org.apache.accumulo.core.file.rfile.bcfile.Utils;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.WritableComparable;
 
 public class MultiLevelIndex {
@@ -189,7 +190,7 @@ public class MultiLevelIndex {
         sbais.seek(indexOffset + offset);
         return newValue();
       } catch (IOException ioe) {
-        throw new RuntimeException(ioe);
+        throw new UncheckedIOException(ioe);
       }
     }
 
@@ -464,11 +465,10 @@ public class MultiLevelIndex {
     private void flush() throws IOException {
       buffer.close();
 
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
-
       IndexEntry ie = new IndexEntry(true);
+      var bytes = BytesReader.wrap(baos.toByteArray());
       for (int i = 0; i < buffered; i++) {
-        ie.readFields(dis);
+        ie.readFields(bytes);
         writer.add(ie.getKey(), ie.getNumEntries(), ie.getOffset(), ie.getCompressedSize(),
             ie.getRawSize());
       }
@@ -693,7 +693,7 @@ public class MultiLevelIndex {
         try {
           return node.getPreviousNode();
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new UncheckedIOException(e);
         }
       }
 
@@ -701,7 +701,7 @@ public class MultiLevelIndex {
         try {
           return node.getNextNode();
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new UncheckedIOException(e);
         }
       }
 

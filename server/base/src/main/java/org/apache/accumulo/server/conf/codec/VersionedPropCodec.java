@@ -22,6 +22,7 @@ import static org.apache.accumulo.server.conf.codec.VersionedProperties.tsFormat
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -30,6 +31,8 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.accumulo.core.util.BytesReader;
 
 /**
  * Abstract class to provide encoding / decoding of versioned properties. This class handles the
@@ -113,7 +116,7 @@ public abstract class VersionedPropCodec {
     try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
         DataInputStream dis = new DataInputStream(bis)) {
 
-      EncodingOptions encodingOpts = EncodingOptions.fromDataStream(dis);
+      EncodingOptions encodingOpts = EncodingOptions.fromDataInput(dis);
 
       if (!checkCanDecodeVersion(encodingOpts)) {
         throw new IllegalArgumentException(
@@ -121,7 +124,7 @@ public abstract class VersionedPropCodec {
                 + encodingOpts.getEncodingVersion());
       }
 
-      DataVersionInfo vMetadata = DataVersionInfo.fromDataStream(dis);
+      DataVersionInfo vMetadata = DataVersionInfo.fromDataInput(dis);
 
       Map<String,String> props = decodePayload(bis, encodingOpts);
 
@@ -142,9 +145,8 @@ public abstract class VersionedPropCodec {
    * @return the encoding version used to serialize the properties.
    */
   public static int getEncodingVersion(final byte[] bytes) {
-    try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        DataInputStream dis = new DataInputStream(bis)) {
-      return EncodingOptions.fromDataStream(dis).getEncodingVersion();
+    try {
+      return EncodingOptions.fromDataInput(BytesReader.wrap(bytes)).getEncodingVersion();
     } catch (NullPointerException | IOException ex) {
       throw new IllegalArgumentException("Failed to read encoding version from byte array provided",
           ex);
@@ -166,11 +168,11 @@ public abstract class VersionedPropCodec {
    * @return the encoding version used to serialize the properties.
    */
   public static int getDataVersion(final byte[] bytes) {
-    try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        DataInputStream dis = new DataInputStream(bis)) {
+    var dis = BytesReader.wrap(bytes);
+    try {
       // skip encoding metadata
-      EncodingOptions.fromDataStream(dis);
-      return DataVersionInfo.fromDataStream(dis).getDataVersion();
+      EncodingOptions.fromDataInput(dis);
+      return DataVersionInfo.fromDataInput(dis).getDataVersion();
     } catch (NullPointerException | IOException ex) {
       throw new IllegalArgumentException(
           "Failed to read data version version from byte array provided", ex);
@@ -259,7 +261,7 @@ public abstract class VersionedPropCodec {
       this.timestamp = timestamp;
     }
 
-    public static DataVersionInfo fromDataStream(final DataInputStream dis) throws IOException {
+    public static DataVersionInfo fromDataInput(final DataInput dis) throws IOException {
       try {
         var dataVersion = dis.readInt();
         var timestamp = tsFormatter.parse(dis.readUTF(), Instant::from);

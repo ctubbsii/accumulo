@@ -18,10 +18,9 @@
  */
 package org.apache.accumulo.server.security.delegation;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.fate.zookeeper.ZooReader;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
@@ -216,7 +215,7 @@ public class ZooAuthenticationKeyWatcher implements Watcher {
   AuthenticationKey deserializeKey(byte[] serializedKey) {
     AuthenticationKey key = new AuthenticationKey();
     try {
-      key.readFields(new DataInputStream(new ByteArrayInputStream(serializedKey)));
+      key.readFields(BytesReader.wrap(serializedKey));
     } catch (IOException e) {
       throw new AssertionError("Failed to read from an in-memory buffer");
     }

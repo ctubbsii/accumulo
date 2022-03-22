@@ -20,10 +20,8 @@ package org.apache.accumulo.tserver.logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,6 +33,7 @@ import java.util.List;
 import org.apache.accumulo.core.data.ColumnUpdate;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.server.data.ServerMutation;
 import org.apache.hadoop.io.Writable;
 
@@ -113,8 +112,8 @@ public class LogFileValue implements Writable {
    */
   public static LogFileValue fromValue(Value value) {
     LogFileValue logFileValue = new LogFileValue();
-    try (var bais = new ByteArrayInputStream(value.get())) {
-      logFileValue.readFields(new DataInputStream(bais));
+    try {
+      logFileValue.readFields(BytesReader.wrap(value.get()));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

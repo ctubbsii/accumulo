@@ -19,6 +19,7 @@
 package org.apache.accumulo.core.iterators;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -79,7 +80,7 @@ public abstract class Filter extends WrappingIterator implements OptionDescriber
       try {
         source.next();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
   }

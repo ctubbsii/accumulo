@@ -19,6 +19,7 @@
 package org.apache.accumulo.test.iterator;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -110,7 +111,7 @@ public class WholeRowIteratorTest extends BaseJUnit4IteratorTest {
           Value encoded = WholeRowIterator.encodeRow(keys, values);
           data.put(new Key(row), encoded);
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new UncheckedIOException(e);
         }
 
         // Empty the aggregated k-v's
@@ -130,7 +131,7 @@ public class WholeRowIteratorTest extends BaseJUnit4IteratorTest {
         Value encoded = WholeRowIterator.encodeRow(keys, values);
         data.put(new Key(row), encoded);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
 

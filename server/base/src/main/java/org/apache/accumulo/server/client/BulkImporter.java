@@ -22,6 +22,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.accumulo.fate.util.UtilWaitThread.sleepUninterruptibly;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -346,7 +347,7 @@ public class BulkImporter {
       }
     } catch (IOException e) {
       log.error("Failed to get map files in for {}: {}", paths, e.getMessage(), e);
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
 
     final Map<Path,List<AssignmentInfo>> ais = Collections.synchronizedMap(new TreeMap<>());

@@ -31,8 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +43,7 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.admin.DelegationTokenConfig;
 import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
 import org.apache.accumulo.core.data.InstanceId;
-import org.apache.accumulo.server.WithTestNames;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
-public class AuthenticationTokenSecretManagerTest extends WithTestNames {
+public class AuthenticationTokenSecretManagerTest {
   private static final Logger log =
       LoggerFactory.getLogger(AuthenticationTokenSecretManagerTest.class);
 
@@ -155,7 +153,7 @@ public class AuthenticationTokenSecretManagerTest extends WithTestNames {
 
     // Reconstitute the token identifier (will happen when clients are involved)
     AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
-    id.readFields(new DataInputStream(new ByteArrayInputStream(token.getIdentifier())));
+    id.readFields(BytesReader.wrap(token.getIdentifier()));
     long now = System.currentTimeMillis();
 
     // Issue date should be after the test started, but before we deserialized the token
@@ -196,7 +194,7 @@ public class AuthenticationTokenSecretManagerTest extends WithTestNames {
     Token<AuthenticationTokenIdentifier> token = pair.getKey();
 
     AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
-    id.readFields(new DataInputStream(new ByteArrayInputStream(token.getIdentifier())));
+    id.readFields(BytesReader.wrap(token.getIdentifier()));
 
     byte[] password = secretManager.retrievePassword(id);
 
@@ -209,7 +207,7 @@ public class AuthenticationTokenSecretManagerTest extends WithTestNames {
     Token<AuthenticationTokenIdentifier> token2 = pair2.getKey();
     // Reconstitute the token identifier (will happen when clients are involved)
     AuthenticationTokenIdentifier id2 = new AuthenticationTokenIdentifier();
-    id2.readFields(new DataInputStream(new ByteArrayInputStream(token2.getIdentifier())));
+    id2.readFields(BytesReader.wrap(token2.getIdentifier()));
 
     // Get the password
     byte[] password2 = secretManager.retrievePassword(id2);
@@ -243,7 +241,7 @@ public class AuthenticationTokenSecretManagerTest extends WithTestNames {
 
     // Reconstitute the token identifier (will happen when clients are involved)
     AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
-    id.readFields(new DataInputStream(new ByteArrayInputStream(token.getIdentifier())));
+    id.readFields(BytesReader.wrap(token.getIdentifier()));
 
     assertThrows(InvalidToken.class, () -> secretManager.retrievePassword(id));
   }
@@ -268,7 +266,7 @@ public class AuthenticationTokenSecretManagerTest extends WithTestNames {
 
     // Reconstitute the token identifier (will happen when clients are involved)
     AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
-    id.readFields(new DataInputStream(new ByteArrayInputStream(token.getIdentifier())));
+    id.readFields(BytesReader.wrap(token.getIdentifier()));
 
     // Increase the value of issueDate
     id.setIssueDate(Long.MAX_VALUE);
@@ -296,7 +294,7 @@ public class AuthenticationTokenSecretManagerTest extends WithTestNames {
     Token<AuthenticationTokenIdentifier> token = pair.getKey();
 
     AuthenticationTokenIdentifier id = new AuthenticationTokenIdentifier();
-    id.readFields(new DataInputStream(new ByteArrayInputStream(token.getIdentifier())));
+    id.readFields(BytesReader.wrap(token.getIdentifier()));
 
     long now = System.currentTimeMillis();
     secretManager.addKey(new AuthenticationKey(2, now, now + tokenLifetime, keyGen.generateKey()));

@@ -22,14 +22,13 @@ import static org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier.
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
 import org.apache.accumulo.core.clientImpl.DelegationTokenImpl;
+import org.apache.accumulo.core.util.BytesReader;
 import org.junit.jupiter.api.Test;
 
 public class DelegationTokenImplTest {
@@ -45,7 +44,7 @@ public class DelegationTokenImplTest {
     token.write(new DataOutputStream(baos));
 
     DelegationTokenImpl copy = new DelegationTokenImpl();
-    copy.readFields(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
+    copy.readFields(BytesReader.wrap(baos.toByteArray()));
 
     assertEquals(token.getServiceName(), copy.getServiceName());
     assertEquals(token, copy);

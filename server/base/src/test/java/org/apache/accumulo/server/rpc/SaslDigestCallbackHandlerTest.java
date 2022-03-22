@@ -22,8 +22,6 @@ import static org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier.
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import javax.crypto.KeyGenerator;
@@ -33,6 +31,7 @@ import org.apache.accumulo.core.client.admin.DelegationTokenConfig;
 import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
 import org.apache.accumulo.core.data.InstanceId;
 import org.apache.accumulo.core.rpc.SaslDigestCallbackHandler;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.server.security.delegation.AuthenticationKey;
 import org.apache.accumulo.server.security.delegation.AuthenticationTokenSecretManager;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,7 +82,7 @@ public class SaslDigestCallbackHandlerTest {
     assertArrayEquals(serialized, reserialized);
 
     AuthenticationTokenIdentifier copy = new AuthenticationTokenIdentifier();
-    copy.readFields(new DataInputStream(new ByteArrayInputStream(reserialized)));
+    copy.readFields(BytesReader.wrap(reserialized));
 
     assertEquals(identifier, copy);
   }
@@ -114,7 +113,7 @@ public class SaslDigestCallbackHandlerTest {
 
     byte[] decodedIdentifier = handler.decodeIdentifier(name);
     AuthenticationTokenIdentifier identifier = new AuthenticationTokenIdentifier();
-    identifier.readFields(new DataInputStream(new ByteArrayInputStream(decodedIdentifier)));
+    identifier.readFields(BytesReader.wrap(decodedIdentifier));
     char[] computedPassword = handler.getPassword(secretManager, identifier);
 
     assertArrayEquals(computedPassword, encodedPassword);

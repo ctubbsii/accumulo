@@ -220,7 +220,9 @@ public class SerializationUtil {
     try {
       in = new ObjectInputStream(inputStream);
       return in.readObject();
-    } catch (ClassNotFoundException | IOException ex) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (ClassNotFoundException ex) {
       throw new RuntimeException(ex);
     } finally {
       if (in != null)

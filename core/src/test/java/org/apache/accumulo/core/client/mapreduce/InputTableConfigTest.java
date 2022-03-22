@@ -20,9 +20,7 @@ package org.apache.accumulo.core.client.mapreduce;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +31,7 @@ import java.util.Set;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.sample.SamplerConfiguration;
 import org.apache.accumulo.core.data.Range;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,9 +121,6 @@ public class InputTableConfigTest {
   }
 
   private InputTableConfig deserialize(byte[] bytes) throws IOException {
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    InputTableConfig actualConfig = new InputTableConfig(new DataInputStream(bais));
-    bais.close();
-    return actualConfig;
+    return new InputTableConfig(BytesReader.wrap(bytes));
   }
 }

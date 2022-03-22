@@ -23,15 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.accumulo.core.dataImpl.KeyExtent;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.Test;
 
@@ -177,8 +176,7 @@ public class KeyExtentTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     in.writeTo(new DataOutputStream(baos));
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    return KeyExtent.readFrom(new DataInputStream(bais));
+    return KeyExtent.readFrom(BytesReader.wrap(baos.toByteArray()));
   }
 
 }

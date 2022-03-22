@@ -18,9 +18,8 @@
  */
 package org.apache.accumulo.core.iterators.user;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -31,6 +30,7 @@ import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
+import org.apache.accumulo.core.util.BytesReader;
 
 /**
  * The WholeRowIterator is designed to provide row-isolation so that queries see mutations as
@@ -73,16 +73,10 @@ public class WholeRowIterator extends RowEncodingIterator {
    * Returns the byte array containing the field of row key from the given DataInputStream din.
    * Assumes that din first has the length of the field, followed by the field itself.
    */
-  private static byte[] readField(DataInputStream din) throws IOException {
+  private static byte[] readField(DataInput din) throws IOException {
     int len = din.readInt();
     byte[] b = new byte[len];
-    int readLen = din.read(b);
-    // Check if expected length is not same as read length.
-    // We ignore the zero length case because DataInputStream.read can return -1
-    // if zero length was expected and end of stream has been reached.
-    if (len > 0 && len != readLen) {
-      throw new IOException(String.format("Expected to read %d bytes but read %d", len, readLen));
-    }
+    din.readFully(b);
     return b;
   }
 
@@ -90,8 +84,7 @@ public class WholeRowIterator extends RowEncodingIterator {
   public static final SortedMap<Key,Value> decodeRow(Key rowKey, Value rowValue)
       throws IOException {
     SortedMap<Key,Value> map = new TreeMap<>();
-    ByteArrayInputStream in = new ByteArrayInputStream(rowValue.get());
-    DataInputStream din = new DataInputStream(in);
+    var din = BytesReader.wrap(rowValue.get());
     int numKeys = din.readInt();
     for (int i = 0; i < numKeys; i++) {
       byte[] cf = readField(din); // read the col fam

@@ -21,9 +21,8 @@ package org.apache.accumulo.core.file.rfile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -34,6 +33,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.PartialKey;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.file.rfile.RelativeKey.SkippR;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.MutableByteSequence;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +86,7 @@ public class RelativeKeyTest {
 
     RelativeKey actual = new RelativeKey();
     actual.setPrevKey(prevKey);
-    actual.readFields(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
+    actual.readFields(BytesReader.wrap(baos.toByteArray()));
 
     assertEquals(expected.getKey(), actual.getKey());
   }
@@ -145,22 +145,32 @@ public class RelativeKeyTest {
     }
   }
 
-  private DataInputStream in;
+  private DataInput in;
 
   @BeforeEach
-  public void setupDataInputStream() {
-    in = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
-    in.mark(0);
+  public void setupDataInput() {
+    in = BytesReader.wrap(baos.toByteArray());
   }
 
   @Test
   public void testSeekBeforeEverything() throws IOException {
     Key seekKey = new Key();
-    Key prevKey = new Key();
-    Key currKey = null;
-    MutableByteSequence value = new MutableByteSequence(new byte[64], 0, 0);
+    seekBeforeEverything(seekKey);
+  }
 
-    RelativeKey.SkippR skippr =
+  @Test
+  public void testSeekBeforeEverything_deletedSeekKey() throws IOException {
+    Key seekKeyDeleted = new Key("a", "b", "c", "d", 1);
+    seekKeyDeleted.setDeleted(true);
+    seekBeforeEverything(seekKeyDeleted);
+  }
+
+  private void seekBeforeEverything(final Key seekKey) throws IOException {
+    final Key prevKey = new Key();
+    final Key currKey = null;
+    final MutableByteSequence value = new MutableByteSequence(new byte[64], 0, 0);
+
+    final RelativeKey.SkippR skippr =
         RelativeKey.fastSkip(in, seekKey, value, prevKey, currKey, expectedKeys.size());
     assertEquals(1, skippr.skipped);
     assertEquals(new Key(), skippr.prevKey);
@@ -168,19 +178,6 @@ public class RelativeKeyTest {
     assertEquals(expectedValues.get(0).toString(), value.toString());
 
     // ensure we can advance after fastskip
-    skippr.rk.readFields(in);
-    assertEquals(expectedKeys.get(1), skippr.rk.getKey());
-
-    in.reset();
-
-    seekKey = new Key("a", "b", "c", "d", 1);
-    seekKey.setDeleted(true);
-    skippr = RelativeKey.fastSkip(in, seekKey, value, prevKey, currKey, expectedKeys.size());
-    assertEquals(1, skippr.skipped);
-    assertEquals(new Key(), skippr.prevKey);
-    assertEquals(expectedKeys.get(0), skippr.rk.getKey());
-    assertEquals(expectedValues.get(0).toString(), value.toString());
-
     skippr.rk.readFields(in);
     assertEquals(expectedKeys.get(1), skippr.rk.getKey());
   }
@@ -209,11 +206,11 @@ public class RelativeKeyTest {
 
   @Test
   public void testSeekMiddle() throws IOException {
-    int seekIndex = expectedKeys.size() / 2;
-    Key seekKey = expectedKeys.get(seekIndex);
-    Key prevKey = new Key();
-    Key currKey = null;
-    MutableByteSequence value = new MutableByteSequence(new byte[64], 0, 0);
+    final int seekIndex = expectedKeys.size() / 2;
+    final Key seekKey = expectedKeys.get(seekIndex);
+    final Key prevKey = new Key();
+    final Key currKey = null;
+    final MutableByteSequence value = new MutableByteSequence(new byte[64], 0, 0);
 
     RelativeKey.SkippR skippr =
         RelativeKey.fastSkip(in, seekKey, value, prevKey, currKey, expectedKeys.size());
@@ -225,16 +222,22 @@ public class RelativeKeyTest {
 
     skippr.rk.readFields(in);
     assertEquals(expectedValues.get(seekIndex + 1).toString(), value.toString());
+  }
 
+  @Test
+  public void testSeekMiddle_nonexistent() throws IOException {
     // try fast skipping to a key that does not exist
-    in.reset();
+    final int seekIndex = expectedKeys.size() / 2;
+    final Key prevKey = new Key();
+    final Key currKey = null;
+    final MutableByteSequence value = new MutableByteSequence(new byte[64], 0, 0);
     Key fKey = expectedKeys.get(seekIndex).followingKey(PartialKey.ROW_COLFAM_COLQUAL);
     int i;
     for (i = seekIndex; expectedKeys.get(i).compareTo(fKey) < 0; i++) {}
 
     int left = expectedKeys.size();
 
-    skippr =
+    RelativeKey.SkippR skippr =
         RelativeKey.fastSkip(in, expectedKeys.get(i), value, prevKey, currKey, expectedKeys.size());
     assertEquals(i + 1, skippr.skipped);
     left -= skippr.skipped;

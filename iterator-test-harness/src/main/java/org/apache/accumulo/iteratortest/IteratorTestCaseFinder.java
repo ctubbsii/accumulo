@@ -19,6 +19,7 @@
 package org.apache.accumulo.iteratortest;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class IteratorTestCaseFinder {
     try {
       cp = ClassPath.from(IteratorTestCaseFinder.class.getClassLoader());
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
     Set<ClassInfo> classes = cp.getTopLevelClasses(IteratorTestCase.class.getPackage().getName());
 

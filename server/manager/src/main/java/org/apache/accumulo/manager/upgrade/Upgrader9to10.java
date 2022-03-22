@@ -346,7 +346,9 @@ public class Upgrader9to10 implements Upgrader {
       }
 
       return result;
-    } catch (KeeperException | InterruptedException | IOException e) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (KeeperException | InterruptedException e) {
       throw new RuntimeException(e);
     }
   }

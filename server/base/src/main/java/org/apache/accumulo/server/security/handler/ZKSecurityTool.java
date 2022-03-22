@@ -20,11 +20,11 @@ package org.apache.accumulo.server.security.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -38,6 +38,7 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.NamespacePermission;
 import org.apache.accumulo.core.security.SystemPermission;
 import org.apache.accumulo.core.security.TablePermission;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.commons.codec.digest.Crypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,19 +143,21 @@ class ZKSecurityTool {
         out.writeByte(sp.getId());
     } catch (IOException e) {
       log.error("{}", e.getMessage(), e);
-      throw new RuntimeException(e); // this is impossible with ByteArrayOutputStream; crash hard if
-                                     // this happens
+      throw new UncheckedIOException(e); // this is impossible with ByteArrayOutputStream; crash
+                                         // hard if this happens
     }
     return bytes.toByteArray();
   }
 
   public static Set<SystemPermission> convertSystemPermissions(byte[] systempermissions) {
-    ByteArrayInputStream bytes = new ByteArrayInputStream(systempermissions);
-    DataInputStream in = new DataInputStream(bytes);
+    var in = BytesReader.wrap(systempermissions);
     Set<SystemPermission> toReturn = new HashSet<>();
     try {
-      while (in.available() > 0)
+      while (true) {
         toReturn.add(SystemPermission.getPermissionById(in.readByte()));
+      }
+    } catch (EOFException e) {
+      // expected because we loop until this occurs
     } catch (IOException e) {
       log.error("User database is corrupt; error converting system permissions", e);
       toReturn.clear();
@@ -170,8 +173,8 @@ class ZKSecurityTool {
         out.writeByte(tp.getId());
     } catch (IOException e) {
       log.error("{}", e.getMessage(), e);
-      throw new RuntimeException(e); // this is impossible with ByteArrayOutputStream; crash hard if
-                                     // this happens
+      throw new UncheckedIOException(e); // this is impossible with ByteArrayOutputStream; crash
+                                         // hard if this happens
     }
     return bytes.toByteArray();
   }
@@ -191,8 +194,8 @@ class ZKSecurityTool {
         out.writeByte(tnp.getId());
     } catch (IOException e) {
       log.error("{}", e.getMessage(), e);
-      throw new RuntimeException(e); // this is impossible with ByteArrayOutputStream; crash hard if
-                                     // this happens
+      throw new UncheckedIOException(e); // this is impossible with ByteArrayOutputStream; crash
+                                         // hard if this happens
     }
     return bytes.toByteArray();
   }

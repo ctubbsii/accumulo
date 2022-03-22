@@ -23,13 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.accumulo.core.dataImpl.thrift.TColumn;
+import org.apache.accumulo.core.util.BytesReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -80,13 +79,13 @@ public class ColumnTest {
   @Test
   public void testWriteReadFields() throws IOException {
     for (Column c : col) {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      c.write(new DataOutputStream(baos));
+      try (var baos = new ByteArrayOutputStream()) {
+        c.write(new DataOutputStream(baos));
 
-      Column other = new Column();
-      other.readFields(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
-
-      assertEquals(c, other);
+        Column other = new Column();
+        other.readFields(BytesReader.wrap(baos.toByteArray()));
+        assertEquals(c, other);
+      }
     }
   }
 

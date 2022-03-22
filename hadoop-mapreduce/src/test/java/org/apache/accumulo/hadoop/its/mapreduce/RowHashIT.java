@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.Accumulo;
@@ -62,7 +62,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class RowHashIT extends ConfigurableMacBase {
 
-  public static final String hadoopTmpDirArg =
+  private static final String hadoopTmpDirArg =
       "-Dhadoop.tmp.dir=" + System.getProperty("user.dir") + "/target/hadoop-tmp";
 
   static final String tablename = "mapredf";
@@ -88,14 +88,14 @@ public class RowHashIT extends ConfigurableMacBase {
       AccumuloSecurityException, TableExistsException, TableNotFoundException,
       MutationsRejectedException, IOException, InterruptedException, NoSuchAlgorithmException {
     c.tableOperations().create(tablename);
-    BatchWriter bw = c.createBatchWriter(tablename);
-    for (int i = 0; i < 10; i++) {
-      Mutation m = new Mutation("" + i);
-      m.put(input_cf, input_cq, "row" + i);
-      bw.addMutation(m);
+    try (BatchWriter bw = c.createBatchWriter(tablename)) {
+      for (int i = 0; i < 10; i++) {
+        Mutation m = new Mutation("" + i);
+        m.put(input_cf, input_cq, "row" + i);
+        bw.addMutation(m);
+      }
     }
-    bw.close();
-    Process hash = cluster.exec(RowHash.class, Collections.singletonList(hadoopTmpDirArg), "-c",
+    Process hash = cluster.exec(RowHash.class, List.of(hadoopTmpDirArg), "-c",
         cluster.getClientPropsPath(), "-t", tablename, "--column", input_cfcq).getProcess();
     assertEquals(0, hash.waitFor());
 
@@ -153,7 +153,7 @@ public class RowHashIT extends ConfigurableMacBase {
       if (cf.getLength() > 0)
         AccumuloInputFormat.configure().clientProperties(opts.getClientProps())
             .table(opts.tableName).auths(Authorizations.EMPTY)
-            .fetchColumns(Collections.singleton(new IteratorSetting.Column(cf, cq))).store(job);
+            .fetchColumns(List.of(new IteratorSetting.Column(cf, cq))).store(job);
 
       job.setMapperClass(RowHash.HashDataMapper.class);
       job.setMapOutputKeyClass(Text.class);

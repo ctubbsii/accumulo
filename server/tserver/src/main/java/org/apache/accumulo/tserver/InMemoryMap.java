@@ -21,6 +21,7 @@ package org.apache.accumulo.tserver;
 import static org.apache.accumulo.fate.util.UtilWaitThread.sleepUninterruptibly;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,7 +101,7 @@ public class InMemoryMap {
 
       return new Pair<>(sampleConfig, SamplerFactory.newSampler(sampleConfig, config));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 

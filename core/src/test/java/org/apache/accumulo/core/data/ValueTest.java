@@ -30,12 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -154,11 +153,8 @@ public class ValueTest {
     DataOutputStream dos = new DataOutputStream(baos);
     v.write(dos);
     dos.close();
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
     Value v2 = new Value();
-    v2.readFields(dis);
-    dis.close();
+    v2.readFields(BytesReader.wrap(baos.toByteArray()));
     assertArrayEquals(DATA, v2.get());
   }
 

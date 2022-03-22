@@ -335,20 +335,20 @@ public class CompactorTest {
     ZooKeeper zk = PowerMock.createNiceMock(ZooKeeper.class);
     EasyMock.expect(context.getZooReaderWriter()).andReturn(zrw).anyTimes();
     EasyMock.expect(zrw.getZooKeeper()).andReturn(zk).anyTimes();
-    VolumeManagerImpl vm = PowerMock.createNiceMock(VolumeManagerImpl.class);
-    EasyMock.expect(context.getVolumeManager()).andReturn(vm);
-    vm.close();
+    try (VolumeManagerImpl vm = PowerMock.createNiceMock(VolumeManagerImpl.class)) {
+      EasyMock.expect(context.getVolumeManager()).andReturn(vm);
+    }
 
     PowerMock.replayAll();
 
-    SuccessfulCompactor c = new SuccessfulCompactor(supplier, client, job, conf, context, eci);
-    c.run();
+    try (var c = new SuccessfulCompactor(supplier, client, job, conf, context, eci)) {
+      c.run();
 
-    PowerMock.verifyAll();
-    c.close();
+      PowerMock.verifyAll();
 
-    assertTrue(c.isCompletedCalled());
-    assertFalse(c.isFailedCalled());
+      assertTrue(c.isCompletedCalled());
+      assertFalse(c.isFailedCalled());
+    }
   }
 
   @Test
@@ -383,9 +383,9 @@ public class CompactorTest {
     ZooKeeper zk = PowerMock.createNiceMock(ZooKeeper.class);
     EasyMock.expect(context.getZooReaderWriter()).andReturn(zrw).anyTimes();
     EasyMock.expect(zrw.getZooKeeper()).andReturn(zk).anyTimes();
-    VolumeManagerImpl vm = PowerMock.createNiceMock(VolumeManagerImpl.class);
-    EasyMock.expect(context.getVolumeManager()).andReturn(vm);
-    vm.close();
+    try (VolumeManagerImpl vm = PowerMock.createNiceMock(VolumeManagerImpl.class)) {
+      EasyMock.expect(context.getVolumeManager()).andReturn(vm);
+    }
 
     PowerMock.replayAll();
 
@@ -431,21 +431,21 @@ public class CompactorTest {
     ZooKeeper zk = PowerMock.createNiceMock(ZooKeeper.class);
     EasyMock.expect(context.getZooReaderWriter()).andReturn(zrw).anyTimes();
     EasyMock.expect(zrw.getZooKeeper()).andReturn(zk).anyTimes();
-    VolumeManagerImpl vm = PowerMock.createNiceMock(VolumeManagerImpl.class);
-    EasyMock.expect(context.getVolumeManager()).andReturn(vm);
-    vm.close();
+    try (VolumeManagerImpl vm = PowerMock.createNiceMock(VolumeManagerImpl.class)) {
+      EasyMock.expect(context.getVolumeManager()).andReturn(vm);
+    }
 
     PowerMock.replayAll();
 
-    InterruptedCompactor c = new InterruptedCompactor(supplier, client, job, conf, context, eci);
-    c.run();
+    try (var c = new InterruptedCompactor(supplier, client, job, conf, context, eci)) {
+      c.run();
 
-    PowerMock.verifyAll();
-    c.close();
+      PowerMock.verifyAll();
 
-    assertFalse(c.isCompletedCalled());
-    assertTrue(c.isFailedCalled());
-    assertEquals(TCompactionState.CANCELLED, c.getLatestState());
+      assertFalse(c.isCompletedCalled());
+      assertTrue(c.isFailedCalled());
+      assertEquals(TCompactionState.CANCELLED, c.getLatestState());
+    }
   }
 
 }

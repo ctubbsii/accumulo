@@ -21,9 +21,7 @@ package org.apache.accumulo.server;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
@@ -35,6 +33,7 @@ import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ClientProperty;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.conf.SiteConfiguration;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.server.conf.ServerConfigurationFactory;
 import org.apache.accumulo.server.rpc.SaslServerConnectionParams;
 import org.apache.accumulo.server.rpc.ThriftServerType;
@@ -80,7 +79,7 @@ public class ServerContextTest {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       pw.write(new DataOutputStream(baos));
       SystemToken token = new SystemToken();
-      token.readFields(new DataInputStream(new ByteArrayInputStream(baos.toByteArray())));
+      token.readFields(BytesReader.wrap(baos.toByteArray()));
 
       ServerConfigurationFactory factory = EasyMock.createMock(ServerConfigurationFactory.class);
       EasyMock.expect(factory.getSystemConfiguration()).andReturn(conf).anyTimes();

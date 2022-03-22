@@ -18,44 +18,43 @@
  */
 package org.apache.accumulo.core.crypto;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
 import org.apache.accumulo.core.spi.crypto.CryptoEnvironment;
 import org.apache.accumulo.core.spi.crypto.CryptoService;
 import org.apache.accumulo.core.spi.crypto.FileDecrypter;
-import org.apache.commons.io.IOUtils;
 
 public class CryptoUtils {
 
   /**
-   * Read the decryption parameters from the DataInputStream
+   * Read the decryption parameters from the DataInput
    */
-  public static byte[] readParams(DataInputStream in) throws IOException {
+  public static byte[] readParams(DataInput in) throws IOException {
     Objects.requireNonNull(in);
     int len = in.readInt();
     byte[] decryptionParams = new byte[len];
-    IOUtils.readFully(in, decryptionParams);
+    in.readFully(decryptionParams);
     return decryptionParams;
   }
 
   /**
-   * Read the decryption parameters from the DataInputStream and get the FileDecrypter associated
-   * with the provided CryptoService and CryptoEnvironment.Scope.
+   * Read the decryption parameters from the DataInput and get the FileDecrypter associated with the
+   * provided CryptoService and CryptoEnvironment.Scope.
    */
   public static FileDecrypter getFileDecrypter(CryptoService cs, CryptoEnvironment.Scope scope,
-      DataInputStream in) throws IOException {
+      DataInput in) throws IOException {
     byte[] decryptionParams = readParams(in);
     CryptoEnvironment decEnv = new CryptoEnvironmentImpl(scope, decryptionParams);
     return cs.getFileDecrypter(decEnv);
   }
 
   /**
-   * Write the decryption parameters to the DataOutputStream
+   * Write the decryption parameters to the DataOutput
    */
-  public static void writeParams(byte[] decryptionParams, DataOutputStream out) throws IOException {
+  public static void writeParams(byte[] decryptionParams, DataOutput out) throws IOException {
     Objects.requireNonNull(decryptionParams);
     Objects.requireNonNull(out);
     out.writeInt(decryptionParams.length);

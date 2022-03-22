@@ -20,6 +20,7 @@ package org.apache.accumulo.core.rpc;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -437,7 +438,7 @@ public class ThriftUtil {
       // The inability to check is worrisome and deserves a RuntimeException instead of a propagated
       // IO-like Exception.
       log.warn("Failed to check (and/or perform) Kerberos client re-login", e);
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 

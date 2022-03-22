@@ -60,21 +60,20 @@ public class BlockedIOStreamTest {
     byte[] written = baos.toByteArray();
     assertEquals(expectedSize, written.length);
 
-    ByteArrayInputStream biis = new ByteArrayInputStream(written);
-    BlockedInputStream blockIn = new BlockedInputStream(biis, blockSize, blockSize);
-    DataInputStream dIn = new DataInputStream(blockIn);
+    try (var biis = new ByteArrayInputStream(written);
+        var blockIn = new BlockedInputStream(biis, blockSize, blockSize);
+        var dIn = new DataInputStream(blockIn)) {
 
-    dIn.readFully(content, 0, content.length);
-    String readContentString = new String(content, UTF_8);
+      dIn.readFully(content, 0, content.length);
+      String readContentString = new String(content, UTF_8);
 
-    assertEquals(contentString, readContentString);
+      assertEquals(contentString, readContentString);
 
-    dIn.readFully(content2, 0, content2.length);
-    String readContentString2 = new String(content2, UTF_8);
+      dIn.readFully(content2, 0, content2.length);
+      String readContentString2 = new String(content2, UTF_8);
 
-    assertEquals(contentString2, readContentString2);
-
-    blockIn.close();
+      assertEquals(contentString2, readContentString2);
+    }
   }
 
   @Test
@@ -152,11 +151,11 @@ public class BlockedIOStreamTest {
 
     assertEquals(blocks * 16, byteStream.length);
 
-    DataInputStream blockIn = new DataInputStream(
-        new BlockedInputStream(new ByteArrayInputStream(byteStream), blockSize, blockSize));
     Arrays.fill(giant, (byte) 0);
-    blockIn.readFully(giant, 0, size);
-    blockIn.close();
+    try (var blockIn = new DataInputStream(
+        new BlockedInputStream(new ByteArrayInputStream(byteStream), blockSize, blockSize))) {
+      blockIn.readFully(giant, 0, size);
+    }
 
     for (int i = 0; i < size / 1024; i++) {
       byte[] readChunk = new byte[1024];

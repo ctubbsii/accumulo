@@ -22,11 +22,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -71,6 +70,7 @@ import org.apache.accumulo.core.sample.impl.SamplerConfigurationImpl;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.NamespacePermission;
 import org.apache.accumulo.core.security.TablePermission;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.accumulo.core.util.TextUtil;
 import org.apache.accumulo.hadoopImpl.mapreduce.InputTableConfig;
@@ -267,9 +267,8 @@ public class InputConfigurator extends ConfiguratorBase {
         conf.getStringCollection(enumToConfKey(implementingClass, ScanOpts.RANGES));
     List<Range> ranges = new ArrayList<>();
     for (String rangeString : encodedRanges) {
-      ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(rangeString));
       Range range = new Range();
-      range.readFields(new DataInputStream(bais));
+      range.readFields(BytesReader.wrap(Base64.getDecoder().decode(rangeString)));
       ranges.add(range);
     }
     return ranges;
@@ -293,10 +292,8 @@ public class InputConfigurator extends ConfiguratorBase {
     List<IteratorSetting> list = new ArrayList<>();
     try {
       while (tokens.hasMoreTokens()) {
-        String itstring = tokens.nextToken();
-        ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(itstring));
-        list.add(new IteratorSetting(new DataInputStream(bais)));
-        bais.close();
+        byte[] bytes = Base64.getDecoder().decode(tokens.nextToken());
+        list.add(new IteratorSetting(BytesReader.wrap(bytes)));
       }
     } catch (IOException e) {
       throw new IllegalArgumentException("couldn't decode iterator settings");
@@ -667,10 +664,7 @@ public class InputConfigurator extends ConfiguratorBase {
     MapWritable mapWritable = new MapWritable();
     if (configString != null) {
       try {
-        byte[] bytes = Base64.getDecoder().decode(configString);
-        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        mapWritable.readFields(new DataInputStream(bais));
-        bais.close();
+        mapWritable.readFields(BytesReader.wrap(Base64.getDecoder().decode(configString)));
       } catch (IOException e) {
         throw new IllegalStateException("The table query configurations could not be deserialized"
             + " from the given configuration");
@@ -810,7 +804,7 @@ public class InputConfigurator extends ConfiguratorBase {
       try {
         ranges = getRanges(implementingClass, conf);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
       if (ranges != null)
         queryConfig.setRanges(ranges);
@@ -919,19 +913,18 @@ public class InputConfigurator extends ConfiguratorBase {
       writable.write(dos);
       dos.close();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
 
     return Base64.getEncoder().encodeToString(baos.toByteArray());
   }
 
   private static <T extends Writable> T fromBase64(T writable, String enc) {
-    ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(enc));
-    DataInputStream dis = new DataInputStream(bais);
+    var dis = BytesReader.wrap(Base64.getDecoder().decode(enc));
     try {
       writable.readFields(dis);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
     return writable;
   }

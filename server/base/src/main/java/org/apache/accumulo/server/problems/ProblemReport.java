@@ -20,9 +20,7 @@ package org.apache.accumulo.server.problems;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -34,6 +32,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.TableId;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.Encoding;
 import org.apache.accumulo.fate.zookeeper.ZooReaderWriter;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
@@ -121,8 +120,7 @@ public class ProblemReport {
   }
 
   private void decode(byte[] enc) throws IOException {
-    ByteArrayInputStream bais = new ByteArrayInputStream(enc);
-    DataInputStream dis = new DataInputStream(bais);
+    var dis = BytesReader.wrap(enc);
 
     creationTime = dis.readLong();
 
@@ -184,8 +182,7 @@ public class ProblemReport {
       throws IOException, KeeperException, InterruptedException {
     byte[] bytes = Encoding.decodeBase64FileName(node);
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    DataInputStream dis = new DataInputStream(bais);
+    var dis = BytesReader.wrap(bytes);
 
     TableId tableId = TableId.of(dis.readUTF());
     String problemType = dis.readUTF();

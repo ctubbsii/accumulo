@@ -18,9 +18,7 @@
  */
 package org.apache.accumulo.core.iterators.user;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +36,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.OptionDescriber;
 import org.apache.accumulo.core.iterators.SortedKeyValueIterator;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -80,8 +79,7 @@ public class WholeColumnFamilyIterator
   public static final SortedMap<Key,Value> decodeColumnFamily(Key rowKey, Value rowValue)
       throws IOException {
     SortedMap<Key,Value> map = new TreeMap<>();
-    ByteArrayInputStream in = new ByteArrayInputStream(rowValue.get());
-    DataInputStream din = new DataInputStream(in);
+    var din = BytesReader.wrap(rowValue.get());
     int numKeys = din.readInt();
     for (int i = 0; i < numKeys; i++) {
       byte[] cq;

@@ -839,9 +839,8 @@ public class Compactor extends AbstractServer implements MetricsProducer, Compac
 
       try {
         LOG.debug("Closing filesystems");
-        VolumeManager mgr = getContext().getVolumeManager();
-        if (null != mgr) {
-          mgr.close();
+        try (VolumeManager mgr = getContext().getVolumeManager()) {
+          // close
         }
       } catch (IOException e) {
         LOG.warn("Failed to close filesystem : {}", e.getMessage(), e);

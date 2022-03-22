@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.core.file.rfile.bcfile;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInput;
@@ -47,6 +46,7 @@ import org.apache.accumulo.core.spi.crypto.FileDecrypter;
 import org.apache.accumulo.core.spi.crypto.FileEncrypter;
 import org.apache.accumulo.core.spi.crypto.NoFileDecrypter;
 import org.apache.accumulo.core.spi.crypto.NoFileEncrypter;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.core.util.ratelimit.RateLimiter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -656,15 +656,13 @@ public final class BCFile {
       this.in = new SeekableDataInputStream(fin);
       this.conf = conf;
 
-      ByteArrayInputStream bais = new ByteArrayInputStream(serializedMetadata);
-      DataInputStream dis = new DataInputStream(bais);
-
+      var bytes = BytesReader.wrap(serializedMetadata);
       version = null;
 
-      metaIndex = new MetaIndex(dis);
-      dataIndex = new DataIndex(dis);
+      metaIndex = new MetaIndex(bytes);
+      dataIndex = new DataIndex(bytes);
 
-      decryptionParams = CryptoUtils.readParams(dis);
+      decryptionParams = CryptoUtils.readParams(bytes);
       CryptoEnvironmentImpl env = new CryptoEnvironmentImpl(Scope.RFILE, decryptionParams);
       this.decrypter = cryptoService.getFileDecrypter(env);
     }

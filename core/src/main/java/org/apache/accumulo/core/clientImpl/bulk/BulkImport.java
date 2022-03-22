@@ -276,11 +276,10 @@ public class BulkImport implements ImportDestinationArguments, ImportMappingOpti
 
     Text row = new Text();
 
-    FileSKVIterator index = FileOperations.getInstance().newIndexReaderBuilder()
+    try (FileSKVIterator index = FileOperations.getInstance().newIndexReaderBuilder()
         .forFile(mapFile.toString(), ns, ns.getConf(), cs).withTableConfiguration(acuConf)
-        .withFileLenCache(fileLenCache).build();
+        .withFileLenCache(fileLenCache).build()) {
 
-    try {
       while (index.hasTop()) {
         Key key = index.getTopKey();
         totalIndexEntries++;
@@ -292,13 +291,6 @@ public class BulkImport implements ImportDestinationArguments, ImportMappingOpti
             entry.getValue().l++;
 
         index.next();
-      }
-    } finally {
-      try {
-        if (index != null)
-          index.close();
-      } catch (IOException e) {
-        log.debug("Failed to close " + mapFile, e);
       }
     }
 

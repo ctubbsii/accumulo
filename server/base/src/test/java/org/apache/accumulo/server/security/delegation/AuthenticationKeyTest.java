@@ -22,15 +22,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.apache.accumulo.core.util.BytesReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -88,9 +87,8 @@ public class AuthenticationKeyTest {
     authKey.write(out);
     byte[] serialized = baos.toByteArray();
 
-    DataInputStream in = new DataInputStream(new ByteArrayInputStream(serialized));
     AuthenticationKey copy = new AuthenticationKey();
-    copy.readFields(in);
+    copy.readFields(BytesReader.wrap(serialized));
 
     assertEquals(authKey, copy);
     assertEquals(authKey.hashCode(), copy.hashCode());

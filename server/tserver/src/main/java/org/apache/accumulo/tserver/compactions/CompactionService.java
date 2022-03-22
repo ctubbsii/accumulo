@@ -19,6 +19,7 @@
 package org.apache.accumulo.tserver.compactions;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -141,7 +142,9 @@ public class CompactionService {
   private CompactionPlanner createPlanner(String plannerClass) {
     try {
       return ConfigurationTypeHelper.getClassInstance(null, plannerClass, CompactionPlanner.class);
-    } catch (IOException | ReflectiveOperationException e) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (ReflectiveOperationException e) {
       throw new RuntimeException(e);
     }
   }

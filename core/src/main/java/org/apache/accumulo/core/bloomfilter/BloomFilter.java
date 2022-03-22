@@ -177,18 +177,14 @@ public class BloomFilter extends Filter {
   }
 
   // Writable
-
   @Override
   public void write(final DataOutput out) throws IOException {
     super.write(out);
-
-    ByteArrayOutputStream boas = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(boas);
-
-    oos.writeObject(bits);
-    oos.flush();
-    oos.close();
-    out.write(boas.toByteArray());
+    try (var boas = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(boas)) {
+      oos.writeObject(bits);
+      oos.flush();
+      out.write(boas.toByteArray());
+    }
   }
 
   @SuppressFBWarnings(value = {"OS_OPEN_STREAM", "OBJECT_DESERIALIZATION"},

@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -50,6 +49,7 @@ import org.apache.accumulo.core.replication.ReplicationTarget;
 import org.apache.accumulo.core.replication.thrift.ReplicationServicer.Client;
 import org.apache.accumulo.core.replication.thrift.WalEdits;
 import org.apache.accumulo.core.securityImpl.thrift.TCredentials;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.server.data.ServerMutation;
 import org.apache.accumulo.server.replication.proto.Replication.Status;
 import org.apache.accumulo.tserver.logger.LogEvents;
@@ -158,7 +158,7 @@ public class AccumuloReplicaSystemTest {
 
     Status status =
         Status.newBuilder().setBegin(0).setEnd(0).setInfiniteEnd(true).setClosed(false).build();
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    var dis = BytesReader.wrap(baos.toByteArray());
     WalReplication repl = ars.getWalEdits(new ReplicationTarget("peer", "1", TableId.of("1")), dis,
         new Path("/accumulo/wals/tserver+port/wal"), status, Long.MAX_VALUE, new HashSet<>());
 
@@ -269,7 +269,7 @@ public class AccumuloReplicaSystemTest {
     // If it were still open, more data could be appended that we need to process
     Status status =
         Status.newBuilder().setBegin(0).setEnd(0).setInfiniteEnd(true).setClosed(true).build();
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    var dis = BytesReader.wrap(baos.toByteArray());
     WalReplication repl = ars.getWalEdits(new ReplicationTarget("peer", "1", TableId.of("1")), dis,
         new Path("/accumulo/wals/tserver+port/wal"), status, Long.MAX_VALUE, new HashSet<>());
 
@@ -310,8 +310,7 @@ public class AccumuloReplicaSystemTest {
 
     out.close();
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream in = new DataInputStream(bais);
+    var in = BytesReader.wrap(baos.toByteArray());
 
     int numMutations = in.readInt();
     assertEquals(1, numMutations);
@@ -339,7 +338,7 @@ public class AccumuloReplicaSystemTest {
     // If it were still open, more data could be appended that we need to process
     Status status =
         Status.newBuilder().setBegin(100).setEnd(0).setInfiniteEnd(true).setClosed(true).build();
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(new byte[0]));
+    var dis = BytesReader.wrap(new byte[0]);
     WalReplication repl = ars.getWalEdits(new ReplicationTarget("peer", "1", TableId.of("1")), dis,
         new Path("/accumulo/wals/tserver+port/wal"), status, Long.MAX_VALUE, new HashSet<>());
 
@@ -364,7 +363,7 @@ public class AccumuloReplicaSystemTest {
     // If it were still open, more data could be appended that we need to process
     Status status =
         Status.newBuilder().setBegin(100).setEnd(0).setInfiniteEnd(true).setClosed(false).build();
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(new byte[0]));
+    var dis = BytesReader.wrap(new byte[0]);
     WalReplication repl = ars.getWalEdits(new ReplicationTarget("peer", "1", TableId.of("1")), dis,
         new Path("/accumulo/wals/tserver+port/wal"), status, Long.MAX_VALUE, new HashSet<>());
 
@@ -426,7 +425,7 @@ public class AccumuloReplicaSystemTest {
 
     Status status =
         Status.newBuilder().setBegin(0).setEnd(0).setInfiniteEnd(true).setClosed(false).build();
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    var dis = BytesReader.wrap(baos.toByteArray());
 
     HashSet<Integer> tids = new HashSet<>();
 

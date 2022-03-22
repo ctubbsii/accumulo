@@ -21,6 +21,7 @@ package org.apache.accumulo.tserver.replication;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -125,7 +126,7 @@ public class ReplicationProcessor implements Processor {
       }
     } catch (IOException e) {
       log.error("Could not determine if file exists {}", filePath, e);
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
 
     log.debug("Replicating {} to {} using {}", filePath, target, replica.getClass().getName());

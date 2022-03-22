@@ -18,9 +18,7 @@
  */
 package org.apache.accumulo.core.client.security.tokens;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,6 +30,7 @@ import java.util.Set;
 import javax.security.auth.DestroyFailedException;
 import javax.security.auth.Destroyable;
 
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -66,21 +65,15 @@ public interface AuthenticationToken extends Writable, Destroyable, Cloneable {
       T type = null;
       try {
         type = tokenType.getDeclaredConstructor().newInstance();
-      } catch (Exception e) {
+      } catch (ReflectiveOperationException e) {
         throw new IllegalArgumentException("Cannot instantiate " + tokenType.getName(), e);
       }
-      ByteArrayInputStream bais = new ByteArrayInputStream(tokenBytes);
-      DataInputStream in = new DataInputStream(bais);
+
       try {
-        type.readFields(in);
+        type.readFields(BytesReader.wrap(tokenBytes));
       } catch (IOException e) {
         throw new IllegalArgumentException(
             "Cannot deserialize provided byte array as class " + tokenType.getName(), e);
-      }
-      try {
-        in.close();
-      } catch (IOException e) {
-        throw new IllegalStateException("Shouldn't happen", e);
       }
       return type;
     }

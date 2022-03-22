@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -554,7 +555,9 @@ public class BulkNewIT extends SharedMiniClusterBase {
       byte[] data = Files.readAllBytes(Paths.get(filename.replaceFirst("^file:", "")));
       byte[] hash = MessageDigest.getInstance("SHA1").digest(data);
       return new BigInteger(1, hash).toString(16);
-    } catch (IOException | NoSuchAlgorithmException e) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
   }

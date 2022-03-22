@@ -20,9 +20,7 @@ package org.apache.accumulo.core.iterators;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Map;
@@ -32,6 +30,7 @@ import org.apache.accumulo.core.client.lexicoder.AbstractLexicoder;
 import org.apache.accumulo.core.client.lexicoder.Encoder;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.WritableUtils;
 
 /**
@@ -153,7 +152,7 @@ public abstract class LongCombiner extends TypedValueCombiner<Long> {
 
     @Override
     protected Long decodeUnchecked(byte[] b, int offset, int len) {
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b, offset, len));
+      var dis = BytesReader.wrap(b, offset, len);
       try {
         return WritableUtils.readVLong(dis);
       } catch (IOException e) {

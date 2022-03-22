@@ -22,6 +22,7 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.accumulo.fate.util.UtilWaitThread.sleepUninterruptibly;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -617,7 +618,7 @@ public class AccumuloReplicaSystem implements ReplicaSystem {
     }
   }
 
-  protected WalReplication getWalEdits(ReplicationTarget target, DataInputStream wal, Path p,
+  protected WalReplication getWalEdits(ReplicationTarget target, DataInput wal, Path p,
       Status status, long sizeLimit, Set<Integer> desiredTids) throws IOException {
     WalEdits edits = new WalEdits();
     edits.edits = new ArrayList<>();

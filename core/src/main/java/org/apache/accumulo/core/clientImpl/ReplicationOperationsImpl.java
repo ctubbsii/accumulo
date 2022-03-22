@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.admin.ReplicationOperations;
 import org.apache.accumulo.core.conf.Property;
@@ -116,24 +115,20 @@ public class ReplicationOperationsImpl implements ReplicationOperations {
     log.debug("Found id of {} for name {}", tableId, tableName);
 
     // Get the WALs currently referenced by the table
-    BatchScanner metaBs = context.createBatchScanner(MetadataTable.NAME, Authorizations.EMPTY, 4);
-    metaBs.setRanges(Collections.singleton(TabletsSection.getRange(tableId)));
-    metaBs.fetchColumnFamily(LogColumnFamily.NAME);
     Set<String> wals = new HashSet<>();
-    try {
+    try (var metaBs = context.createBatchScanner(MetadataTable.NAME, Authorizations.EMPTY, 4)) {
+      metaBs.setRanges(Collections.singleton(TabletsSection.getRange(tableId)));
+      metaBs.fetchColumnFamily(LogColumnFamily.NAME);
       for (Entry<Key,Value> entry : metaBs) {
         LogEntry logEntry = LogEntry.fromMetaWalEntry(entry);
         wals.add(new Path(logEntry.filename).toString());
       }
-    } finally {
-      metaBs.close();
     }
 
     // And the WALs that need to be replicated for this table
-    metaBs = context.createBatchScanner(MetadataTable.NAME, Authorizations.EMPTY, 4);
-    metaBs.setRanges(Collections.singleton(ReplicationSection.getRange()));
-    metaBs.fetchColumnFamily(ReplicationSection.COLF);
-    try {
+    try (var metaBs = context.createBatchScanner(MetadataTable.NAME, Authorizations.EMPTY, 4)) {
+      metaBs.setRanges(Collections.singleton(ReplicationSection.getRange()));
+      metaBs.fetchColumnFamily(ReplicationSection.COLF);
       Text buffer = new Text();
       for (Entry<Key,Value> entry : metaBs) {
         if (tableId.equals(ReplicationSection.getTableId(entry.getKey()))) {
@@ -141,8 +136,6 @@ public class ReplicationOperationsImpl implements ReplicationOperations {
           wals.add(buffer.toString());
         }
       }
-    } finally {
-      metaBs.close();
     }
     return wals;
   }

@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.server.rpc;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
@@ -31,6 +29,7 @@ import javax.security.sasl.RealmCallback;
 
 import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
 import org.apache.accumulo.core.rpc.SaslDigestCallbackHandler;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.server.security.delegation.AuthenticationTokenSecretManager;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
@@ -56,7 +55,7 @@ public class SaslServerDigestCallbackHandler extends SaslDigestCallbackHandler {
     byte[] tokenId = decodeIdentifier(id);
     AuthenticationTokenIdentifier tokenIdentifier = secretManager.createIdentifier();
     try {
-      tokenIdentifier.readFields(new DataInputStream(new ByteArrayInputStream(tokenId)));
+      tokenIdentifier.readFields(BytesReader.wrap(tokenId));
     } catch (IOException e) {
       throw (InvalidToken) new InvalidToken("Can't de-serialize tokenIdentifier").initCause(e);
     }

@@ -22,9 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Base64;
@@ -32,6 +30,7 @@ import java.util.List;
 
 import javax.security.auth.DestroyFailedException;
 
+import org.apache.accumulo.core.util.BytesReader;
 import org.junit.jupiter.api.Test;
 
 public class PasswordTokenTest {
@@ -57,12 +56,10 @@ public class PasswordTokenTest {
     String oldFormat1 = "AAAAHB+LCAAAAAAAAAArSS0uKUgsLgYAGRFm+ggAAAA="; // jdk 11 GZip produced this
     String oldFormat2 = "AAAAHB+LCAAAAAAAAP8rSS0uKUgsLgYAGRFm+ggAAAA="; // jdk 17 GZip produced this
     for (String format : List.of(oldFormat1, oldFormat2, newFormat)) {
-      byte[] array = Base64.getDecoder().decode(format);
-      try (var bais = new ByteArrayInputStream(array); var dis = new DataInputStream(bais)) {
-        var deserializedToken = new PasswordToken();
-        deserializedToken.readFields(dis);
-        assertArrayEquals("testpass".getBytes(UTF_8), deserializedToken.getPassword());
-      }
+      var dis = BytesReader.wrap(Base64.getDecoder().decode(format));
+      var deserializedToken = new PasswordToken();
+      deserializedToken.readFields(dis);
+      assertArrayEquals("testpass".getBytes(UTF_8), deserializedToken.getPassword());
     }
   }
 
@@ -74,10 +71,9 @@ public class PasswordTokenTest {
       originalToken.write(dos);
       saved = baos.toByteArray();
     }
-    try (var bais = new ByteArrayInputStream(saved); var dis = new DataInputStream(bais)) {
-      var deserializedToken = new PasswordToken();
-      deserializedToken.readFields(dis);
-      assertArrayEquals(originalToken.getPassword(), deserializedToken.getPassword());
-    }
+    var dis = BytesReader.wrap(saved);
+    var deserializedToken = new PasswordToken();
+    deserializedToken.readFields(dis);
+    assertArrayEquals(originalToken.getPassword(), deserializedToken.getPassword());
   }
 }

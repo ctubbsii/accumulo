@@ -19,6 +19,7 @@
 package org.apache.accumulo.core.rpc;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,7 +57,9 @@ public class UGIAssumingTransport extends FilterTransport {
         }
         return null;
       });
-    } catch (IOException | InterruptedException e) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
 

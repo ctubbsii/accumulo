@@ -18,13 +18,13 @@
  */
 package org.apache.accumulo.core.client.lexicoder;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
 
 import org.apache.accumulo.core.clientImpl.lexicoder.FixedByteArrayOutputStream;
+import org.apache.accumulo.core.util.BytesReader;
 
 /**
  * A lexicoder to encode/decode a BigInteger to/from bytes that maintain its native Java sort order.
@@ -41,24 +41,24 @@ public class BigIntegerLexicoder extends AbstractLexicoder<BigInteger> {
 
       byte[] ret = new byte[4 + bytes.length];
 
-      DataOutputStream dos = new DataOutputStream(new FixedByteArrayOutputStream(ret));
+      try (DataOutputStream dos = new DataOutputStream(new FixedByteArrayOutputStream(ret))) {
 
-      // flip the sign bit
-      bytes[0] = (byte) (0x80 ^ bytes[0]);
+        // flip the sign bit
+        bytes[0] = (byte) (0x80 ^ bytes[0]);
 
-      int len = bytes.length;
-      if (v.signum() < 0)
-        len = -len;
+        int len = bytes.length;
+        if (v.signum() < 0)
+          len = -len;
 
-      len = len ^ 0x80000000;
+        len = len ^ 0x80000000;
 
-      dos.writeInt(len);
-      dos.write(bytes);
-      dos.close();
+        dos.writeInt(len);
+        dos.write(bytes);
+      }
 
       return ret;
     } catch (IOException ioe) {
-      throw new RuntimeException(ioe);
+      throw new UncheckedIOException(ioe);
     }
 
   }
@@ -72,9 +72,8 @@ public class BigIntegerLexicoder extends AbstractLexicoder<BigInteger> {
 
   @Override
   protected BigInteger decodeUnchecked(byte[] b, int offset, int origLen) {
-
+    var dis = BytesReader.wrap(b, offset, origLen);
     try {
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b, offset, origLen));
       int newLen = dis.readInt();
       newLen = newLen ^ 0x80000000;
       newLen = Math.abs(newLen);
@@ -86,7 +85,7 @@ public class BigIntegerLexicoder extends AbstractLexicoder<BigInteger> {
 
       return new BigInteger(bytes);
     } catch (IOException ioe) {
-      throw new RuntimeException(ioe);
+      throw new UncheckedIOException(ioe);
     }
   }
 

@@ -21,9 +21,7 @@ package org.apache.accumulo.hadoopImpl.mapreduce;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +34,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.iterators.user.SummingCombiner;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.Test;
 
@@ -52,9 +51,7 @@ public class RangeInputSplitTest {
 
     RangeInputSplit newSplit = new RangeInputSplit();
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
-    newSplit.readFields(dis);
+    newSplit.readFields(BytesReader.wrap(baos.toByteArray()));
 
     assertEquals(split.getTableName(), newSplit.getTableName());
     assertEquals(split.getTableId(), newSplit.getTableId());
@@ -96,9 +93,7 @@ public class RangeInputSplitTest {
 
     RangeInputSplit newSplit = new RangeInputSplit();
 
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
-    newSplit.readFields(dis);
+    newSplit.readFields(BytesReader.wrap(baos.toByteArray()));
 
     assertEquals(split.getRange(), newSplit.getRange());
     assertArrayEquals(split.getLocations(), newSplit.getLocations());

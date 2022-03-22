@@ -18,10 +18,8 @@
  */
 package org.apache.accumulo.core.clientImpl;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -34,6 +32,7 @@ import java.util.Map.Entry;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.admin.CompactionConfig;
 import org.apache.accumulo.core.client.admin.PluginConfig;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 
 import com.google.common.base.Preconditions;
@@ -80,13 +79,9 @@ public class UserCompactionUtils {
   }
 
   public static <T> byte[] encode(T csc, Encoder<T> encoder) {
-
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-
-    try {
+    try (var baos = new ByteArrayOutputStream(); var dos = new DataOutputStream(baos)) {
       encoder.encode(dos, csc);
-      dos.close();
+      dos.flush();
       return baos.toByteArray();
     } catch (IOException ioe) {
       throw new UncheckedIOException(ioe);
@@ -151,9 +146,7 @@ public class UserCompactionUtils {
   }
 
   public static <T> T decode(byte[] encodedCsc, Decoder<T> decoder) {
-    ByteArrayInputStream bais = new ByteArrayInputStream(encodedCsc);
-    DataInputStream dis = new DataInputStream(bais);
-    return decoder.decode(dis);
+    return decoder.decode(BytesReader.wrap(encodedCsc));
   }
 
   public static void encodeSelector(DataOutput dout, PluginConfig csc) {

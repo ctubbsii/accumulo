@@ -23,9 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +39,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.IteratorEnvironment;
 import org.apache.accumulo.core.iterators.IteratorUtil;
 import org.apache.accumulo.core.iteratorsImpl.system.SortedMapIterator;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +60,7 @@ public class RowEncodingIteratorTest {
   private static final class RowEncodingIteratorImpl extends RowEncodingIterator {
 
     public static SortedMap<Key,Value> decodeRow(Value rowValue) throws IOException {
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(rowValue.get()));
+      var dis = BytesReader.wrap(rowValue.get());
       int numKeys = dis.readInt();
       List<Key> decodedKeys = new ArrayList<>();
       List<Value> decodedValues = new ArrayList<>();

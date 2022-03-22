@@ -19,6 +19,7 @@
 package org.apache.accumulo.server.manager.state;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.ref.Cleaner.Cleanable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,7 +137,9 @@ public class MetaDataTableScanner implements ClosableIterator<TabletLocationStat
     try {
       Entry<Key,Value> e = iter.next();
       return createTabletLocationState(e.getKey(), e.getValue());
-    } catch (IOException | BadLocationStateException ex) {
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (BadLocationStateException ex) {
       throw new RuntimeException(ex);
     }
   }

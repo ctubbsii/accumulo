@@ -18,13 +18,13 @@
  */
 package org.apache.accumulo.core.client.lexicoder;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.UUID;
 
 import org.apache.accumulo.core.clientImpl.lexicoder.FixedByteArrayOutputStream;
+import org.apache.accumulo.core.util.BytesReader;
 
 /**
  * A lexicoder for a UUID that maintains its lexicographic sorting order.
@@ -41,18 +41,13 @@ public class UUIDLexicoder extends AbstractLexicoder<UUID> {
    */
   @Override
   public byte[] encode(UUID uuid) {
-    try {
-      byte[] ret = new byte[16];
-      DataOutputStream out = new DataOutputStream(new FixedByteArrayOutputStream(ret));
-
+    byte[] ret = new byte[16];
+    try (var out = new DataOutputStream(new FixedByteArrayOutputStream(ret))) {
       out.writeLong(uuid.getMostSignificantBits() ^ 0x8000000000000000L);
       out.writeLong(uuid.getLeastSignificantBits() ^ 0x8000000000000000L);
-
-      out.close();
-
       return ret;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -65,11 +60,11 @@ public class UUIDLexicoder extends AbstractLexicoder<UUID> {
 
   @Override
   protected UUID decodeUnchecked(byte[] b, int offset, int len) {
+    var in = BytesReader.wrap(b, offset, len);
     try {
-      DataInputStream in = new DataInputStream(new ByteArrayInputStream(b, offset, len));
       return new UUID(in.readLong() ^ 0x8000000000000000L, in.readLong() ^ 0x8000000000000000L);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
 

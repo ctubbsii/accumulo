@@ -21,9 +21,7 @@ package org.apache.accumulo.server.security.delegation;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.accumulo.fate.zookeeper.ZooReaderWriter;
 import org.apache.accumulo.fate.zookeeper.ZooUtil;
 import org.apache.accumulo.fate.zookeeper.ZooUtil.NodeExistsPolicy;
@@ -114,7 +113,7 @@ public class ZooAuthenticationKeyDistributor {
       if (data != null) {
         AuthenticationKey key = new AuthenticationKey();
         try {
-          key.readFields(new DataInputStream(new ByteArrayInputStream(data)));
+          key.readFields(BytesReader.wrap(data));
         } catch (IOException e) {
           throw new AssertionError("Error reading from in-memory buffer which should not happen",
               e);

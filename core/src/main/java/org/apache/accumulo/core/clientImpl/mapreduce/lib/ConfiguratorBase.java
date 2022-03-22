@@ -22,10 +22,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Base64;
 import java.util.Scanner;
 
@@ -38,6 +37,7 @@ import org.apache.accumulo.core.clientImpl.AuthenticationTokenIdentifier;
 import org.apache.accumulo.core.clientImpl.ClientContext;
 import org.apache.accumulo.core.clientImpl.Credentials;
 import org.apache.accumulo.core.clientImpl.DelegationTokenImpl;
+import org.apache.accumulo.core.util.BytesReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
@@ -465,12 +465,11 @@ public class ConfiguratorBase {
           job.getCredentials().getToken(new Text(delTokenStub.getServiceName()));
       AuthenticationTokenIdentifier identifier = new AuthenticationTokenIdentifier();
       try {
-        identifier
-            .readFields(new DataInputStream(new ByteArrayInputStream(hadoopToken.getIdentifier())));
+        identifier.readFields(BytesReader.wrap(hadoopToken.getIdentifier()));
         return new DelegationTokenImpl(hadoopToken.getPassword(), identifier);
       } catch (IOException e) {
-        throw new RuntimeException("Could not construct DelegationToken from JobConf Credentials",
-            e);
+        throw new UncheckedIOException(
+            "Could not construct DelegationToken from JobConf Credentials", e);
       }
     }
     return token;
@@ -496,12 +495,11 @@ public class ConfiguratorBase {
           job.getCredentials().getToken(new Text(delTokenStub.getServiceName()));
       AuthenticationTokenIdentifier identifier = new AuthenticationTokenIdentifier();
       try {
-        identifier
-            .readFields(new DataInputStream(new ByteArrayInputStream(hadoopToken.getIdentifier())));
+        identifier.readFields(BytesReader.wrap(hadoopToken.getIdentifier()));
         return new DelegationTokenImpl(hadoopToken.getPassword(), identifier);
       } catch (IOException e) {
-        throw new RuntimeException("Could not construct DelegationToken from JobConf Credentials",
-            e);
+        throw new UncheckedIOException(
+            "Could not construct DelegationToken from JobConf Credentials", e);
       }
     }
     return token;

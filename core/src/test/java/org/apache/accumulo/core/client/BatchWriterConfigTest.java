@@ -29,14 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.accumulo.core.conf.ClientProperty;
+import org.apache.accumulo.core.util.BytesReader;
 import org.junit.jupiter.api.Test;
 
 public class BatchWriterConfigTest {
@@ -233,9 +232,8 @@ public class BatchWriterConfigTest {
   }
 
   private void checkBytes(BatchWriterConfig bwConfig, byte[] bytes) throws IOException {
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
     BatchWriterConfig createdConfig = new BatchWriterConfig();
-    createdConfig.readFields(new DataInputStream(bais));
+    createdConfig.readFields(BytesReader.wrap(bytes));
 
     assertEquals(bwConfig.getMaxMemory(), createdConfig.getMaxMemory());
     assertEquals(bwConfig.getMaxLatency(MILLISECONDS), createdConfig.getMaxLatency(MILLISECONDS));

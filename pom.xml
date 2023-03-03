@@ -143,6 +143,8 @@
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     <minimalJavaBuildVersion>11</minimalJavaBuildVersion>
     <minimalMavenBuildVersion>3.5.0</minimalMavenBuildVersion>
+    <!-- Netty version -->
+    <netty.version>4.1.89.Final</netty.version>
     <powermock.version>2.0.9</powermock.version>
     <!-- timestamp for reproducible outputs, updated on release by the release plugin -->
     <project.build.outputTimestamp>2022-10-27T05:45:29Z</project.build.outputTimestamp>
@@ -160,8 +162,6 @@
     <unitTestMemSize>-Xmx1G</unitTestMemSize>
     <!-- ZooKeeper version -->
     <zookeeper.version>3.8.1</zookeeper.version>
-    <!-- Netty version -->
-    <netty.version>4.1.89.Final</netty.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -176,6 +176,13 @@
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-bom</artifactId>
         <version>1.9.8</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-bom</artifactId>
+        <version>${netty.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -240,13 +247,6 @@
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <version>5.9.2</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-bom</artifactId>
-        <version>${netty.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

@@ -172,9 +172,9 @@ public class ECAdmin implements KeywordExecutable {
         if (ec != null) {
           var runningCompaction = new RunningCompaction(ec);
           var addr = runningCompaction.getCompactorAddress();
-          var kind = runningCompaction.getJob().kind;
+          var kind = runningCompaction.getJob().getKind();
           var queue = runningCompaction.getQueueName();
-          var ke = KeyExtent.fromThrift(runningCompaction.getJob().extent);
+          var ke = KeyExtent.fromThrift(runningCompaction.getJob().getExtent());
           System.out.format("%s %s %s %s TableId: %s\n", ecid, addr, kind, queue, ke.tableId());
           if (details) {
             var runningCompactionInfo = new RunningCompactionInfo(ec);

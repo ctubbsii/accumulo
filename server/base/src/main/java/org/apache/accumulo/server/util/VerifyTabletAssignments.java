@@ -145,7 +145,7 @@ public class VerifyTabletAssignments {
 
   private static void checkFailures(HostAndPort server, HashSet<KeyExtent> failures,
       MultiScanResult scanResult) {
-    for (TKeyExtent tke : scanResult.failures.keySet()) {
+    for (TKeyExtent tke : scanResult.getFailures().keySet()) {
       KeyExtent ke = KeyExtent.fromThrift(tke);
       System.out.println(" Tablet " + ke + " failed at " + server);
       failures.add(ke);
@@ -192,17 +192,17 @@ public class VerifyTabletAssignments {
     InitialMultiScan is = client.startMultiScan(tinfo, context.rpcCreds(), batch, emptyListColumn,
         emptyListIterInfo, emptyMapSMapSS, Authorizations.EMPTY.getAuthorizationsBB(), false, null,
         0L, null, null, 0L);
-    if (is.result.more) {
-      MultiScanResult result = client.continueMultiScan(tinfo, is.scanID, 0L);
+    if (is.getResult().isMore()) {
+      MultiScanResult result = client.continueMultiScan(tinfo, is.getScanID(), 0L);
       checkFailures(entry.getKey(), failures, result);
 
-      while (result.more) {
-        result = client.continueMultiScan(tinfo, is.scanID, 0L);
+      while (result.isMore()) {
+        result = client.continueMultiScan(tinfo, is.getScanID(), 0L);
         checkFailures(entry.getKey(), failures, result);
       }
     }
 
-    client.closeMultiScan(tinfo, is.scanID);
+    client.closeMultiScan(tinfo, is.getScanID());
 
     ThriftUtil.returnClient((TServiceClient) client, context);
   }

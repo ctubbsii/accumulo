@@ -74,7 +74,7 @@ public class Writer {
       client.update(TraceUtil.traceInfo(), context.rpcCreds(), extent.toThrift(), m.toThrift(),
           TDurability.DEFAULT);
     } catch (ThriftSecurityException e) {
-      throw new AccumuloSecurityException(e.user, e.code);
+      throw new AccumuloSecurityException(e.getUser(), e.getCode());
     } finally {
       ThriftUtil.returnClient((TServiceClient) client, context);
     }

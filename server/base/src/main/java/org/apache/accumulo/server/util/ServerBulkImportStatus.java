@@ -41,7 +41,7 @@ public class ServerBulkImportStatus {
         if (currentStatus == null) {
           return new BulkImportStatus(System.currentTimeMillis(), file, state);
         }
-        currentStatus.state = state;
+        currentStatus.setState(state);
         return currentStatus;
       });
     }

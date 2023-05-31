@@ -686,7 +686,7 @@ public class ThriftScanner {
           timer.stop();
           log.trace("tid={} Finished scan in {} #results={} scanid={}",
               Thread.currentThread().getId(), String.format("%.3f secs", timer.scale(SECONDS)),
-              sr.getResults().size(), scanState.scanID);
+              sr.getResultsSize(), scanState.scanID);
         }
       } else {
         // log.debug("No more : tab end row = "+loc.tablet_extent.getEndRow()+" range =
@@ -698,7 +698,7 @@ public class ThriftScanner {
             timer.stop();
             log.trace("tid={} Completely finished scan in {} #results={}",
                 Thread.currentThread().getId(), String.format("%.3f secs", timer.scale(SECONDS)),
-                sr.getResults().size());
+                sr.getResultsSize());
           }
 
         } else if (scanState.range.getEndKey() == null || !scanState.range
@@ -710,7 +710,7 @@ public class ThriftScanner {
             timer.stop();
             log.trace("tid={} Finished scanning tablet in {} #results={}",
                 Thread.currentThread().getId(), String.format("%.3f secs", timer.scale(SECONDS)),
-                sr.getResults().size());
+                sr.getResultsSize());
           }
         } else {
           scanState.finished = true;
@@ -718,7 +718,7 @@ public class ThriftScanner {
             timer.stop();
             log.trace("tid={} Completely finished in {} #results={}",
                 Thread.currentThread().getId(), String.format("%.3f secs", timer.scale(SECONDS)),
-                sr.getResults().size());
+                sr.getResultsSize());
           }
         }
       }
@@ -726,12 +726,11 @@ public class ThriftScanner {
       Key.decompress(sr.getResults());
 
       if (!sr.getResults().isEmpty() && !scanState.finished) {
-        scanState.range =
-            new Range(new Key(sr.getResults().get(sr.getResults().size() - 1).getKey()), false,
-                scanState.range.getEndKey(), scanState.range.isEndKeyInclusive());
+        scanState.range = new Range(new Key(sr.getResults().get(sr.getResultsSize() - 1).getKey()),
+            false, scanState.range.getEndKey(), scanState.range.isEndKeyInclusive());
       }
 
-      List<KeyValue> results = new ArrayList<>(sr.getResults().size());
+      List<KeyValue> results = new ArrayList<>(sr.getResultsSize());
       for (TKeyValue tkv : sr.getResults()) {
         results.add(new KeyValue(new Key(tkv.getKey()), tkv.getValue()));
       }

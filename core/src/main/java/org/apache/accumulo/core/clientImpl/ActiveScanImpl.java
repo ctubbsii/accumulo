@@ -70,7 +70,7 @@ public class ActiveScanImpl extends ActiveScan {
     this.extent = KeyExtent.fromThrift(activeScan.getExtent());
     this.authorizations = new Authorizations(activeScan.getAuthorizations());
 
-    this.columns = new ArrayList<>(activeScan.getColumns().size());
+    this.columns = new ArrayList<>(activeScan.getColumnsSize());
 
     for (TColumn tcolumn : activeScan.getColumns()) {
       this.columns.add(new Column(tcolumn));

@@ -61,10 +61,8 @@ public class SimpleLoadBalancerTest {
           new org.apache.accumulo.core.manager.thrift.TabletServerStatus();
       result.setTableMap(new HashMap<>());
       for (TabletId tabletId : tablets) {
-        TableInfo info = result.getTableMap().get(tabletId.getTable().canonical());
-        if (info == null) {
-          result.putToTableMap(tabletId.getTable().canonical(), info = new TableInfo());
-        }
+        TableInfo info = result.getTableMap().computeIfAbsent(tabletId.getTable().canonical(),
+            k -> new TableInfo());
         final int onlineTablets = info.getOnlineTablets() + 1;
         info.setOnlineTablets(onlineTablets);
         info.setRecs(onlineTablets);

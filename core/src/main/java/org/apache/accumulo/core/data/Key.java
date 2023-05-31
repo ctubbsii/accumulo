@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.core.data;
 
-import static org.apache.accumulo.core.util.ByteBufferUtil.toBytes;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -614,10 +612,10 @@ public class Key implements WritableComparable<Key>, Cloneable {
    * @param tkey Thrift key
    */
   public Key(TKey tkey) {
-    this.row = toBytes(tkey.bufferForRow());
-    this.colFamily = toBytes(tkey.bufferForColFamily());
-    this.colQualifier = toBytes(tkey.bufferForColQualifier());
-    this.colVisibility = toBytes(tkey.bufferForColVisibility());
+    this.row = tkey.getRow();
+    this.colFamily = tkey.getColFamily();
+    this.colQualifier = tkey.getColQualifier();
+    this.colVisibility = tkey.getColVisibility();
     this.timestamp = tkey.getTimestamp();
     this.deleted = false;
 

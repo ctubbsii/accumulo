@@ -56,7 +56,7 @@ public class GetManagerStats {
         out(1, "%s: %d", entry.getKey(), (int) entry.getValue());
       }
     }
-    out(0, "Dead tablet servers count: %s", stats.getDeadTabletServers().size());
+    out(0, "Dead tablet servers count: %s", stats.getDeadTabletServersSize());
     for (DeadServer dead : stats.getDeadTabletServers()) {
       out(1, "Dead tablet server: %s", dead.getServer());
       out(2, "Last report: %s", new SimpleDateFormat().format(new Date(dead.getLastStatus())));

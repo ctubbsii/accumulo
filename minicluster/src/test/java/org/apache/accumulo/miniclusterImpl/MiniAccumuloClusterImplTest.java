@@ -130,7 +130,7 @@ public class MiniAccumuloClusterImplTest {
     assertTrue(stats.getTableMap().containsKey(testTableID),
         "our test table should exist in " + stats.getTableMap().keySet());
     assertNotNull(stats.getTServerInfo(), "there should be tservers.");
-    assertEquals(NUM_TSERVERS, stats.getTServerInfo().size());
+    assertEquals(NUM_TSERVERS, stats.getTServerInfoSize());
   }
 
   @AfterAll

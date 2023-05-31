@@ -1665,7 +1665,7 @@ public class Tablet extends TabletBase {
     List<String> files = new ArrayList<>();
 
     for (Entry<TabletFile,DataFileInfo> entry : fileMap.entrySet()) {
-      entries.put(entry.getKey(), new DataFileValue(entry.getValue().estimatedSize, 0L));
+      entries.put(entry.getKey(), new DataFileValue(entry.getValue().getEstimatedSize(), 0L));
       files.add(entry.getKey().getPathStr());
     }
 

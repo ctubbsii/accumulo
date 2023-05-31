@@ -115,7 +115,7 @@ public class GarbageCollectWriteAheadLogs {
 
       Span span = TraceUtil.startSpan(this.getClass(), "getCandidates");
       try (Scope scope = span.makeCurrent()) {
-        status.currentLog.started = System.currentTimeMillis();
+        status.getCurrentLog().setStarted(System.currentTimeMillis());
 
         recoveryLogs = getSortedWALogs();
 
@@ -131,8 +131,8 @@ public class GarbageCollectWriteAheadLogs {
         fileScanStop = System.currentTimeMillis();
 
         log.info(String.format("Fetched %d files for %d servers in %.2f seconds", count,
-            logsByServer.size(), (fileScanStop - status.currentLog.started) / 1000.));
-        status.currentLog.candidates = count;
+            logsByServer.size(), (fileScanStop - status.getCurrentLog().getStarted()) / 1000.));
+        status.getCurrentLog().setCandidates(count);
       } catch (Exception e) {
         TraceUtil.setException(span, e, true);
         throw e;
@@ -194,9 +194,9 @@ public class GarbageCollectWriteAheadLogs {
         span5.end();
       }
 
-      status.currentLog.finished = removeStop;
-      status.lastLog = status.currentLog;
-      status.currentLog = new GcCycleStats();
+      status.getCurrentLog().setFinished(removeStop);
+      status.setLastLog(status.getCurrentLog());
+      status.setCurrentLog(new GcCycleStats());
 
     } catch (Exception e) {
       log.error("exception occurred while garbage collecting write ahead logs", e);
@@ -247,9 +247,9 @@ public class GarbageCollectWriteAheadLogs {
     for (Pair<WalState,Path> stateFile : collection) {
       Path path = stateFile.getSecond();
       log.debug("Removing {} WAL {}", stateFile.getFirst(), path);
-      status.currentLog.deleted += removeFile(path);
+      status.getCurrentLog().setDeleted(status.getCurrentLog().getDeleted() + removeFile(path));
     }
-    return status.currentLog.deleted;
+    return status.getCurrentLog().getDeleted();
   }
 
   private long removeFiles(Collection<Path> values) {

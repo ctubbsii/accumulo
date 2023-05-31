@@ -940,7 +940,7 @@ public class TabletClientHandler implements TabletServerClientService.Iface,
   public void splitTablet(TInfo tinfo, TCredentials credentials, TKeyExtent tkeyExtent,
       ByteBuffer splitPoint) throws NotServingTabletException, ThriftSecurityException {
 
-    TableId tableId = TableId.of(new String(ByteBufferUtil.toBytes(tkeyExtent.table)));
+    TableId tableId = TableId.of(new String(tkeyExtent.getTable()));
     NamespaceId namespaceId = getNamespaceId(credentials, tableId);
 
     if (!security.canSplitTablet(credentials, tableId, namespaceId)) {
@@ -983,11 +983,11 @@ public class TabletClientHandler implements TabletServerClientService.Iface,
       if (ke.tableId().compareTo(text) == 0) {
         Tablet tablet = entry.getValue();
         TabletStats stats = tablet.getTabletStats();
-        stats.extent = ke.toThrift();
-        stats.ingestRate = tablet.ingestRate();
-        stats.queryRate = tablet.queryRate();
-        stats.splitCreationTime = tablet.getSplitCreationTime();
-        stats.numEntries = tablet.getNumEntries();
+        stats.setExtent(ke.toThrift());
+        stats.setIngestRate(tablet.ingestRate());
+        stats.setQueryRate(tablet.queryRate());
+        stats.setSplitCreationTime(tablet.getSplitCreationTime());
+        stats.setNumEntries(tablet.getNumEntries());
         result.add(stats);
       }
     }

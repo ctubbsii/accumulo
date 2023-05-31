@@ -335,15 +335,15 @@ public class ManagerClientServiceHandler implements ManagerClientService.Iface {
           SecurityErrorCode.PERMISSION_DENIED);
     }
 
-    KeyExtent oldTablet = KeyExtent.fromThrift(split.oldTablet);
+    KeyExtent oldTablet = KeyExtent.fromThrift(split.getOldTablet());
     if (manager.migrations.remove(oldTablet) != null) {
-      Manager.log.info("Canceled migration of {}", split.oldTablet);
+      Manager.log.info("Canceled migration of {}", split.getOldTablet());
     }
     for (TServerInstance instance : manager.tserverSet.getCurrentServers()) {
       if (serverName.equals(instance.getHostPort())) {
         manager.nextEvent.event("%s reported split %s, %s", serverName,
-            KeyExtent.fromThrift(split.newTablets.get(0)),
-            KeyExtent.fromThrift(split.newTablets.get(1)));
+            KeyExtent.fromThrift(split.getNewTablets().get(0)),
+            KeyExtent.fromThrift(split.getNewTablets().get(1)));
         return;
       }
     }
@@ -610,7 +610,7 @@ public class ManagerClientServiceHandler implements ManagerClientService.Iface {
     final AuthenticationTokenSecretManager secretManager = manager.getContext().getSecretManager();
     try {
       Entry<Token<AuthenticationTokenIdentifier>,AuthenticationTokenIdentifier> pair =
-          secretManager.generateToken(credentials.principal, config);
+          secretManager.generateToken(credentials.getPrincipal(), config);
 
       return new TDelegationToken(ByteBuffer.wrap(pair.getKey().getPassword()),
           pair.getValue().getThriftIdentifier());

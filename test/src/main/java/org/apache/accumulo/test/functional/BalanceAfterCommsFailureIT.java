@@ -120,10 +120,10 @@ public class BalanceAfterCommsFailureIT extends ConfigurableMacBase {
     assertEquals(0, unassignedTablets, "Unassigned tablets were not assigned within 30 seconds");
 
     List<Integer> counts = new ArrayList<>();
-    for (TabletServerStatus server : stats.tServerInfo) {
+    for (TabletServerStatus server : stats.getTServerInfo()) {
       int count = 0;
-      for (TableInfo table : server.tableMap.values()) {
-        count += table.onlineTablets;
+      for (TableInfo table : server.getTableMap().values()) {
+        count += table.getOnlineTablets();
       }
       counts.add(count);
     }

@@ -87,10 +87,10 @@ public class ConditionCheckerContext {
   SortedKeyValueIterator<Key,Value> buildIterator(SortedKeyValueIterator<Key,Value> systemIter,
       TCondition tc) throws IOException {
 
-    ArrayByteSequence key = new ArrayByteSequence(tc.iterators);
+    ArrayByteSequence key = new ArrayByteSequence(tc.getIterators());
     MergedIterConfig mic = mergedIterCache.get(key);
     if (mic == null) {
-      IterConfig ic = compressedIters.decompress(tc.iterators);
+      IterConfig ic = compressedIters.decompress(tc.bufferForIterators());
 
       List<IterInfo> mergedIters = new ArrayList<>(tableIters.size() + ic.ssiList.size());
       Map<String,Map<String,String>> mergedItersOpts =
@@ -116,7 +116,7 @@ public class ConditionCheckerContext {
     for (TCondition tc : scm.getConditions()) {
 
       Range range;
-      if (tc.hasTimestamp) {
+      if (tc.isHasTimestamp()) {
         range = Range.exact(new Text(scm.getRow()), new Text(tc.getCf()), new Text(tc.getCq()),
             new Text(tc.getCv()), tc.getTs());
       } else {

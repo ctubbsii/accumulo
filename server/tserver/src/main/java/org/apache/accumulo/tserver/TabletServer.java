@@ -86,6 +86,7 @@ import org.apache.accumulo.core.lock.ServiceLockData.ServiceDescriptor;
 import org.apache.accumulo.core.lock.ServiceLockData.ServiceDescriptors;
 import org.apache.accumulo.core.lock.ServiceLockData.ThriftService;
 import org.apache.accumulo.core.manager.thrift.BulkImportState;
+import org.apache.accumulo.core.manager.thrift.BulkImportStatus;
 import org.apache.accumulo.core.manager.thrift.Compacting;
 import org.apache.accumulo.core.manager.thrift.ManagerClientService;
 import org.apache.accumulo.core.manager.thrift.TableInfo;
@@ -983,34 +984,34 @@ public class TabletServer extends AbstractServer implements TabletHostingServer 
       TableInfo table = tables.get(tableId);
       if (table == null) {
         table = new TableInfo();
-        table.minors = new Compacting();
-        table.majors = new Compacting();
+        table.setMinors(new Compacting());
+        table.setMajors(new Compacting());
         tables.put(tableId, table);
       }
       long recs = tablet.getNumEntries();
-      table.tablets++;
-      table.onlineTablets++;
-      table.recs += recs;
-      table.queryRate += tablet.queryRate();
-      table.queryByteRate += tablet.queryByteRate();
-      table.ingestRate += tablet.ingestRate();
-      table.ingestByteRate += tablet.ingestByteRate();
-      table.scanRate += tablet.scanRate();
+      table.setTablets(table.getTablets() + 1);
+      table.setOnlineTablets(table.getOnlineTablets() + 1);
+      table.setRecs(table.getRecs() + recs);
+      table.setQueryRate(table.getQueryRate() + tablet.queryRate());
+      table.setQueryByteRate(table.getQueryByteRate() + tablet.queryByteRate());
+      table.setIngestRate(table.getIngestRate() + tablet.ingestRate());
+      table.setIngestByteRate(table.getIngestByteRate() + tablet.ingestByteRate());
+      table.setScanRate(table.getScanRate() + tablet.scanRate());
       long recsInMemory = tablet.getNumEntriesInMemory();
-      table.recsInMemory += recsInMemory;
+      table.setRecsInMemory(table.getRecsInMemory() + recsInMemory);
       if (tablet.isMinorCompactionRunning()) {
-        table.minors.running++;
+        table.getMinors().setRunning(table.getMinors().getRunning() + 1);
       }
       if (tablet.isMinorCompactionQueued()) {
-        table.minors.queued++;
+        table.getMinors().setQueued(table.getMinors().getQueued() + 1);
       }
 
       if (tablet.isMajorCompactionRunning()) {
-        table.majors.running++;
+        table.getMajors().setRunning(table.getMajors().getRunning() + 1);
       }
 
       if (tablet.isMajorCompactionQueued()) {
-        table.majors.queued++;
+        table.getMajors().setQueued(table.getMajors().getQueued() + 1);
       }
 
     });
@@ -1022,12 +1023,14 @@ public class TabletServer extends AbstractServer implements TabletHostingServer 
         tables.put(tableId.canonical(), table);
       }
 
-      if (table.scans == null) {
-        table.scans = new Compacting();
+      if (!table.isSetScans()) {
+        table.setScans(new Compacting());
       }
 
-      table.scans.queued += mapCounter.getInt(ScanRunState.QUEUED);
-      table.scans.running += mapCounter.getInt(ScanRunState.RUNNING);
+      table.getScans()
+          .setQueued(table.getScans().getQueued() + mapCounter.getInt(ScanRunState.QUEUED));
+      table.getScans()
+          .setRunning(table.getScans().getRunning() + mapCounter.getInt(ScanRunState.RUNNING));
     });
 
     ArrayList<KeyExtent> offlineTabletsCopy = new ArrayList<>();
@@ -1045,28 +1048,32 @@ public class TabletServer extends AbstractServer implements TabletHostingServer 
         table = new TableInfo();
         tables.put(tableId, table);
       }
-      table.tablets++;
+      table.setTablets(table.getTablets() + 1);
     }
 
-    result.lastContact = RelativeTime.currentTimeMillis();
-    result.tableMap = tables;
-    result.osLoad = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
-    result.name = getClientAddressString();
-    result.holdTime = resourceManager.holdTime();
-    result.lookups = seekCount.get();
-    result.indexCacheHits = resourceManager.getIndexCache().getStats().hitCount();
-    result.indexCacheRequest = resourceManager.getIndexCache().getStats().requestCount();
-    result.dataCacheHits = resourceManager.getDataCache().getStats().hitCount();
-    result.dataCacheRequest = resourceManager.getDataCache().getStats().requestCount();
-    result.logSorts = logSorter.getLogSorts();
-    result.flushs = flushCounter.get();
-    result.syncs = syncCounter.get();
-    result.bulkImports = new ArrayList<>();
-    result.bulkImports.addAll(clientHandler.getBulkLoadStatus());
-    result.bulkImports.addAll(bulkImportStatus.getBulkLoadStatus());
-    result.version = getVersion();
-    result.responseTime = System.currentTimeMillis() - start;
+    result.setLastContact(RelativeTime.currentTimeMillis());
+    result.setTableMap(tables);
+    result.setOsLoad(ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
+    result.setName(getClientAddressString());
+    result.setHoldTime(resourceManager.holdTime());
+    result.setLookups(seekCount.get());
+    result.setIndexCacheHits(resourceManager.getIndexCache().getStats().hitCount());
+    result.setIndexCacheRequest(resourceManager.getIndexCache().getStats().requestCount());
+    result.setDataCacheHits(resourceManager.getDataCache().getStats().hitCount());
+    result.setDataCacheRequest(resourceManager.getDataCache().getStats().requestCount());
+    result.setLogSorts(logSorter.getLogSorts());
+    result.setFlushs(flushCounter.get());
+    result.setSyncs(syncCounter.get());
+
+    List<BulkImportStatus> bulkImports = new ArrayList<>();
+    bulkImports.addAll(clientHandler.getBulkLoadStatus());
+    bulkImports.addAll(bulkImportStatus.getBulkLoadStatus());
+    result.setBulkImports(bulkImports);
+
+    result.setVersion(getVersion());
+    result.setResponseTime(System.currentTimeMillis() - start);
     return result;
+
   }
 
   private Durability getMincEventDurability(KeyExtent extent) {

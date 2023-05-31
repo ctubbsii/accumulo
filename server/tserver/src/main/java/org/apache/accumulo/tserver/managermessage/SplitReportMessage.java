@@ -47,9 +47,9 @@ public class SplitReportMessage implements ManagerMessage {
   public void send(TCredentials credentials, String serverName, ManagerClientService.Iface client)
       throws TException, ThriftSecurityException {
     TabletSplit split = new TabletSplit();
-    split.oldTablet = old_extent.toThrift();
-    split.newTablets =
-        extents.keySet().stream().map(KeyExtent::toThrift).collect(Collectors.toList());
+    split.setOldTablet(old_extent.toThrift());
+    split.setNewTablets(
+        extents.keySet().stream().map(KeyExtent::toThrift).collect(Collectors.toList()));
     client.reportSplitExtent(TraceUtil.traceInfo(), credentials, serverName, split);
   }
 

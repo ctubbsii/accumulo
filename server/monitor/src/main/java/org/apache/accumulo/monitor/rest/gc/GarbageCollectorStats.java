@@ -47,11 +47,11 @@ public class GarbageCollectorStats {
   public GarbageCollectorStats(String type, GcCycleStats thriftStats) {
     log.info("Creating {} stats using thriftStats = {}", type, thriftStats);
     this.type = type;
-    this.finished = thriftStats.finished;
-    this.candidates = thriftStats.candidates;
-    this.inUse = thriftStats.inUse;
-    this.deleted = thriftStats.deleted;
-    this.errors = thriftStats.errors;
-    this.duration = this.finished - thriftStats.started;
+    this.finished = thriftStats.getFinished();
+    this.candidates = thriftStats.getCandidates();
+    this.inUse = thriftStats.getInUse();
+    this.deleted = thriftStats.getDeleted();
+    this.errors = thriftStats.getErrors();
+    this.duration = this.finished - thriftStats.getStarted();
   }
 }

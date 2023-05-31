@@ -58,15 +58,15 @@ public class TabletServerInformationTest {
     ts.setResponseTime(99);
     ts.setSyncs(101);
     TableInfo tableInfo = new TableInfo();
-    tableInfo.tablets = 202;
-    tableInfo.ingestRate = 2.34;
-    tableInfo.queryRate = 3.45;
-    tableInfo.ingestByteRate = 4.56;
-    tableInfo.queryByteRate = 5.67;
-    tableInfo.scans = new Compacting(301, 401);
-    tableInfo.recs = 502;
-    tableInfo.majors = new Compacting(501, 601);
-    tableInfo.minors = new Compacting(701, 801);
+    tableInfo.setTablets(202);
+    tableInfo.setIngestRate(2.34);
+    tableInfo.setQueryRate(3.45);
+    tableInfo.setIngestByteRate(4.56);
+    tableInfo.setQueryByteRate(5.67);
+    tableInfo.setScans(new Compacting(301, 401));
+    tableInfo.setRecs(502);
+    tableInfo.setMajors(new Compacting(501, 601));
+    tableInfo.setMinors(new Compacting(701, 801));
     ts.setTableMap(Collections.singletonMap("tableId0", tableInfo));
     ts.setVersion("testVersion");
 

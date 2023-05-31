@@ -60,7 +60,7 @@ public class CompactionsResource {
     Map<HostAndPort,Monitor.CompactionStats> entry = monitor.getCompactions();
 
     for (TabletServerStatus tserverInfo : mmi.getTServerInfo()) {
-      var stats = entry.get(HostAndPort.fromString(tserverInfo.name));
+      var stats = entry.get(HostAndPort.fromString(tserverInfo.getName()));
       if (stats != null) {
         compactions.addCompaction(new CompactionInfo(tserverInfo, stats));
       }

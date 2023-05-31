@@ -303,27 +303,28 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
         dataCacheHitTracker.startingUpdates();
         dataCacheRequestTracker.startingUpdates();
 
-        for (TabletServerStatus server : mmi.tServerInfo) {
+        for (TabletServerStatus server : mmi.getTServerInfo()) {
           TableInfo summary = TableInfoUtil.summarizeTableStats(server);
-          totalIngestRate += summary.ingestRate;
-          totalIngestByteRate += summary.ingestByteRate;
-          totalQueryRate += summary.queryRate;
-          totalScanRate += summary.scanRate;
-          totalQueryByteRate += summary.queryByteRate;
-          totalEntries += summary.recs;
-          totalHoldTime += server.holdTime;
-          totalLookups += server.lookups;
-          majorCompactions += summary.majors.running;
-          minorCompactions += summary.minors.running;
-          lookupRateTracker.updateTabletServer(server.name, server.lastContact, server.lookups);
-          indexCacheHitTracker.updateTabletServer(server.name, server.lastContact,
-              server.indexCacheHits);
-          indexCacheRequestTracker.updateTabletServer(server.name, server.lastContact,
-              server.indexCacheRequest);
-          dataCacheHitTracker.updateTabletServer(server.name, server.lastContact,
-              server.dataCacheHits);
-          dataCacheRequestTracker.updateTabletServer(server.name, server.lastContact,
-              server.dataCacheRequest);
+          totalIngestRate += summary.getIngestRate();
+          totalIngestByteRate += summary.getIngestByteRate();
+          totalQueryRate += summary.getQueryRate();
+          totalScanRate += summary.getScanRate();
+          totalQueryByteRate += summary.getQueryByteRate();
+          totalEntries += summary.getRecs();
+          totalHoldTime += server.getHoldTime();
+          totalLookups += server.getLookups();
+          majorCompactions += summary.getMajors().getRunning();
+          minorCompactions += summary.getMinors().getRunning();
+          lookupRateTracker.updateTabletServer(server.getName(), server.getLastContact(),
+              server.getLookups());
+          indexCacheHitTracker.updateTabletServer(server.getName(), server.getLastContact(),
+              server.getIndexCacheHits());
+          indexCacheRequestTracker.updateTabletServer(server.getName(), server.getLastContact(),
+              server.getIndexCacheRequest());
+          dataCacheHitTracker.updateTabletServer(server.getName(), server.getLastContact(),
+              server.getDataCacheHits());
+          dataCacheRequestTracker.updateTabletServer(server.getName(), server.getLastContact(),
+              server.getDataCacheRequest());
         }
 
         lookupRateTracker.finishedUpdating();
@@ -333,8 +334,8 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
         dataCacheRequestTracker.finishedUpdating();
 
         int totalTables = 0;
-        for (TableInfo tInfo : mmi.tableMap.values()) {
-          totalTabletCount += tInfo.tablets;
+        for (TableInfo tInfo : mmi.getTableMap().values()) {
+          totalTabletCount += tInfo.getTablets();
           totalTables++;
         }
         this.totalIngestRate = totalIngestRate;
@@ -352,9 +353,9 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
         ingestByteRateOverTime.add(new Pair<>(currentTime, totalIngestByteRate));
 
         double totalLoad = 0.;
-        for (TabletServerStatus status : mmi.tServerInfo) {
+        for (TabletServerStatus status : mmi.getTServerInfo()) {
           if (status != null) {
-            totalLoad += status.osLoad;
+            totalLoad += status.getOsLoad();
           }
         }
         loadOverTime.add(new Pair<>(currentTime, totalLoad));
@@ -575,7 +576,7 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
       this.scanCount = active.size();
       long oldest = -1;
       for (ActiveScan scan : active) {
-        oldest = Math.max(oldest, scan.age);
+        oldest = Math.max(oldest, scan.getAge());
       }
       this.oldestScan = oldest < 0 ? null : oldest;
       // use clock time for date friendly display
@@ -592,7 +593,7 @@ public class Monitor extends AbstractServer implements HighlyAvailableService {
       this.count = active.size();
       long oldest = -1;
       for (ActiveCompaction a : active) {
-        oldest = Math.max(oldest, a.age);
+        oldest = Math.max(oldest, a.getAge());
       }
       this.oldest = oldest < 0 ? null : oldest;
       // use clock time for date friendly display

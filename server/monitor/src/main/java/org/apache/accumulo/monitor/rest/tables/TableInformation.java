@@ -121,12 +121,12 @@ public class TableInformation {
     this.tablename = tableName;
     this.tableId = tableId;
 
-    this.tablets = info.tablets;
-    this.offlineTablets = info.tablets - info.onlineTablets;
-    this.onlineTablets = info.onlineTablets;
+    this.tablets = info.getTablets();
+    this.offlineTablets = info.getTablets() - info.getOnlineTablets();
+    this.onlineTablets = info.getOnlineTablets();
 
-    this.recs = info.recs;
-    this.recsInMemory = info.recsInMemory;
+    this.recs = info.getRecs();
+    this.recsInMemory = info.getRecsInMemory();
 
     this.ingestRate = cleanNumber(info.getIngestRate());
     this.ingestByteRate = cleanNumber(info.getIngestByteRate());
@@ -134,35 +134,35 @@ public class TableInformation {
     this.query = cleanNumber(info.getQueryRate());
     this.queryByteRate = cleanNumber(info.getQueryByteRate());
 
-    this.entriesRead = cleanNumber(info.scanRate);
-    this.entriesReturned = cleanNumber(info.queryRate);
+    this.entriesRead = cleanNumber(info.getScanRate());
+    this.entriesReturned = cleanNumber(info.getQueryRate());
 
     this.holdTime = holdTime;
 
-    if (info.scans != null) {
-      this.queuedScans = info.scans.queued;
-      this.runningScans = info.scans.running;
-      this.scansCombo = info.scans.running + "(" + info.scans.queued + ")";
+    if (info.isSetScans()) {
+      this.queuedScans = info.getScans().getQueued();
+      this.runningScans = info.getScans().getRunning();
+      this.scansCombo = info.getScans().getRunning() + "(" + info.getScans().getQueued() + ")";
     } else {
       this.queuedScans = 0;
       this.runningScans = 0;
       this.scansCombo = ZERO_COMBO;
     }
 
-    if (info.minors != null) {
-      this.queuedMinorCompactions = info.minors.queued;
-      this.runningMinorCompactions = info.minors.running;
-      this.minorCombo = info.minors.running + "(" + info.minors.queued + ")";
+    if (info.isSetMinors()) {
+      this.queuedMinorCompactions = info.getMinors().getQueued();
+      this.runningMinorCompactions = info.getMinors().getRunning();
+      this.minorCombo = info.getMinors().getRunning() + "(" + info.getMinors().getQueued() + ")";
     } else {
       this.queuedMinorCompactions = 0;
       this.runningMinorCompactions = 0;
       this.minorCombo = ZERO_COMBO;
     }
 
-    if (info.majors != null) {
-      this.queuedMajorCompactions = info.majors.queued;
-      this.runningMajorCompactions = info.majors.running;
-      this.majorCombo = info.majors.running + "(" + info.majors.queued + ")";
+    if (info.isSetMajors()) {
+      this.queuedMajorCompactions = info.getMajors().getQueued();
+      this.runningMajorCompactions = info.getMajors().getRunning();
+      this.majorCombo = info.getMajors().getRunning() + "(" + info.getMajors().getQueued() + ")";
     } else {
       this.queuedMajorCompactions = 0;
       this.runningMajorCompactions = 0;

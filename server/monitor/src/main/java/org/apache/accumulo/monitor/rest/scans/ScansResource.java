@@ -62,9 +62,9 @@ public class ScansResource {
 
     // Adds new scans to the array for tservers known to the Manager
     for (TabletServerStatus tserverInfo : mmi.getTServerInfo()) {
-      ScanStats stats = entry.get(HostAndPort.fromString(tserverInfo.name));
+      ScanStats stats = entry.get(HostAndPort.fromString(tserverInfo.getName()));
       if (stats != null) {
-        scans.addScan(new ScanInformation(tserverInfo.name, stats));
+        scans.addScan(new ScanInformation(tserverInfo.getName(), stats));
       }
     }
     // Add all ScanServer entries, the Manager is not aware of the ScanServers

@@ -93,10 +93,10 @@ public class SimpleBalancerFairnessIT extends ConfigurableMacBase {
 
       // Compute online tablets per tserver
       List<Integer> counts = new ArrayList<>();
-      for (TabletServerStatus server : stats.tServerInfo) {
+      for (TabletServerStatus server : stats.getTServerInfo()) {
         int count = 0;
-        for (TableInfo table : server.tableMap.values()) {
-          count += table.onlineTablets;
+        for (TableInfo table : server.getTableMap().values()) {
+          count += table.getOnlineTablets();
         }
         counts.add(count);
       }

@@ -53,8 +53,8 @@ public class RecoveryStatusInformation {
    * @param recovery Recovery status to obtain name, runtime, and progress
    */
   public RecoveryStatusInformation(RecoveryStatus recovery) {
-    this.name = recovery.name;
-    this.runtime = recovery.runtime;
-    this.progress = recovery.progress;
+    this.name = recovery.getName();
+    this.runtime = recovery.getRuntime();
+    this.progress = recovery.getProgress();
   }
 }

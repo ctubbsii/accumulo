@@ -125,8 +125,10 @@ public class Gatherer {
       CryptoService cryptoService) {
     this.ctx = context;
     this.tableId = TableId.of(request.getTableId());
-    this.startRow = new Text(request.getBounds().getStartRow());
-    this.endRow = new Text(request.getBounds().getEndRow());
+    this.startRow =
+        request.getBounds().isSetStartRow() ? new Text(request.getBounds().getStartRow()) : null;
+    this.endRow =
+        request.getBounds().isSetEndRow() ? new Text(request.getBounds().getEndRow()) : null;
     this.clipRange = new Range(startRow, false, endRow, true);
     this.summaries = request.getSummarizers().stream().map(SummarizerConfigurationUtil::fromThrift)
         .collect(Collectors.toSet());
@@ -549,8 +551,8 @@ public class Gatherer {
     }
 
     public RowRange(TRowRange trr) {
-      this.startRow = new Text(trr.getStartRow());
-      this.endRow = new Text(trr.getEndRow());
+      this.startRow = trr.isSetStartRow() ? new Text(trr.getStartRow()) : null;
+      this.endRow = trr.isSetEndRow() ? new Text(trr.getEndRow()) : null;
     }
 
     public RowRange(Text startRow, Text endRow) {

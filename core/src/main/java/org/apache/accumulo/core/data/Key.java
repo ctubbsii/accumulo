@@ -1244,16 +1244,16 @@ public class Key implements WritableComparable<Key>, Cloneable {
       TKey prevKey = param.get(i - 1).getKey();
       TKey key = param.get(i).getKey();
 
-      if (key.isSetRow()) {
+      if (!key.isSetRow()) {
         key.setRow(prevKey.getRow());
       }
-      if (key.isSetColFamily()) {
+      if (!key.isSetColFamily()) {
         key.setColFamily(prevKey.getColFamily());
       }
-      if (key.isSetColQualifier()) {
+      if (!key.isSetColQualifier()) {
         key.setColQualifier(prevKey.getColQualifier());
       }
-      if (key.isSetColVisibility()) {
+      if (!key.isSetColVisibility()) {
         key.setColVisibility(prevKey.getColVisibility());
       }
     }

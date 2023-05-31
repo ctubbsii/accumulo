@@ -29,13 +29,13 @@ import org.apache.accumulo.core.manager.thrift.TabletServerStatus;
 public class TableInfoUtil {
 
   public static void add(TableInfo total, TableInfo more) {
-    if (total.isSetMinors()) {
+    if (!total.isSetMinors()) {
       total.setMinors(new Compacting());
     }
-    if (total.isSetMajors()) {
+    if (!total.isSetMajors()) {
       total.setMajors(new Compacting());
     }
-    if (total.isSetScans()) {
+    if (!total.isSetScans()) {
       total.setScans(new Compacting());
     }
 
@@ -43,11 +43,11 @@ public class TableInfoUtil {
       total.getMinors().setRunning(total.getMinors().getRunning() + more.getMinors().getRunning());
       total.getMinors().setQueued(total.getMinors().getQueued() + more.getMinors().getQueued());
     }
-    if (more.getMajors() != null) {
+    if (more.isSetMajors()) {
       total.getMajors().setRunning(total.getMajors().getRunning() + more.getMajors().getRunning());
       total.getMajors().setQueued(total.getMajors().getQueued() + more.getMajors().getQueued());
     }
-    if (more.getScans() != null) {
+    if (more.isSetScans()) {
       total.getScans().setRunning(total.getScans().getRunning() + more.getScans().getRunning());
       total.getScans().setQueued(total.getScans().getQueued() + more.getScans().getQueued());
     }

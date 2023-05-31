@@ -111,8 +111,8 @@ public class KeyExtent implements Comparable<KeyExtent> {
    */
   public static KeyExtent fromThrift(TKeyExtent tke) {
     TableId tableId = TableId.of(new String(tke.getTable(), UTF_8));
-    Text endRow = tke.isSetEndRow() ? null : new Text(tke.getEndRow());
-    Text prevEndRow = tke.isSetPrevEndRow() ? null : new Text(tke.getPrevEndRow());
+    Text endRow = !tke.isSetEndRow() ? null : new Text(tke.getEndRow());
+    Text prevEndRow = !tke.isSetPrevEndRow() ? null : new Text(tke.getPrevEndRow());
     return new KeyExtent(tableId, endRow, prevEndRow);
   }
 

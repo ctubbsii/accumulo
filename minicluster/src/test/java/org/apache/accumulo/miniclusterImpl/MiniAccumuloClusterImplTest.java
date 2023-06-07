@@ -109,28 +109,28 @@ public class MiniAccumuloClusterImplTest {
     ManagerMonitorInfo stats;
     while (true) {
       stats = accumulo.getManagerMonitorInfo();
-      if (stats.tableMap.size() <= 2) {
+      if (stats.getTableMapSize() <= 2) {
         continue;
       }
 
-      if (null != stats.tServerInfo && stats.tServerInfo.size() == NUM_TSERVERS) {
+      if (stats.isSetTServerInfo() && stats.getTServerInfoSize() == NUM_TSERVERS) {
         break;
       }
     }
     List<ManagerState> validStates = Arrays.asList(ManagerState.values());
     List<ManagerGoalState> validGoals = Arrays.asList(ManagerGoalState.values());
-    assertTrue(validStates.contains(stats.state), "manager state should be valid.");
-    assertTrue(validGoals.contains(stats.goalState),
-        "manager goal state should be in " + validGoals + ". is " + stats.goalState);
-    assertNotNull(stats.tableMap, "should have a table map.");
-    assertTrue(stats.tableMap.containsKey(RootTable.ID.canonical()),
-        "root table should exist in " + stats.tableMap.keySet());
-    assertTrue(stats.tableMap.containsKey(MetadataTable.ID.canonical()),
-        "meta table should exist in " + stats.tableMap.keySet());
-    assertTrue(stats.tableMap.containsKey(testTableID),
-        "our test table should exist in " + stats.tableMap.keySet());
-    assertNotNull(stats.tServerInfo, "there should be tservers.");
-    assertEquals(NUM_TSERVERS, stats.tServerInfo.size());
+    assertTrue(validStates.contains(stats.getState()), "manager state should be valid.");
+    assertTrue(validGoals.contains(stats.getGoalState()),
+        "manager goal state should be in " + validGoals + ". is " + stats.getGoalState());
+    assertNotNull(stats.getTableMap(), "should have a table map.");
+    assertTrue(stats.getTableMap().containsKey(RootTable.ID.canonical()),
+        "root table should exist in " + stats.getTableMap().keySet());
+    assertTrue(stats.getTableMap().containsKey(MetadataTable.ID.canonical()),
+        "meta table should exist in " + stats.getTableMap().keySet());
+    assertTrue(stats.getTableMap().containsKey(testTableID),
+        "our test table should exist in " + stats.getTableMap().keySet());
+    assertNotNull(stats.getTServerInfo(), "there should be tservers.");
+    assertEquals(NUM_TSERVERS, stats.getTServerInfoSize());
   }
 
   @AfterAll

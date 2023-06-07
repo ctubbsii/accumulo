@@ -59,16 +59,15 @@ public class SimpleLoadBalancerTest {
     TServerStatus getStatus() {
       org.apache.accumulo.core.manager.thrift.TabletServerStatus result =
           new org.apache.accumulo.core.manager.thrift.TabletServerStatus();
-      result.tableMap = new HashMap<>();
+      result.setTableMap(new HashMap<>());
       for (TabletId tabletId : tablets) {
-        TableInfo info = result.tableMap.get(tabletId.getTable().canonical());
-        if (info == null) {
-          result.tableMap.put(tabletId.getTable().canonical(), info = new TableInfo());
-        }
-        info.onlineTablets++;
-        info.recs = info.onlineTablets;
-        info.ingestRate = 123.;
-        info.queryRate = 456.;
+        TableInfo info = result.getTableMap().computeIfAbsent(tabletId.getTable().canonical(),
+            k -> new TableInfo());
+        final int onlineTablets = info.getOnlineTablets() + 1;
+        info.setOnlineTablets(onlineTablets);
+        info.setRecs(onlineTablets);
+        info.setIngestRate(123.);
+        info.setQueryRate(456.);
       }
       return new TServerStatusImpl(result);
     }

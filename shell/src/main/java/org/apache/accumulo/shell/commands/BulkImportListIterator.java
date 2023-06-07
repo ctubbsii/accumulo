@@ -38,9 +38,9 @@ public class BulkImportListIterator implements Iterator<String> {
     }
     if (!tservers.isEmpty()) {
       for (TabletServerStatus tserver : stats.getTServerInfo()) {
-        if (tservers.contains(tserver.name)) {
-          result.add(tserver.name + ":");
-          for (BulkImportStatus status : tserver.bulkImports) {
+        if (tservers.contains(tserver.getName())) {
+          result.add(tserver.getName() + ":");
+          for (BulkImportStatus status : tserver.getBulkImports()) {
             result.add(format(status));
           }
         }
@@ -50,9 +50,9 @@ public class BulkImportListIterator implements Iterator<String> {
   }
 
   private String format(BulkImportStatus status) {
-    long diff = System.currentTimeMillis() - status.startTime;
+    long diff = System.currentTimeMillis() - status.getStartTime();
     var dur = new DurationFormat(diff, " ");
-    return String.format("%25s | %4s | %s", status.filename, dur, status.state);
+    return String.format("%25s | %4s | %s", status.getFilename(), dur, status.getState());
   }
 
   @Override

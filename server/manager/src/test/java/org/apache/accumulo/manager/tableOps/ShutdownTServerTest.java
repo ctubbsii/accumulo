@@ -52,9 +52,9 @@ public class ShutdownTServerTest {
 
     final TServerConnection tserverCnxn = EasyMock.createMock(TServerConnection.class);
     final TabletServerStatus status = new TabletServerStatus();
-    status.tableMap = new HashMap<>();
+    status.setTableMap(new HashMap<>());
     // Put in a table info record, don't care what
-    status.tableMap.put("a_table", new TableInfo());
+    status.putToTableMap("a_table", new TableInfo());
 
     manager.shutdownTServer(tserver);
     EasyMock.expectLastCall().once();
@@ -74,7 +74,7 @@ public class ShutdownTServerTest {
     EasyMock.reset(tserverCnxn, manager);
 
     // reset the table map to the empty set to simulate all tablets unloaded
-    status.tableMap = new HashMap<>();
+    status.setTableMap(new HashMap<>());
     manager.shutdownTServer(tserver);
     EasyMock.expectLastCall().once();
     EasyMock.expect(manager.onlineTabletServers()).andReturn(Collections.singleton(tserver));

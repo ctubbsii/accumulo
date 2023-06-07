@@ -955,7 +955,7 @@ public class TabletServerBatchWriter implements AutoCloseable {
               allFailures.addAll(entry.getKey().tableId(), entry.getValue());
               getLocator(entry.getKey().tableId()).invalidateCache(entry.getKey());
             } catch (ConstraintViolationException e) {
-              updatedConstraintViolations(e.violationSummaries.stream()
+              updatedConstraintViolations(e.getViolationSummaries().stream()
                   .map(ConstraintViolationSummary::new).collect(toList()));
             }
             timeoutTracker.madeProgress();
@@ -984,15 +984,15 @@ public class TabletServerBatchWriter implements AutoCloseable {
             UpdateErrors updateErrors = client.closeUpdate(tinfo, usid);
 
             // @formatter:off
-            Map<KeyExtent,Long> failures = updateErrors.failedExtents.entrySet().stream().collect(toMap(
+            Map<KeyExtent,Long> failures = updateErrors.getFailedExtents().entrySet().stream().collect(toMap(
                             entry -> KeyExtent.fromThrift(entry.getKey()),
                             Entry::getValue
             ));
             // @formatter:on
-            updatedConstraintViolations(updateErrors.violationSummaries.stream()
+            updatedConstraintViolations(updateErrors.getViolationSummaries().stream()
                 .map(ConstraintViolationSummary::new).collect(toList()));
             // @formatter:off
-            updateAuthorizationFailures(updateErrors.authorizationFailures.entrySet().stream().collect(toMap(
+            updateAuthorizationFailures(updateErrors.getAuthorizationFailures().entrySet().stream().collect(toMap(
                             entry -> KeyExtent.fromThrift(entry.getKey()),
                             Entry::getValue
             )));
@@ -1032,8 +1032,8 @@ public class TabletServerBatchWriter implements AutoCloseable {
         throw new AccumuloServerException(location, tae);
       } catch (ThriftSecurityException e) {
         updateAuthorizationFailures(
-            tabMuts.keySet().stream().collect(toMap(identity(), ke -> e.code)));
-        throw new AccumuloSecurityException(e.user, e.code, e);
+            tabMuts.keySet().stream().collect(toMap(identity(), ke -> e.getCode())));
+        throw new AccumuloSecurityException(e.getUser(), e.getCode(), e);
       } catch (TException e) {
         throw new IOException(e);
       }

@@ -86,8 +86,8 @@ public class TablesResource {
     }
     SortedMap<TableId,TableInfo> tableStats = new TreeMap<>();
 
-    if (mmi.tableMap != null) {
-      for (Map.Entry<String,TableInfo> te : mmi.tableMap.entrySet()) {
+    if (mmi.isSetTableMap()) {
+      for (Map.Entry<String,TableInfo> te : mmi.getTableMap().entrySet()) {
         tableStats.put(TableId.of(te.getKey()), te.getValue());
       }
     }
@@ -135,7 +135,7 @@ public class TablesResource {
       return new TabletServers();
     }
 
-    TabletServers tabletServers = new TabletServers(mmi.tServerInfo.size());
+    TabletServers tabletServers = new TabletServers(mmi.getTServerInfoSize());
 
     if (tableIdStr.isBlank()) {
       return tabletServers;
@@ -167,9 +167,9 @@ public class TablesResource {
     }
 
     List<TabletServerStatus> tservers = new ArrayList<>();
-    for (TabletServerStatus tss : mmi.tServerInfo) {
+    for (TabletServerStatus tss : mmi.getTServerInfo()) {
       try {
-        if (tss.name != null && locs.contains(tss.name)) {
+        if (tss.getName() != null && locs.contains(tss.getName())) {
           tservers.add(tss);
         }
       } catch (Exception ex) {
@@ -182,7 +182,7 @@ public class TablesResource {
       if (status == null) {
         status = NO_STATUS;
       }
-      TableInfo summary = status.tableMap.get(tableId.canonical());
+      TableInfo summary = status.getTableMap().get(tableId.canonical());
       if (summary == null) {
         continue;
       }

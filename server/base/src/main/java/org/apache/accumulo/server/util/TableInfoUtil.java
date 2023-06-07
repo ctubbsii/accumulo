@@ -29,44 +29,46 @@ import org.apache.accumulo.core.manager.thrift.TabletServerStatus;
 public class TableInfoUtil {
 
   public static void add(TableInfo total, TableInfo more) {
-    if (total.minors == null) {
-      total.minors = new Compacting();
+    if (!total.isSetMinors()) {
+      total.setMinors(new Compacting());
     }
-    if (total.majors == null) {
-      total.majors = new Compacting();
+    if (!total.isSetMajors()) {
+      total.setMajors(new Compacting());
     }
-    if (total.scans == null) {
-      total.scans = new Compacting();
+    if (!total.isSetScans()) {
+      total.setScans(new Compacting());
     }
-    if (more.minors != null) {
-      total.minors.running += more.minors.running;
-      total.minors.queued += more.minors.queued;
+
+    if (more.isSetMinors()) {
+      total.getMinors().setRunning(total.getMinors().getRunning() + more.getMinors().getRunning());
+      total.getMinors().setQueued(total.getMinors().getQueued() + more.getMinors().getQueued());
     }
-    if (more.majors != null) {
-      total.majors.running += more.majors.running;
-      total.majors.queued += more.majors.queued;
+    if (more.isSetMajors()) {
+      total.getMajors().setRunning(total.getMajors().getRunning() + more.getMajors().getRunning());
+      total.getMajors().setQueued(total.getMajors().getQueued() + more.getMajors().getQueued());
     }
-    if (more.scans != null) {
-      total.scans.running += more.scans.running;
-      total.scans.queued += more.scans.queued;
+    if (more.isSetScans()) {
+      total.getScans().setRunning(total.getScans().getRunning() + more.getScans().getRunning());
+      total.getScans().setQueued(total.getScans().getQueued() + more.getScans().getQueued());
     }
-    total.onlineTablets += more.onlineTablets;
-    total.recs += more.recs;
-    total.recsInMemory += more.recsInMemory;
-    total.tablets += more.tablets;
-    total.ingestRate += more.ingestRate;
-    total.ingestByteRate += more.ingestByteRate;
-    total.queryRate += more.queryRate;
-    total.queryByteRate += more.queryByteRate;
-    total.scanRate += more.scanRate;
+
+    total.setOnlineTablets(total.getOnlineTablets() + more.getOnlineTablets());
+    total.setRecs(total.getRecs() + more.getRecs());
+    total.setRecsInMemory(total.getRecsInMemory() + more.getRecsInMemory());
+    total.setTablets(total.getTablets() + more.getTablets());
+    total.setIngestRate(total.getIngestRate() + more.getIngestRate());
+    total.setIngestByteRate(total.getIngestByteRate() + more.getIngestByteRate());
+    total.setQueryRate(total.getQueryRate() + more.getQueryRate());
+    total.setQueryByteRate(total.getQueryByteRate() + more.getQueryByteRate());
+    total.setScanRate(total.getScanRate() + more.getScanRate());
   }
 
   public static TableInfo summarizeTableStats(TabletServerStatus status) {
     TableInfo summary = new TableInfo();
-    summary.majors = new Compacting();
-    summary.minors = new Compacting();
-    summary.scans = new Compacting();
-    for (TableInfo rates : status.tableMap.values()) {
+    summary.setMajors(new Compacting());
+    summary.setMinors(new Compacting());
+    summary.setScans(new Compacting());
+    for (TableInfo rates : status.getTableMap().values()) {
       TableInfoUtil.add(summary, rates);
     }
     return summary;
@@ -74,13 +76,13 @@ public class TableInfoUtil {
 
   public static Map<String,Double> summarizeTableStats(ManagerMonitorInfo mmi) {
     Map<String,Double> compactingByTable = new HashMap<>();
-    if (mmi != null && mmi.tServerInfo != null) {
-      for (TabletServerStatus status : mmi.tServerInfo) {
-        if (status != null && status.tableMap != null) {
-          for (String table : status.tableMap.keySet()) {
+    if (mmi != null && mmi.isSetTServerInfo()) {
+      for (TabletServerStatus status : mmi.getTServerInfo()) {
+        if (status != null && status.isSetTableMap()) {
+          for (String table : status.getTableMap().keySet()) {
             Double holdTime = compactingByTable.get(table);
             compactingByTable.put(table,
-                Math.max(holdTime == null ? 0. : holdTime, status.holdTime));
+                Math.max(holdTime == null ? 0. : holdTime, status.getHoldTime()));
           }
         }
       }

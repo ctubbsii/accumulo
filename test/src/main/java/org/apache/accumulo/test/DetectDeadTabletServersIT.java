@@ -54,32 +54,32 @@ public class DetectDeadTabletServersIT extends ConfigurableMacBase {
         scanner.forEach((k, v) -> {});
       }
       ManagerMonitorInfo stats = getStats(c);
-      assertEquals(2, stats.tServerInfo.size());
-      assertEquals(0, stats.badTServers.size());
-      assertEquals(0, stats.deadTabletServers.size());
+      assertEquals(2, stats.getTServerInfoSize());
+      assertEquals(0, stats.getBadTServersSize());
+      assertEquals(0, stats.getDeadTabletServersSize());
       log.info("Killing a tablet server");
       getCluster().killProcess(TABLET_SERVER,
           getCluster().getProcesses().get(TABLET_SERVER).iterator().next());
 
       while (true) {
         stats = getStats(c);
-        if (stats.tServerInfo.size() != 2) {
+        if (stats.getTServerInfoSize() != 2) {
           break;
         }
         UtilWaitThread.sleep(500);
       }
-      assertEquals(1, stats.tServerInfo.size());
-      assertEquals(1, stats.badTServers.size() + stats.deadTabletServers.size());
+      assertEquals(1, stats.getTServerInfoSize());
+      assertEquals(1, stats.getBadTServersSize() + stats.getDeadTabletServersSize());
       while (true) {
         stats = getStats(c);
-        if (!stats.deadTabletServers.isEmpty()) {
+        if (!stats.getDeadTabletServers().isEmpty()) {
           break;
         }
         UtilWaitThread.sleep(500);
       }
-      assertEquals(1, stats.tServerInfo.size());
-      assertEquals(0, stats.badTServers.size());
-      assertEquals(1, stats.deadTabletServers.size());
+      assertEquals(1, stats.getTServerInfoSize());
+      assertEquals(0, stats.getBadTServersSize());
+      assertEquals(1, stats.getDeadTabletServersSize());
     }
   }
 

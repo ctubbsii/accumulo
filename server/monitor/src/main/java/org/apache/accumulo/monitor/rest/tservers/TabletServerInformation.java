@@ -112,58 +112,58 @@ public class TabletServerInformation {
 
     long now = System.currentTimeMillis();
 
-    this.server = this.ip = this.hostname = thriftStatus.name;
-    this.tablets = summary.tablets;
-    this.lastContact = now - thriftStatus.lastContact;
-    this.responseTime = thriftStatus.responseTime;
-    this.entries = summary.recs;
-    this.ingest = cleanNumber(summary.ingestRate);
-    this.query = cleanNumber(summary.queryRate);
+    this.server = this.ip = this.hostname = thriftStatus.getName();
+    this.tablets = summary.getTablets();
+    this.lastContact = now - thriftStatus.getLastContact();
+    this.responseTime = thriftStatus.getResponseTime();
+    this.entries = summary.getRecs();
+    this.ingest = cleanNumber(summary.getIngestRate());
+    this.query = cleanNumber(summary.getQueryRate());
 
-    this.holdtime = thriftStatus.holdTime;
+    this.holdtime = thriftStatus.getHoldTime();
 
-    this.scansRunning = summary.scans != null ? summary.scans.running : 0;
-    this.scansQueued = summary.scans != null ? summary.scans.queued : 0;
+    this.scansRunning = summary.isSetScans() ? summary.getScans().getRunning() : 0;
+    this.scansQueued = summary.isSetScans() ? summary.getScans().getQueued() : 0;
     this.scansCombo = scansRunning + "(" + scansQueued + ")";
 
     this.scans = this.scansRunning;
 
     this.scansCompacting = new CompactionsList(this.scansRunning, this.scansQueued);
 
-    this.minorRunning = summary.minors != null ? summary.minors.running : 0;
-    this.minorQueued = summary.minors != null ? summary.minors.queued : 0;
+    this.minorRunning = summary.isSetMinors() ? summary.getMinors().getRunning() : 0;
+    this.minorQueued = summary.isSetMinors() ? summary.getMinors().getQueued() : 0;
     this.minorCombo = minorRunning + "(" + minorQueued + ")";
 
     this.minor = new CompactionsList(this.minorRunning, this.minorQueued);
 
-    this.majorRunning = summary.majors != null ? summary.majors.running : 0;
-    this.majorQueued = summary.majors != null ? summary.majors.queued : 0;
+    this.majorRunning = summary.isSetMajors() ? summary.getMajors().getRunning() : 0;
+    this.majorQueued = summary.isSetMajors() ? summary.getMajors().getQueued() : 0;
     this.majorCombo = majorRunning + "(" + majorQueued + ")";
 
     this.major = new CompactionsList(this.majorRunning, this.majorQueued);
 
     this.compactions = new CompactionsTypes(scansCompacting, major, minor);
 
-    this.osload = thriftStatus.osLoad;
-    this.version = thriftStatus.version;
-    this.lookups = thriftStatus.lookups;
+    this.osload = thriftStatus.getOsLoad();
+    this.version = thriftStatus.getVersion();
+    this.lookups = thriftStatus.getLookups();
 
-    this.dataCacheHits = thriftStatus.dataCacheHits;
-    this.dataCacheRequests = thriftStatus.dataCacheRequest;
-    this.indexCacheHits = thriftStatus.indexCacheHits;
-    this.indexCacheRequests = thriftStatus.indexCacheRequest;
+    this.dataCacheHits = thriftStatus.getDataCacheHits();
+    this.dataCacheRequests = thriftStatus.getDataCacheRequest();
+    this.indexCacheHits = thriftStatus.getIndexCacheHits();
+    this.indexCacheRequests = thriftStatus.getIndexCacheRequest();
 
     this.indexCacheHitRate = this.indexCacheHits / (double) Math.max(this.indexCacheRequests, 1);
     this.dataCacheHitRate = this.dataCacheHits / (double) Math.max(this.dataCacheRequests, 1);
 
-    this.ingestMB = cleanNumber(summary.ingestByteRate);
-    this.queryMB = cleanNumber(summary.queryByteRate);
+    this.ingestMB = cleanNumber(summary.getIngestByteRate());
+    this.queryMB = cleanNumber(summary.getQueryByteRate());
 
     this.scansessions = monitor.getLookupRate();
     this.scanssessions = this.scansessions; // For backwards compatibility
 
-    this.logRecoveries = new ArrayList<>(thriftStatus.logSorts.size());
-    for (RecoveryStatus recovery : thriftStatus.logSorts) {
+    this.logRecoveries = new ArrayList<>(thriftStatus.getLogSortsSize());
+    for (RecoveryStatus recovery : thriftStatus.getLogSorts()) {
       logRecoveries.add(new RecoveryStatusInformation(recovery));
     }
   }

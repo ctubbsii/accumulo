@@ -1661,34 +1661,35 @@ public class Manager extends AbstractServer
   public ManagerMonitorInfo getManagerMonitorInfo() {
     final ManagerMonitorInfo result = new ManagerMonitorInfo();
 
-    result.tServerInfo = new ArrayList<>();
-    result.tableMap = new HashMap<>();
+    result.setTServerInfo(new ArrayList<>());
+    result.setTableMap(new HashMap<>());
     for (Entry<TServerInstance,TabletServerStatus> serverEntry : tserverStatus.entrySet()) {
       final TabletServerStatus status = serverEntry.getValue();
-      result.tServerInfo.add(status);
-      for (Entry<String,TableInfo> entry : status.tableMap.entrySet()) {
-        TableInfoUtil.add(result.tableMap.computeIfAbsent(entry.getKey(), k -> new TableInfo()),
+      result.getTServerInfo().add(status);
+      for (Entry<String,TableInfo> entry : status.getTableMap().entrySet()) {
+        TableInfoUtil.add(
+            result.getTableMap().computeIfAbsent(entry.getKey(), k -> new TableInfo()),
             entry.getValue());
       }
     }
-    result.badTServers = new HashMap<>();
+    result.setBadTServers(new HashMap<>());
     synchronized (badServers) {
       for (TServerInstance bad : badServers.keySet()) {
-        result.badTServers.put(bad.getHostPort(), TabletServerState.UNRESPONSIVE.getId());
+        result.putToBadTServers(bad.getHostPort(), TabletServerState.UNRESPONSIVE.getId());
       }
     }
-    result.state = getManagerState();
-    result.goalState = getManagerGoalState();
-    result.unassignedTablets = displayUnassigned();
-    result.serversShuttingDown = new HashSet<>();
+    result.setState(getManagerState());
+    result.setGoalState(getManagerGoalState());
+    result.setUnassignedTablets(displayUnassigned());
+    result.setServersShuttingDown(new HashSet<>());
     synchronized (serversToShutdown) {
       for (TServerInstance server : serversToShutdown) {
-        result.serversShuttingDown.add(server.getHostPort());
+        result.addToServersShuttingDown(server.getHostPort());
       }
     }
     DeadServerList obit = new DeadServerList(getContext());
-    result.deadTabletServers = obit.getList();
-    result.bulkImports = bulkImportStatus.getBulkLoadStatus();
+    result.setDeadTabletServers(obit.getList());
+    result.setBulkImports(bulkImportStatus.getBulkLoadStatus());
     return result;
   }
 

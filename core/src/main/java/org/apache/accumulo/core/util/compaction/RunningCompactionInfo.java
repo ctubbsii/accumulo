@@ -106,7 +106,7 @@ public class RunningCompactionInfo {
     if (updates.isEmpty()) {
       status = "na";
     } else {
-      status = last.state.name();
+      status = last.getState().name();
     }
     log.debug("Parsed running compaction {} for {} with progress = {}%", status, ecid, progress);
     if (sinceLastUpdateSeconds > 30) {

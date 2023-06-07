@@ -49,24 +49,24 @@ public class ListBulkCommandTest {
 
     // tserver 1
     var bis1 = new BulkImportStatus();
-    bis1.filename = "file1";
-    bis1.startTime = System.currentTimeMillis();
-    bis1.state = BulkImportState.COPY_FILES;
+    bis1.setFilename("file1");
+    bis1.setStartTime(System.currentTimeMillis());
+    bis1.setState(BulkImportState.COPY_FILES);
     bulkImports.add(bis1);
     var ts1 = new TabletServerStatus();
-    ts1.name = "tserver1";
-    ts1.bulkImports = new ArrayList<>(bulkImports);
+    ts1.setName("tserver1");
+    ts1.setBulkImports(new ArrayList<>(bulkImports));
     bulkImports.clear();
 
     // tserver 2
     var bis2 = new BulkImportStatus();
-    bis2.filename = "file2";
-    bis2.startTime = System.currentTimeMillis();
-    bis2.state = BulkImportState.LOADING;
+    bis2.setFilename("file2");
+    bis2.setStartTime(System.currentTimeMillis());
+    bis2.setState(BulkImportState.LOADING);
     bulkImports.add(bis2);
     var ts2 = new TabletServerStatus();
-    ts2.name = "tserver2";
-    ts2.bulkImports = new ArrayList<>(bulkImports);
+    ts2.setName("tserver2");
+    ts2.setBulkImports(new ArrayList<>(bulkImports));
     bulkImports.clear();
 
     statusList.add(ts1);

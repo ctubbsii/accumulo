@@ -458,7 +458,8 @@ public class CompactionCoordinator extends AbstractServer
         // is not actually running.
         RUNNING_CACHE.put(ExternalCompactionId.of(job.getExternalCompactionId()),
             new RunningCompaction(job, compactorAddress, queue));
-        LOG.debug("Returning external job {} to {}", job.externalCompactionId, compactorAddress);
+        LOG.debug("Returning external job {} to {}", job.getExternalCompactionId(),
+            compactorAddress);
         result = job;
         break;
       } catch (TException e) {
@@ -521,7 +522,8 @@ public class CompactionCoordinator extends AbstractServer
     LOG.info("Compaction completed, id: {}, stats: {}, extent: {}", externalCompactionId, stats,
         extent);
     final var ecid = ExternalCompactionId.of(externalCompactionId);
-    compactionFinalizer.commitCompaction(ecid, extent, stats.fileSize, stats.entriesWritten);
+    compactionFinalizer.commitCompaction(ecid, extent, stats.getFileSize(),
+        stats.getEntriesWritten());
     // It's possible that RUNNING might not have an entry for this ecid in the case
     // of a coordinator restart when the Coordinator can't find the TServer for the
     // corresponding external compaction.

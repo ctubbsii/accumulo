@@ -33,14 +33,14 @@ public class RunningCompactorDetails extends RunningCompactionInfo {
   public RunningCompactorDetails(TExternalCompaction ec) {
     super(ec);
     var job = ec.getJob();
-    inputFiles = convertInputFiles(job.files);
-    outputFile = job.outputFile;
+    inputFiles = convertInputFiles(job.getFiles());
+    outputFile = job.getOutputFile();
   }
 
   private List<CompactionInputFile> convertInputFiles(List<InputFile> files) {
     List<CompactionInputFile> list = new ArrayList<>();
-    files.forEach(f -> list
-        .add(new CompactionInputFile(f.metadataFileEntry, f.size, f.entries, f.timestamp)));
+    files.forEach(f -> list.add(new CompactionInputFile(f.getMetadataFileEntry(), f.getSize(),
+        f.getEntries(), f.getTimestamp())));
     // sorted largest to smallest
     list.sort((o1, o2) -> Long.compare(o2.size, o1.size));
     return list;

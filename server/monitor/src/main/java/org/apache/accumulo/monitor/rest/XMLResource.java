@@ -58,11 +58,11 @@ public class XMLResource {
     }
 
     // Add Monitor information
-    SummaryInformation xml = new SummaryInformation(mmi.tServerInfo.size(),
+    SummaryInformation xml = new SummaryInformation(mmi.getTServerInfoSize(),
         ManagerResource.getTables(monitor), TablesResource.getTables(monitor));
 
     // Add tserver information
-    for (TabletServerStatus status : mmi.tServerInfo) {
+    for (TabletServerStatus status : mmi.getTServerInfo()) {
       xml.addTabletServer(new TabletServer(monitor, status));
     }
 

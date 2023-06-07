@@ -253,7 +253,7 @@ public class InstanceOperationsImpl implements InstanceOperations {
       }
       return as;
     } catch (ThriftSecurityException e) {
-      throw new AccumuloSecurityException(e.user, e.code, e);
+      throw new AccumuloSecurityException(e.getUser(), e.getCode(), e);
     } catch (TException e) {
       throw new AccumuloException(e);
     } finally {
@@ -284,7 +284,7 @@ public class InstanceOperationsImpl implements InstanceOperations {
       }
       return as;
     } catch (ThriftSecurityException e) {
-      throw new AccumuloSecurityException(e.user, e.code, e);
+      throw new AccumuloSecurityException(e.getUser(), e.getCode(), e);
     } catch (TException e) {
       throw new AccumuloException(e);
     } finally {
@@ -330,7 +330,7 @@ public class InstanceOperationsImpl implements InstanceOperations {
         } catch (InterruptedException | ExecutionException e) {
           if (e.getCause() instanceof ThriftSecurityException) {
             ThriftSecurityException tse = (ThriftSecurityException) e.getCause();
-            throw new AccumuloSecurityException(tse.user, tse.code, e);
+            throw new AccumuloSecurityException(tse.getUser(), tse.getCode(), e);
           }
           throw new AccumuloException(e);
         }

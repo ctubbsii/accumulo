@@ -58,9 +58,9 @@ public class BulkImportResource {
     }
 
     // Generating Bulk Import and adding it to the return object
-    for (BulkImportStatus bulk : mmi.bulkImports) {
-      bulkImport
-          .addBulkImport(new BulkImportInformation(bulk.filename, bulk.startTime, bulk.state));
+    for (BulkImportStatus bulk : mmi.getBulkImports()) {
+      bulkImport.addBulkImport(
+          new BulkImportInformation(bulk.getFilename(), bulk.getStartTime(), bulk.getState()));
     }
 
     // Generating TServer Bulk Import and adding it to the return object
@@ -68,12 +68,12 @@ public class BulkImportResource {
       int size = 0;
       long oldest = 0L;
 
-      List<BulkImportStatus> stats = tserverInfo.bulkImports;
+      List<BulkImportStatus> stats = tserverInfo.getBulkImports();
       if (stats != null) {
         size = stats.size();
         oldest = Long.MAX_VALUE;
         for (BulkImportStatus bulk : stats) {
-          oldest = Math.min(oldest, bulk.startTime);
+          oldest = Math.min(oldest, bulk.getStartTime());
         }
         if (oldest == Long.MAX_VALUE) {
           oldest = 0L;

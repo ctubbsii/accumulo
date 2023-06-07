@@ -84,12 +84,12 @@ public class MetadataMaxFilesIT extends ConfigurableMacBase {
         ManagerMonitorInfo stats = ThriftClientTypes.MANAGER.execute(context,
             client -> client.getManagerStats(TraceUtil.traceInfo(), context.rpcCreds()));
         int tablets = 0;
-        for (TabletServerStatus tserver : stats.tServerInfo) {
-          for (Entry<String,TableInfo> entry : tserver.tableMap.entrySet()) {
+        for (TabletServerStatus tserver : stats.getTServerInfo()) {
+          for (Entry<String,TableInfo> entry : tserver.getTableMap().entrySet()) {
             if (entry.getKey().startsWith("!") || entry.getKey().startsWith("+")) {
               continue;
             }
-            tablets += entry.getValue().onlineTablets;
+            tablets += entry.getValue().getOnlineTablets();
           }
         }
         log.info("Online tablets " + tablets);

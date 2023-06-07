@@ -230,9 +230,9 @@ public class Range implements WritableComparable<Range> {
    * @param trange Thrift range
    */
   public Range(TRange trange) {
-    this(trange.start == null ? null : new Key(trange.start), trange.startKeyInclusive,
-        trange.infiniteStartKey, trange.stop == null ? null : new Key(trange.stop),
-        trange.stopKeyInclusive, trange.infiniteStopKey);
+    this(trange.isSetStart() ? new Key(trange.getStart()) : null, trange.isStartKeyInclusive(),
+        trange.isInfiniteStartKey(), trange.isSetStop() ? new Key(trange.getStop()) : null,
+        trange.isStopKeyInclusive(), trange.isInfiniteStopKey());
     if (!infiniteStartKey && !infiniteStopKey && beforeStartKeyImpl(stop)) {
       throw new IllegalArgumentException(
           "Start key must be less than end key in range (" + start + ", " + stop + ")");

@@ -25,6 +25,7 @@ import java.io.IOException;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.admin.TimeType;
 import org.apache.accumulo.core.clientImpl.Namespace;
+import org.apache.accumulo.core.clientImpl.ZooKeeperMapping;
 import org.apache.accumulo.core.data.InstanceId;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
@@ -117,6 +118,9 @@ public class ZooKeeperInitializer {
         ZooUtil.NodeExistsPolicy.FAIL);
     TableManager.prepareNewNamespaceState(context, Namespace.ACCUMULO.id(),
         Namespace.ACCUMULO.name(), ZooUtil.NodeExistsPolicy.FAIL);
+
+    ZooKeeperMapping.initializeNamespaceMap(context.getZooReaderWriter(),
+            zkInstanceRoot + Constants.ZNAMESPACES);
 
     TableManager.prepareNewTableState(context, AccumuloTable.ROOT.tableId(),
         Namespace.ACCUMULO.id(), AccumuloTable.ROOT.tableName(), TableState.ONLINE,

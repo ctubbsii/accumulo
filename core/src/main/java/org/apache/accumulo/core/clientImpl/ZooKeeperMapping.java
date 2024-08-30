@@ -22,8 +22,6 @@ import static java.util.Collections.emptySortedMap;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -43,16 +41,9 @@ public class ZooKeeperMapping {
 
   public static void initializeNamespaceMap(ZooReaderWriter zoo, String zPath)
       throws InterruptedException, KeeperException {
-    List<String> namespaceIds = zoo.getChildren(zPath);
-    Map<String,String> namespaceMap = new HashMap<>();
-    for (String id : namespaceIds) {
-      if (id.equals("+default")) {
-        namespaceMap.put(id, Namespace.DEFAULT.name());
-      } else if (id.equals("+accumulo")) {
-        namespaceMap.put(id, Namespace.ACCUMULO.name());
-      }
-    }
-    String jsonNamespaces = gson.toJson(namespaceMap);
+    var map = Map.of(Namespace.DEFAULT.id().canonical(), Namespace.DEFAULT.name(),
+        Namespace.ACCUMULO.id().canonical(), Namespace.ACCUMULO.name());
+    String jsonNamespaces = gson.toJson(map);
     zoo.putPersistentData(zPath, jsonNamespaces.getBytes(StandardCharsets.UTF_8),
         ZooUtil.NodeExistsPolicy.OVERWRITE);
   }
@@ -66,7 +57,7 @@ public class ZooKeeperMapping {
       String jsonData = new String(data, StandardCharsets.UTF_8);
       Type type = new TypeToken<Map<String,String>>() {}.getType();
       Map<String,String> namespaceMap = gson.fromJson(jsonData, type);
-      namespaceMap.put(namespaceId.toString(), namespaceName);
+      namespaceMap.put(namespaceId.canonical(), namespaceName);
       String serializedJson = gson.toJson(namespaceMap);
       zoo.putPersistentData(zPath, serializedJson.getBytes(StandardCharsets.UTF_8), existsPolicy);
     }

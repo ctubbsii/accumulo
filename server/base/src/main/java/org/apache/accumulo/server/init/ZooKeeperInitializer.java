@@ -119,8 +119,7 @@ public class ZooKeeperInitializer {
     TableManager.prepareNewNamespaceState(context, Namespace.ACCUMULO.id(),
         Namespace.ACCUMULO.name(), ZooUtil.NodeExistsPolicy.FAIL);
 
-    ZooKeeperMapping.initializeNamespaceMap(context.getZooReaderWriter(),
-            zkInstanceRoot + Constants.ZNAMESPACES);
+    ZooKeeperMapping.initializeNamespaceMap(zoo, zkInstanceRoot + Constants.ZNAMESPACES);
 
     TableManager.prepareNewTableState(context, AccumuloTable.ROOT.tableId(),
         Namespace.ACCUMULO.id(), AccumuloTable.ROOT.tableName(), TableState.ONLINE,

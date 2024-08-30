@@ -75,11 +75,11 @@ public class TableManager {
     String zPath = Constants.ZROOT + "/" + instanceId + Constants.ZNAMESPACES + "/" + namespaceId;
 
     zoo.putPersistentData(zPath, new byte[0], existsPolicy);
-    zoo.putPersistentData(zPath + Constants.ZNAMESPACE_NAME, namespace.getBytes(UTF_8),
-    existsPolicy);
+    // zoo.putPersistentData(zPath + Constants.ZNAMESPACE_NAME, namespace.getBytes(UTF_8),
+    // existsPolicy);
     ZooKeeperMapping.appendNamespaceToMap(zoo,
-            Constants.ZROOT + "/" + instanceId + Constants.ZNAMESPACES, namespaceId, namespace,
-            existsPolicy);
+        Constants.ZROOT + "/" + instanceId + Constants.ZNAMESPACES, namespaceId, namespace,
+        existsPolicy);
     var propKey = NamespacePropKey.of(instanceId, namespaceId);
     if (!propStore.exists(propKey)) {
       propStore.create(propKey, Map.of());

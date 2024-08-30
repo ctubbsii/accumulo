@@ -20,9 +20,10 @@ package org.apache.accumulo.core.clientImpl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
+import java.util.SortedMap;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.NamespaceNotFoundException;
@@ -35,8 +36,6 @@ import org.slf4j.LoggerFactory;
 
 public class Namespaces {
   private static final Logger log = LoggerFactory.getLogger(Namespaces.class);
-  private static volatile Map<String,String> currentNamespaceMap = new HashMap<>();
-  private static volatile long lastMzxid;
 
   public static boolean exists(ClientContext context, NamespaceId namespaceId) {
     ZooCache zc = context.getZooCache();
@@ -69,44 +68,17 @@ public class Namespaces {
   }
 
   /**
-   * Gets all the namespaces from ZK. The first arg (t) the BiConsumer accepts is the ID and the
-   * second (u) is the namespaceName.
-   */
-  private static void getAllNamespaces(ClientContext context,
-      BiConsumer<String,String> biConsumer) {
-    final ZooCache zc = context.getZooCache();
-    String zPath = context.getZooKeeperRoot() + Constants.ZNAMESPACES;
-    final ZooCache.ZcStat stat = new ZooCache.ZcStat();
-
-    // Retrieve the current data and stat from ZooCache
-    zc.get(zPath, stat);
-    if (stat.getMzxid() != lastMzxid) {
-      try {
-        currentNamespaceMap = ZooKeeperMapping.getNamespaceMap(zc, zPath);
-        currentNamespaceMap.forEach(biConsumer);
-        lastMzxid = stat.getMzxid();
-      } catch (Exception e) {
-        log.warn("Failed to retrieve namespace data from ZooKeeper", e);
-      }
-    }
-  }
-
-  /**
    * Return sorted map with key = ID, value = namespaceName
    */
   public static SortedMap<NamespaceId,String> getIdToNameMap(ClientContext context) {
-    SortedMap<NamespaceId,String> idMap = new TreeMap<>();
-    getAllNamespaces(context, (id, name) -> idMap.put(NamespaceId.of(id), name));
-    return idMap;
+    return context.getNamespaces().getIdToNameMap();
   }
 
   /**
    * Return sorted map with key = namespaceName, value = ID
    */
   public static SortedMap<String,NamespaceId> getNameToIdMap(ClientContext context) {
-    SortedMap<String,NamespaceId> nameMap = new TreeMap<>();
-    getAllNamespaces(context, (id, name) -> nameMap.put(name, NamespaceId.of(id)));
-    return nameMap;
+    return context.getNamespaces().getNameToIdMap();
   }
 
   /**
@@ -114,17 +86,12 @@ public class Namespaces {
    */
   public static NamespaceId getNamespaceId(ClientContext context, String namespaceName)
       throws NamespaceNotFoundException {
-    final ArrayList<NamespaceId> singleId = new ArrayList<>(1);
-    getAllNamespaces(context, (id, name) -> {
-      if (name.equals(namespaceName)) {
-        singleId.add(NamespaceId.of(id));
-      }
-    });
-    if (singleId.isEmpty()) {
+    var id = context.getNamespaces().getNameToIdMap().get(namespaceName);
+    if (id == null) {
       throw new NamespaceNotFoundException(null, namespaceName,
           "getNamespaceId() failed to find namespace");
     }
-    return singleId.get(0);
+    return id;
   }
 
   /**

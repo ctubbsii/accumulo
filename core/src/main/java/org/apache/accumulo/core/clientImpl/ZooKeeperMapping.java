@@ -18,18 +18,23 @@
  */
 package org.apache.accumulo.core.clientImpl;
 
+import static java.util.Collections.emptySortedMap;
+
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
+import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.data.NamespaceId;
 import org.apache.accumulo.core.fate.zookeeper.ZooCache;
 import org.apache.accumulo.core.fate.zookeeper.ZooReaderWriter;
 import org.apache.accumulo.core.fate.zookeeper.ZooUtil;
 import org.apache.zookeeper.KeeperException;
 
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
@@ -67,14 +72,57 @@ public class ZooKeeperMapping {
     }
   }
 
-  public static Map<String,String> getNamespaceMap(ZooCache zc, String zPath)
-      throws KeeperException, InterruptedException {
-    byte[] data = zc.get(zPath);
-    if (data == null) {
-      return new HashMap<>();
+  public static class NamespaceMapping {
+
+    private final ClientContext context;
+
+    private volatile SortedMap<NamespaceId,String> currentNamespaceMap = emptySortedMap();
+    private volatile SortedMap<String,NamespaceId> currentNamespaceReverseMap = emptySortedMap();
+    private volatile long lastMzxid;
+
+    public NamespaceMapping(ClientContext context) {
+      this.context = context;
     }
-    String jsonData = new String(data, StandardCharsets.UTF_8);
-    Type type = new TypeToken<Map<String,String>>() {}.getType();
-    return gson.fromJson(jsonData, type);
+
+    private synchronized void update() {
+      final ZooCache zc = context.getZooCache();
+      final String zPath = context.getZooKeeperRoot() + Constants.ZNAMESPACES;
+      final ZooCache.ZcStat stat = new ZooCache.ZcStat();
+
+      // Retrieve the current data and stat from ZooCache
+      byte[] data = zc.get(zPath, stat);
+      if (stat.getMzxid() > lastMzxid) {
+        if (data == null) {
+          currentNamespaceMap = emptySortedMap();
+          currentNamespaceReverseMap = emptySortedMap();
+        } else {
+          String jsonData = new String(data, StandardCharsets.UTF_8);
+          Type type = new TypeToken<Map<String,String>>() {}.getType();
+          Map<String,String> idToName = gson.fromJson(jsonData, type);
+          var converted = ImmutableSortedMap.<NamespaceId,String>naturalOrder();
+          var convertedReverse = ImmutableSortedMap.<String,NamespaceId>naturalOrder();
+          idToName.forEach((idString, name) -> {
+            var id = NamespaceId.of(idString);
+            converted.put(id, name);
+            convertedReverse.put(name, id);
+          });
+          currentNamespaceMap = converted.build();
+          currentNamespaceReverseMap = convertedReverse.build();
+        }
+        lastMzxid = stat.getMzxid();
+      }
+    }
+
+    public SortedMap<NamespaceId,String> getIdToNameMap() {
+      update();
+      return currentNamespaceMap;
+    }
+
+    public SortedMap<String,NamespaceId> getNameToIdMap() {
+      update();
+      return currentNamespaceReverseMap;
+    }
+
   }
+
 }

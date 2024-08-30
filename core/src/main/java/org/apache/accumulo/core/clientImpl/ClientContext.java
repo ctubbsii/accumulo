@@ -70,6 +70,7 @@ import org.apache.accumulo.core.client.admin.NamespaceOperations;
 import org.apache.accumulo.core.client.admin.SecurityOperations;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
+import org.apache.accumulo.core.clientImpl.ZooKeeperMapping.NamespaceMapping;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.ClientProperty;
 import org.apache.accumulo.core.conf.Property;
@@ -142,6 +143,8 @@ public class ClientContext implements AccumuloClient {
   private final Supplier<SaslConnectionParams> saslSupplier;
   private final Supplier<SslConnectionParams> sslSupplier;
   private final Supplier<ScanServerSelector> scanServerSelectorSupplier;
+  private final NamespaceMapping namespaces;
+
   private TCredentials rpcCreds;
   private ThriftTransportPool thriftTransportPool;
   private ZookeeperLockChecker zkLockChecker;
@@ -249,6 +252,7 @@ public class ClientContext implements AccumuloClient {
         clientThreadPools = ThreadPools.getClientThreadPools(ueh);
       }
     }
+    this.namespaces = new NamespaceMapping(this);
   }
 
   public Ample getAmple() {
@@ -1108,6 +1112,10 @@ public class ClientContext implements AccumuloClient {
       this.zkLockChecker = new ZookeeperLockChecker(this);
     }
     return this.zkLockChecker;
+  }
+
+  public NamespaceMapping getNamespaces() {
+    return namespaces;
   }
 
 }

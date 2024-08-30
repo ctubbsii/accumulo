@@ -14,6 +14,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.client.ZKClientConfig;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,9 @@ public class TestZKImpl {
     public static void main(String[] args) {
         try {
             // Initialize ServerContext and ZooReaderWriter
-            ZooKeeper zoo = new ZooKeeper("localhost:2181/accumulo/instance", 2000, null);
-            var siteConfig = SiteConfiguration.auto();
+            ZooKeeper zoo = new ZooKeeper("localhost:2181/", 2000, null);
+            File file = new File("/home/ubuntu/Projects/fluo-uno/install/accumulo-2.1.3/conf/accumulo.properties");
+            var siteConfig = SiteConfiguration.fromFile(file).build();
             ServerContext context = new ServerContext(siteConfig);
             ZooReaderWriter zooReaderWriter = new ZooReaderWriter(siteConfig);
 

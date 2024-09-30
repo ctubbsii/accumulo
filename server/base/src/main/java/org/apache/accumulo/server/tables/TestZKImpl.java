@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.clientImpl.ZooKeeperMapping;
+import org.apache.accumulo.core.clientImpl.NamespaceMapping;
 import org.apache.accumulo.core.conf.SiteConfiguration;
 import org.apache.accumulo.core.data.NamespaceId;
 import org.apache.accumulo.core.fate.zookeeper.ZooReaderWriter;
@@ -48,7 +48,7 @@ public class TestZKImpl {
       String zPath = Constants.ZROOT + "/" + context.getInstanceID() + Constants.ZNAMESPACES;
 
       // Initialize the namespace map in ZooKeeper
-      ZooKeeperMapping.initializeNamespaceMap(zooReaderWriter, zPath);
+      NamespaceMapping.initializeNamespaceMap(zooReaderWriter, zPath);
 
       // Verify that the JSON data is created and stored in ZooKeeper
       byte[] initialData = zoo.getData(zPath, false, null);

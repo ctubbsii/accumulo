@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
-public class ZooKeeperMapping {
+public class NamespaceMapping {
   private static final Gson gson = new Gson();
 
   public static void initializeNamespaceMap(ZooReaderWriter zoo, String zPath)
@@ -63,57 +63,58 @@ public class ZooKeeperMapping {
     }
   }
 
-  public static class NamespaceMapping {
+  private final ClientContext context;
 
-    private final ClientContext context;
+  private volatile SortedMap<NamespaceId,String> currentNamespaceMap = emptySortedMap();
+  private volatile SortedMap<String,NamespaceId> currentNamespaceReverseMap = emptySortedMap();
+  private volatile long lastMzxid;
 
-    private volatile SortedMap<NamespaceId,String> currentNamespaceMap = emptySortedMap();
-    private volatile SortedMap<String,NamespaceId> currentNamespaceReverseMap = emptySortedMap();
-    private volatile long lastMzxid;
+  public NamespaceMapping(ClientContext context) {
+    this.context = context;
+  }
 
-    public NamespaceMapping(ClientContext context) {
-      this.context = context;
-    }
+  // visible for testing
+  public static byte[] serialize(Map<String,String> mapping) {
+    return null; // TODO put serialization here
+  }
 
-    private synchronized void update() {
-      final ZooCache zc = context.getZooCache();
-      final String zPath = context.getZooKeeperRoot() + Constants.ZNAMESPACES;
-      final ZooCache.ZcStat stat = new ZooCache.ZcStat();
+  private synchronized void update() {
+    final ZooCache zc = context.getZooCache();
+    final String zPath = context.getZooKeeperRoot() + Constants.ZNAMESPACES;
+    final ZooCache.ZcStat stat = new ZooCache.ZcStat();
 
-      // Retrieve the current data and stat from ZooCache
-      byte[] data = zc.get(zPath, stat);
-      if (stat.getMzxid() > lastMzxid) {
-        if (data == null) {
-          currentNamespaceMap = emptySortedMap();
-          currentNamespaceReverseMap = emptySortedMap();
-        } else {
-          String jsonData = new String(data, StandardCharsets.UTF_8);
-          Type type = new TypeToken<Map<String,String>>() {}.getType();
-          Map<String,String> idToName = gson.fromJson(jsonData, type);
-          var converted = ImmutableSortedMap.<NamespaceId,String>naturalOrder();
-          var convertedReverse = ImmutableSortedMap.<String,NamespaceId>naturalOrder();
-          idToName.forEach((idString, name) -> {
-            var id = NamespaceId.of(idString);
-            converted.put(id, name);
-            convertedReverse.put(name, id);
-          });
-          currentNamespaceMap = converted.build();
-          currentNamespaceReverseMap = convertedReverse.build();
-        }
-        lastMzxid = stat.getMzxid();
+    // Retrieve the current data and stat from ZooCache
+    byte[] data = zc.get(zPath, stat);
+    if (stat.getMzxid() > lastMzxid) {
+      if (data == null) {
+        currentNamespaceMap = emptySortedMap();
+        currentNamespaceReverseMap = emptySortedMap();
+      } else {
+        String jsonData = new String(data, StandardCharsets.UTF_8);
+        Type type = new TypeToken<Map<String,String>>() {}.getType();
+        Map<String,String> idToName = gson.fromJson(jsonData, type);
+        var converted = ImmutableSortedMap.<NamespaceId,String>naturalOrder();
+        var convertedReverse = ImmutableSortedMap.<String,NamespaceId>naturalOrder();
+        idToName.forEach((idString, name) -> {
+          var id = NamespaceId.of(idString);
+          converted.put(id, name);
+          convertedReverse.put(name, id);
+        });
+        currentNamespaceMap = converted.build();
+        currentNamespaceReverseMap = convertedReverse.build();
       }
+      lastMzxid = stat.getMzxid();
     }
+  }
 
-    public SortedMap<NamespaceId,String> getIdToNameMap() {
-      update();
-      return currentNamespaceMap;
-    }
+  public SortedMap<NamespaceId,String> getIdToNameMap() {
+    update();
+    return currentNamespaceMap;
+  }
 
-    public SortedMap<String,NamespaceId> getNameToIdMap() {
-      update();
-      return currentNamespaceReverseMap;
-    }
-
+  public SortedMap<String,NamespaceId> getNameToIdMap() {
+    update();
+    return currentNamespaceReverseMap;
   }
 
 }

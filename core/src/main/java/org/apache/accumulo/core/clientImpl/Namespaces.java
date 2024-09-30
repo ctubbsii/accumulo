@@ -18,8 +18,6 @@
  */
 package org.apache.accumulo.core.clientImpl;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -121,13 +119,8 @@ public class Namespaces {
    */
   public static String getNamespaceName(ClientContext context, NamespaceId namespaceId)
       throws NamespaceNotFoundException {
-    String name;
-    ZooCache zc = context.getZooCache();
-    byte[] path = zc.get(context.getZooKeeperRoot() + Constants.ZNAMESPACES + "/"
-        + namespaceId.canonical() + Constants.ZNAMESPACE_NAME);
-    if (path != null) {
-      name = new String(path, UTF_8);
-    } else {
+    String name = getIdToNameMap(context).get(namespaceId);
+    if (name == null) {
       throw new NamespaceNotFoundException(namespaceId.canonical(), null,
           "getNamespaceName() failed to find namespace");
     }

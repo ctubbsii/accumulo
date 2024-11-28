@@ -29,7 +29,6 @@ import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
 import org.apache.accumulo.core.clientImpl.ClientConfConverter;
 import org.apache.accumulo.core.clientImpl.ClientInfo;
 import org.apache.accumulo.core.clientImpl.Credentials;
-import org.apache.accumulo.core.clientImpl.InstanceOperationsImpl;
 import org.apache.accumulo.core.conf.ClientProperty;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.conf.SiteConfiguration;
@@ -107,7 +106,7 @@ public class ServerInfo implements ClientInfo {
     zooKeepers = config.get(Property.INSTANCE_ZK_HOST);
     zooKeepersSessionTimeOut = (int) config.getTimeInMillis(Property.INSTANCE_ZK_TIMEOUT);
     zooCache = new ZooCacheFactory().getZooCache(zooKeepers, zooKeepersSessionTimeOut);
-    instanceName = InstanceOperationsImpl.lookupInstanceName(zooCache, instanceID);
+    instanceName = ZooUtil.getInstanceName(zooKeepers, zooKeepersSessionTimeOut, instanceID);
     credentials = SystemCredentials.get(instanceID, siteConfig);
   }
 

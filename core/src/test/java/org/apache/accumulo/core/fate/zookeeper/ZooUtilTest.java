@@ -18,12 +18,23 @@
  */
 package org.apache.accumulo.core.fate.zookeeper;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import org.apache.accumulo.core.Constants;
+import org.apache.accumulo.core.data.InstanceId;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.ACL;
@@ -66,4 +77,29 @@ class ZooUtilTest {
     }
     return true;
   }
+
+  @Test
+  public void fetchInstancesFromZk() throws Exception {
+
+    String instAName = "INST_A";
+    InstanceId instA = InstanceId.of(UUID.randomUUID());
+    String instBName = "INST_B";
+    InstanceId instB = InstanceId.of(UUID.randomUUID());
+
+    ZooReader zooReader = createMock(ZooReader.class);
+    String namePath = Constants.ZROOT + Constants.ZINSTANCES;
+    expect(zooReader.getChildren(eq(namePath))).andReturn(List.of(instAName, instBName)).once();
+    expect(zooReader.getData(eq(namePath + "/" + instAName)))
+        .andReturn(instA.canonical().getBytes(UTF_8)).once();
+    expect(zooReader.getData(eq(namePath + "/" + instBName)))
+        .andReturn(instB.canonical().getBytes(UTF_8)).once();
+    replay(zooReader);
+
+    Map<String,InstanceId> instanceMap = ZooUtil.readInstancesFromZk(zooReader);
+
+    log.trace("id map returned: {}", instanceMap);
+    assertEquals(Map.of(instAName, instA, instBName, instB), instanceMap);
+    verify(zooReader);
+  }
+
 }

@@ -19,7 +19,9 @@
 package org.apache.accumulo.core.fate.zookeeper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -27,8 +29,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.data.InstanceId;
@@ -41,8 +47,13 @@ import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.auth.DigestAuthenticationProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZooUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(ZooUtil.class);
+
+  private ZooUtil() {}
 
   public enum NodeExistsPolicy {
     SKIP, OVERWRITE, FAIL
@@ -111,6 +122,94 @@ public class ZooUtil {
 
   public static String getRoot(final InstanceId instanceId) {
     return Constants.ZROOT + "/" + instanceId;
+  }
+
+  /**
+   * Given a zooCache and instanceId, look up the instance name.
+   */
+  public static String getInstanceName(String zooKeepers, int zkSessionTimeout,
+      InstanceId instanceId) {
+    requireNonNull(zooKeepers);
+    var instanceIdBytes = requireNonNull(instanceId).canonical().getBytes(UTF_8);
+    try (var zoo = new ZooKeeper(zooKeepers, zkSessionTimeout, null)) {
+      for (String name : zoo.getChildren(Constants.ZROOT + Constants.ZINSTANCES, false)) {
+        var bytes = zoo.getData(Constants.ZROOT + Constants.ZINSTANCES + "/" + name, false, null);
+        if (Arrays.equals(bytes, instanceIdBytes)) {
+          return name;
+        }
+      }
+    } catch (IOException | KeeperException | InterruptedException e) {
+      throw new RuntimeException("Unable to get instance name for the instanceId " + instanceId, e);
+    }
+    return null;
+  }
+
+  /**
+   * Read the instance names and instance ids from ZooKeeper. The storage structure in ZooKeeper is:
+   *
+   * <pre>
+   *   /accumulo/instances/instance_name  - with the instance id stored as data.
+   * </pre>
+   *
+   * @return a map of (instance name, instance id) entries
+   */
+  public static Map<String,InstanceId> readInstancesFromZk(final ZooReader zooReader) {
+    // TODO clean up
+    Map<String,InstanceId> idMap = new TreeMap<>();
+    try {
+      List<String> names = zooReader.getChildren(Constants.ZROOT + Constants.ZINSTANCES);
+      names.forEach(name -> {
+        try {
+          byte[] uuid = zooReader.getData(Constants.ZROOT + Constants.ZINSTANCES + "/" + name);
+          idMap.put(name, InstanceId.of(UUID.fromString(new String(uuid, UTF_8))));
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+          throw new IllegalStateException("Interrupted reading instance id from ZooKeeper", ex);
+        } catch (KeeperException ex) {
+          LOG.warn("Failed to read instance id for " + ex.getPath());
+        }
+      });
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted reading instance name info from ZooKeeper", ex);
+    } catch (KeeperException ex) {
+      throw new IllegalStateException("Failed to read instance name info from ZooKeeper", ex);
+    }
+    return idMap;
+  }
+
+  /**
+   * Returns a unique string that identifies this instance of accumulo.
+   */
+  public static InstanceId getInstanceID(String zooKeepers, int zkSessionTimeout,
+      String instanceName) {
+    requireNonNull(zooKeepers);
+    requireNonNull(instanceName);
+    // lookup by name
+    String instanceIdString = null;
+    try (var zoo = new ZooKeeper(zooKeepers, zkSessionTimeout, null)) {
+      String instanceNamePath = Constants.ZROOT + Constants.ZINSTANCES + "/" + instanceName;
+      byte[] data = zoo.getData(instanceNamePath, false, null);
+      if (data == null) {
+        throw new RuntimeException(
+            "Instance name " + instanceName + " does not exist in zookeeper. "
+                + "Run \"accumulo org.apache.accumulo.server.util.ListInstances\" to see a list.");
+      }
+      instanceIdString = new String(data, UTF_8);
+      // verify that the instanceId found via the instanceName actually exists as an instance
+      if (zoo.getData(Constants.ZROOT + "/" + instanceIdString, false, null) == null) {
+        throw new RuntimeException("Instance id " + instanceIdString
+            + (instanceName == null ? "" : " pointed to by the name " + instanceName)
+            + " does not exist in zookeeper");
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted reading instance id from ZooKeeper", e);
+    } catch (IOException | KeeperException e) {
+      throw new IllegalStateException(
+          "Unable to get instanceId for the instance name " + instanceName, e);
+    }
+    return InstanceId.of(instanceIdString);
   }
 
   /**

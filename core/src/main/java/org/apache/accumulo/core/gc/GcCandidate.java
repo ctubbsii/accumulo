@@ -18,7 +18,6 @@
  */
 package org.apache.accumulo.core.gc;
 
-import java.lang.Object;
 import java.util.Objects;
 
 public class GcCandidate implements Comparable<GcCandidate> {

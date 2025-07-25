@@ -28,14 +28,14 @@ This data was created using the Accumulo shell to
  - compact the table so the data is written to the tablet's files
  - offline and export the table to an hdfs directory in the /accumulo namespace
 
-The data can be recreated using the following commands: 
+The data can be recreated using the following commands:
 
-Using hdfs create a directory in the accumulo namespace 
+Using hdfs create a directory in the accumulo namespace
 `hadoop fs -mkdir /accumulo/export_test`
 
 Using the Accumulo shell with any version prior to 3.1
 
-``` 
+```
 > createtable tableA
 > addsplits -t tableA 2 4 6
 > insert -t tableA 1 1
@@ -49,7 +49,7 @@ Using the Accumulo shell with any version prior to 3.1
 
 > compact -w -t tableA
 
-to see the current tablet files: 
+to see the current tablet files:
 
 > scan -t accumulo.metadata -c file -np
 > offline -t tableA

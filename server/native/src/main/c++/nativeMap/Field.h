@@ -34,71 +34,75 @@ struct Field {
   uint8_t *field;
   int32_t len;
 
-  int compare(const uint8_t *d1, int len1, const uint8_t *d2, int len2) const{
+  int compare(const uint8_t *d1, int len1, const uint8_t *d2,
+      int len2) const {
     int result = memcmp(d1, d2, len1 < len2 ? len1 : len2);
 
-    if(result != 0)
+    if (result != 0)
       return result;
-    if(len1 == len2)
+    if (len1 == len2)
       return 0;
-    if(len1 < len2)
+    if (len1 < len2)
       return -1;
 
     return 1;
   }
 
-  Field(){}
+  Field() {
+  }
 
-  Field(LinkedBlockAllocator *lba, JNIEnv *env, jbyteArray f, int l){
+  Field(LinkedBlockAllocator *lba, JNIEnv *env, jbyteArray f, int l) {
     len = l;
-    field=(uint8_t *)lba->allocate(len);
-    env->GetByteArrayRegion(f, 0, len, (jbyte *)field);
+    field = (uint8_t*) lba->allocate(len);
+    env->GetByteArrayRegion(f, 0, len, (jbyte*) field);
   }
 
-  Field(LinkedBlockAllocator *lba, JNIEnv *env, jbyteArray f){
+  Field(LinkedBlockAllocator *lba, JNIEnv *env, jbyteArray f) {
     len = env->GetArrayLength(f);
-    field=(uint8_t *)lba->allocate(len);
-    env->GetByteArrayRegion(f, 0, len, (jbyte *)field);
+    field = (uint8_t*) lba->allocate(len);
+    env->GetByteArrayRegion(f, 0, len, (jbyte*) field);
   }
 
-  Field(uint8_t *f, int32_t l):field(f),len(l){
+  Field(uint8_t *f, int32_t l) : field(f), len(l) {
   }
 
-  Field(const char *cstr){
+  Field(const char *cstr) {
     //constructor for testing C++
     len = strlen(cstr);
-    field=new uint8_t[len];
+    field = new uint8_t[len];
     memcpy(field, cstr, len);
   }
 
-  Field(LinkedBlockAllocator *lba, const char *cstr){
+  Field(LinkedBlockAllocator *lba, const char *cstr) {
     //constructor for testing C++
     len = strlen(cstr);
-    field=(uint8_t *)lba->allocate(len);
+    field = (uint8_t*) lba->allocate(len);
     memcpy(field, cstr, len);
   }
 
-  void set(const char *d, int l){
-    if(l < 0 || l > len){
-      cerr << "Tried to set field with value that is too long " << l << " " << len << endl;
+  void set(const char *d, int l) {
+    if (l < 0 || l > len) {
+      cerr << "Tried to set field with value that is too long " << l
+          << " " << len << endl;
     }
     memcpy(field, d, l);
     len = l;
   }
 
-  void set(JNIEnv *env, jbyteArray f, int l){
-    if(l < 0 || l > len){
-      cerr << "Tried to set field with value that is too long " << l << " " << len << endl;
+  void set(JNIEnv *env, jbyteArray f, int l) {
+    if (l < 0 || l > len) {
+      cerr << "Tried to set field with value that is too long " << l
+          << " " << len << endl;
     }
     len = l;
-    env->GetByteArrayRegion(f, 0, len, (jbyte *)field);
+    env->GetByteArrayRegion(f, 0, len, (jbyte*) field);
   }
 
-  int compare(const Field &of) const{
+  int compare(const Field &of) const {
     return compare(field, len, of.field, of.len);
   }
 
-  bool operator<(const Field &of) const{
+  bool operator<(const Field &of) const {
     return compare(of) < 0;
   }
 
@@ -108,36 +112,36 @@ struct Field {
 
   void fillIn(JNIEnv *env, jbyteArray d) const {
     //TODO ensure lengths match up
-    env->SetByteArrayRegion(d, 0, len, (jbyte *)field);
+    env->SetByteArrayRegion(d, 0, len, (jbyte*) field);
   }
 
-  jbyteArray createJByteArray(JNIEnv *env) const{
+  jbyteArray createJByteArray(JNIEnv *env) const {
     jbyteArray valData = env->NewByteArray(len);
-    env->SetByteArrayRegion(valData, 0, len, (jbyte *)field);
+    env->SetByteArrayRegion(valData, 0, len, (jbyte*) field);
     return valData;
   }
 
-  string toString() const{
-    return string((char *)field, len);
+  string toString() const {
+    return string((char*) field, len);
   }
 
-  void clear(){
+  void clear() {
     //delete(field);
   }
 
-  void clear(LinkedBlockAllocator *lba){
+  void clear(LinkedBlockAllocator *lba) {
     lba->deleteLast(field);
   }
 };
 
-struct LocalField : public Field {
-  LocalField(JNIEnv *env, jbyteArray f){
+struct LocalField: public Field {
+  LocalField(JNIEnv *env, jbyteArray f) {
     len = env->GetArrayLength(f);
-    field= new uint8_t[len];
-    env->GetByteArrayRegion(f, 0, len, (jbyte *)field);
+    field = new uint8_t[len];
+    env->GetByteArrayRegion(f, 0, len, (jbyte*) field);
   }
 
-  ~LocalField(){
+  ~LocalField() {
     delete[] field;
   }
 };

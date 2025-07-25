@@ -49,7 +49,7 @@ mvn clean verify -Psec-bugs -DskipTests
 
 # Integration Tests
 
-The integration tests are medium length tests that check for regressions. These tests do require more memory over what 
+The integration tests are medium length tests that check for regressions. These tests do require more memory over what
 Maven itself requires. As such, it's recommended to have at least 3-4GB of free memory and 10GB of free disk space.
 
 Accumulo uses JUnit Category annotations to categorize certain integration tests based on their runtime requirements.

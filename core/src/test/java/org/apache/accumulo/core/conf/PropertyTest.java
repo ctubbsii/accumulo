@@ -88,8 +88,10 @@ public class PropertyTest {
           "Property: %s has extraneous whitespace".formatted(prop.name()));
 
       // make sure property description ends with a period
-      assertTrue(prop.getDescription().strip().endsWith("."), "Property: " + prop.getKey()
-          + " description does not end with period. Description = " + prop.getDescription());
+      assertTrue(prop.getDescription().endsWith(".") || prop.getDescription().endsWith("\n```"),
+          "Property: " + prop.getKey()
+              + " description does not end with period or example block. Description = "
+              + prop.getDescription());
 
       if (EnumSet
           .of(PropertyType.JSON, PropertyType.FATE_META_CONFIG, PropertyType.FATE_USER_CONFIG)

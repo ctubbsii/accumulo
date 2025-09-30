@@ -117,7 +117,7 @@ public class ConfigurationDocGen {
     doc.printf("""
         <tr>
         <td markdown="1"><a name="%sprefix" class="prop"></a>
-        %s**%s***%s
+        %s**%s\\***%s
         </td>
         <td markdown="1" style="max-width: 600px">
         %s
@@ -155,17 +155,15 @@ public class ConfigurationDocGen {
     } else {
       defaultValue = switch (prop.getType()) {
         case JSON, FATE_META_CONFIG, FATE_USER_CONFIG -> """
+            `%s`
 
+            Formatted JSON (for convenience only):
             ```json
             %s
             ```
-            """.formatted(gsonPrettyPrinter.toJson(JsonParser.parseString(defaultValue)));
-        default -> (defaultValue.contains("\n") ? """
-
-            ```
-            %s
-            ```
-            """ : "`%s`").formatted(defaultValue);
+            """.formatted(defaultValue,
+            gsonPrettyPrinter.toJson(JsonParser.parseString(defaultValue)));
+        default -> "`%s`".formatted(defaultValue);
       };
     }
     doc.printf("""

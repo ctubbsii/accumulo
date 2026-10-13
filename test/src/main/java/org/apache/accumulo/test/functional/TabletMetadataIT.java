@@ -55,7 +55,7 @@ public class TabletMetadataIT extends ConfigurableMacBase {
   public void getLiveTServersTest() throws Exception {
     try (AccumuloClient c = Accumulo.newClient().from(getClientProperties()).build()) {
       Wait.waitFor(() -> c.instanceOperations().getServers(ServerId.Type.TABLET_SERVER).size()
-          == NUM_TSERVERS, 30_000, 250, "Tablet servers did not start up");
+          == NUM_TSERVERS, "Tablet servers did not start up");
       Set<TServerInstance> servers = TabletMetadata.getLiveTServers((ClientContext) c);
       assertEquals(NUM_TSERVERS, servers.size());
 
@@ -64,7 +64,7 @@ public class TabletMetadataIT extends ConfigurableMacBase {
           getCluster().getProcesses().get(TABLET_SERVER).iterator().next());
 
       Wait.waitFor(() -> c.instanceOperations().getServers(ServerId.Type.TABLET_SERVER).size()
-          != NUM_TSERVERS, 30_000, 250, "Tablet server did not leave the live list");
+          != NUM_TSERVERS, "Tablet server did not leave the live list");
       servers = TabletMetadata.getLiveTServers((ClientContext) c);
       assertEquals(NUM_TSERVERS - 1, servers.size());
     }

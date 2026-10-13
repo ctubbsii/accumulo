@@ -199,7 +199,7 @@ public class TabletManagementIteratorIT extends AccumuloClusterHarness {
           log.debug("Waiting for {} tablets for {}", tabletsInFlux, metaCopy1);
         }
         return tabletsInFlux.isEmpty();
-      }, 30_000, 250, "Tablets remained in flux");
+      }, "Tablets remained in flux");
       expected = Map.of();
       assertEquals(expected,
           findTabletsNeedingAttention(client, metaCopy1, tabletMgmtParams1, false),

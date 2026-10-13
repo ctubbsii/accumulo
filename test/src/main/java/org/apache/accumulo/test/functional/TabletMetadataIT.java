@@ -28,6 +28,7 @@ import org.apache.accumulo.core.client.Accumulo;
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.admin.servers.ServerId;
 import org.apache.accumulo.core.clientImpl.ClientContext;
+import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.core.metadata.TServerInstance;
 import org.apache.accumulo.core.metadata.schema.TabletMetadata;
 import org.apache.accumulo.miniclusterImpl.MiniAccumuloConfigImpl;
@@ -49,6 +50,7 @@ public class TabletMetadataIT extends ConfigurableMacBase {
   @Override
   public void configure(MiniAccumuloConfigImpl cfg, Configuration conf) {
     cfg.getClusterServerConfiguration().setNumDefaultTabletServers(NUM_TSERVERS);
+    cfg.setProperty(Property.INSTANCE_ZK_TIMEOUT, "15s");
   }
 
   @Test
